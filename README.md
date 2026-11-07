@@ -139,12 +139,24 @@ The Kotlin project is scaffolded at the repository root.
 adb install -r app\build\outputs\apk\debug\app-debug.apk
 ```
 
+### Android Studio
+
+Open the **repository root** in Android Studio. It is a standard root Gradle project with the
+`app` module. Let Android Studio use its bundled JBR (the project is verified with Android Studio
+2026.2.1 / JBR 25) or any JDK 21+. JVM target is 21.
+
+1. Open `C:\projects\expense` as a project.
+2. Let Gradle sync with the wrapper (Gradle 9.5.0).
+3. Select the `app` run configuration.
+4. Use an API 37 device or the S26 Ultra over USB debugging.
+5. Run or install the debug APK.
+
 Toolchain used by the scaffold:
 
 - Gradle 9.5.0
 - Android Gradle Plugin 9.2.1
 - Kotlin 2.2.20
-- JDK 21
+- JDK 21+ (the project is verified with Android Studio's JBR 25; JVM target 21)
 - compileSdk / targetSdk / minSdk 37
 
 KSP and Hilt currently require opting out of AGP's built-in Kotlin support, so

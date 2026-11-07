@@ -14,7 +14,6 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import ph.salo.app.core.data.AdultProfileRepository
-import ph.salo.app.core.data.LedgerRepository
 import ph.salo.app.core.data.OutingDetails
 import ph.salo.app.core.data.OutingRepository
 import ph.salo.app.core.data.ProfilePreferences
@@ -24,6 +23,7 @@ import ph.salo.app.core.recap.RecapData
 import ph.salo.app.core.recap.RecapImageRenderer
 import ph.salo.app.core.recap.RecapSharer
 import ph.salo.app.core.recap.RecapTextBuilder
+import ph.salo.app.core.money.Transfer
 import javax.inject.Inject
 
 @HiltViewModel
@@ -32,7 +32,6 @@ class OutingDetailViewModel @Inject constructor(
     private val outingRepository: OutingRepository,
     private val adultRepository: AdultProfileRepository,
     private val studentRepository: StudentRepository,
-    ledgerRepository: LedgerRepository,
     private val profilePreferences: ProfilePreferences
 ) : ViewModel() {
     private val outingId: String = checkNotNull(savedStateHandle["outingId"])
@@ -51,10 +50,15 @@ class OutingDetailViewModel @Inject constructor(
     val recap: StateFlow<RecapData?> = combine(
         outingRepository.observeDetails(outingId),
         adultRepository.observeAll(),
-        studentRepository.observeAll(),
-        ledgerRepository.observeTransfers()
-    ) { details, adults, students, transfers ->
-        details?.let { RecapBuilder.build(it, adults, students, transfers) }
+        studentRepository.observeAll()
+    ) { details, adults, students ->
+        details?.let {
+            val payerId = it.outing.payerAdultId
+            val transfers = it.shares
+                .filter { share -> share.adultId != payerId && share.totalCentavos > 0 }
+                .map { share -> Transfer(share.adultId, payerId, share.totalCentavos) }
+            RecapBuilder.build(it, adults, students, transfers)
+        }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
 
     private val _message = MutableStateFlow<String?>(null)

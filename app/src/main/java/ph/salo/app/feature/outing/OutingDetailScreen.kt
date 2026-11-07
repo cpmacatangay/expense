@@ -37,7 +37,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import ph.salo.app.core.data.OutingDetails
 import ph.salo.app.core.money.formatPeso
 import ph.salo.app.core.recap.RecapTextBuilder
 import ph.salo.app.ui.components.ConfirmDialog

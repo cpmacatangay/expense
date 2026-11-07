@@ -6,7 +6,6 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -57,11 +56,9 @@ import ph.salo.app.core.money.ItemAssignmentType
 import ph.salo.app.core.money.formatCentavosPlain
 import ph.salo.app.core.money.formatPeso
 import ph.salo.app.core.money.parsePesoToCentavos
-import ph.salo.app.ui.components.LabelValueRow
 import ph.salo.app.ui.components.SaloAvatar
 import ph.salo.app.ui.components.SectionCard
 import ph.salo.app.ui.components.SelectionField
-import java.time.LocalDate
 
 private val steps = listOf("Details", "Receipt & items", "Students", "Review")
 
