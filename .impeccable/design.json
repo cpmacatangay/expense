@@ -1,0 +1,241 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-08T00:00:00Z",
+  "title": "Design System: Salo",
+  "extensions": {
+    "colorMeta": {
+      "ledger-green": {
+        "role": "primary",
+        "displayName": "Ledger Green",
+        "canonical": "oklch(38% 0.07 160)",
+        "tonalRamp": [
+          "oklch(15% 0.04 160)",
+          "oklch(25% 0.05 160)",
+          "oklch(38% 0.07 160)",
+          "oklch(50% 0.08 160)",
+          "oklch(62% 0.08 160)",
+          "oklch(74% 0.06 160)",
+          "oklch(85% 0.04 160)",
+          "oklch(95% 0.02 160)"
+        ]
+      },
+      "ledger-green-light": {
+        "role": "primary-container",
+        "displayName": "Ledger Green Light",
+        "canonical": "oklch(90% 0.06 160)",
+        "tonalRamp": [
+          "oklch(15% 0.03 160)",
+          "oklch(30% 0.05 160)",
+          "oklch(45% 0.06 160)",
+          "oklch(60% 0.07 160)",
+          "oklch(72% 0.07 160)",
+          "oklch(82% 0.06 160)",
+          "oklch(90% 0.06 160)",
+          "oklch(96% 0.03 160)"
+        ]
+      },
+      "sage-secondary": {
+        "role": "secondary",
+        "displayName": "Sage Secondary",
+        "canonical": "oklch(45% 0.02 150)",
+        "tonalRamp": [
+          "oklch(15% 0.01 150)",
+          "oklch(25% 0.02 150)",
+          "oklch(35% 0.02 150)",
+          "oklch(45% 0.02 150)",
+          "oklch(58% 0.02 150)",
+          "oklch(70% 0.02 150)",
+          "oklch(84% 0.02 150)",
+          "oklch(94% 0.01 150)"
+        ]
+      },
+      "slate-teal": {
+        "role": "tertiary",
+        "displayName": "Slate Teal",
+        "canonical": "oklch(45% 0.04 210)",
+        "tonalRamp": [
+          "oklch(15% 0.02 210)",
+          "oklch(28% 0.03 210)",
+          "oklch(45% 0.04 210)",
+          "oklch(56% 0.04 210)",
+          "oklch(68% 0.04 210)",
+          "oklch(80% 0.04 210)",
+          "oklch(90% 0.03 210)",
+          "oklch(96% 0.02 210)"
+        ]
+      },
+      "cool-paper": {
+        "role": "neutral",
+        "displayName": "Cool Paper",
+        "canonical": "oklch(98% 0.01 140)",
+        "tonalRamp": [
+          "oklch(15% 0.01 140)",
+          "oklch(28% 0.01 140)",
+          "oklch(42% 0.01 140)",
+          "oklch(56% 0.01 140)",
+          "oklch(68% 0.01 140)",
+          "oklch(80% 0.01 140)",
+          "oklch(90% 0.01 140)",
+          "oklch(98% 0.01 140)"
+        ]
+      },
+      "night-ledger": {
+        "role": "neutral",
+        "displayName": "Night Ledger",
+        "canonical": "oklch(17% 0.01 150)",
+        "tonalRamp": [
+          "oklch(12% 0.01 150)",
+          "oklch(17% 0.01 150)",
+          "oklch(26% 0.01 150)",
+          "oklch(38% 0.01 150)",
+          "oklch(52% 0.01 150)",
+          "oklch(68% 0.01 150)",
+          "oklch(84% 0.01 150)",
+          "oklch(95% 0.01 150)"
+        ]
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "Ink",
+        "canonical": "oklch(22% 0.01 150)",
+        "tonalRamp": [
+          "oklch(12% 0.01 150)",
+          "oklch(22% 0.01 150)",
+          "oklch(34% 0.01 150)",
+          "oklch(46% 0.01 150)",
+          "oklch(60% 0.01 150)",
+          "oklch(74% 0.01 150)",
+          "oklch(86% 0.01 150)",
+          "oklch(96% 0.01 150)"
+        ]
+      },
+      "error-red": {
+        "role": "error",
+        "displayName": "Error Red",
+        "canonical": "oklch(50% 0.19 27)",
+        "tonalRamp": [
+          "oklch(18% 0.08 27)",
+          "oklch(28% 0.12 27)",
+          "oklch(38% 0.16 27)",
+          "oklch(50% 0.19 27)",
+          "oklch(62% 0.17 27)",
+          "oklch(74% 0.13 27)",
+          "oklch(86% 0.08 27)",
+          "oklch(95% 0.03 27)"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display", "purpose": "The one figure that answers how much: home balance, receipt total." },
+      "headline": { "displayName": "Headline", "purpose": "Screen titles and the top of the split review." },
+      "title": { "displayName": "Title", "purpose": "Section headings, names, and amounts inside rows." },
+      "body": { "displayName": "Body", "purpose": "Explanatory sentences and values inside rows." },
+      "label": { "displayName": "Label", "purpose": "Uppercase eyebrows, chip text, captions, metadata." }
+    },
+    "shadows": [],
+    "motion": [
+      { "name": "state-layer", "value": "ripple, 200ms", "purpose": "Press feedback on every tappable surface; Material ripple and state layers only, never a color shift or lift." },
+      { "name": "screen-transition", "value": "fade-through, 300ms, cubic-bezier(0.2, 0, 0, 1)", "purpose": "Navigation between destinations; honors the system Remove animations setting." }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-filled",
+      "description": "The one committing action on a screen: Next, Finalize outing, Back up, Record payment.",
+      "html": "<button class=\"ds-btn-filled\"><span class=\"ds-btn-icon\" aria-hidden=\"true\">＋</span>New outing</button>",
+      "css": ".ds-btn-filled { display:inline-flex; align-items:center; justify-content:center; gap:6px; min-height:48px; padding:0 24px; border:none; border-radius:9999px; background:#B8F0D2; color:#002114; font-family:Roboto,sans-serif; font-size:14px; font-weight:500; letter-spacing:0.1px; cursor:pointer; transition:background-color 120ms ease, box-shadow 120ms ease; } .ds-btn-filled:hover { background:#a3e4c3; } .ds-btn-filled:focus-visible { outline:2px solid #1F5C45; outline-offset:2px; } .ds-btn-filled:active { background:#8fd8b4; } .ds-btn-icon { font-size:16px; line-height:1; }"
+    },
+    {
+      "name": "Outlined Button",
+      "kind": "button",
+      "refersTo": "button-outlined",
+      "description": "Reversible or alternative actions: Back, Export, Reopen and edit, Use.",
+      "html": "<button class=\"ds-btn-outlined\">Back</button>",
+      "css": ".ds-btn-outlined { display:inline-flex; align-items:center; justify-content:center; min-height:48px; padding:0 24px; border:1px solid #717970; border-radius:9999px; background:transparent; color:#414942; font-family:Roboto,sans-serif; font-size:14px; font-weight:500; cursor:pointer; transition:background-color 120ms ease, border-color 120ms ease; } .ds-btn-outlined:hover { background:rgba(31,92,69,0.06); border-color:#1F5C45; } .ds-btn-outlined:focus-visible { outline:2px solid #1F5C45; outline-offset:2px; } .ds-btn-outlined:active { background:rgba(31,92,69,0.12); }"
+    },
+    {
+      "name": "Filter Chip",
+      "kind": "chip",
+      "refersTo": "chip-filter-selected",
+      "description": "Date ranges and the Adult / Student / Shared assignment choice.",
+      "html": "<div class=\"ds-chip-row\"><button class=\"ds-chip\">This month</button><button class=\"ds-chip ds-chip--selected\">All time</button></div>",
+      "css": ".ds-chip-row { display:flex; gap:8px; flex-wrap:wrap; } .ds-chip { min-height:32px; padding:0 16px; border:1px solid #717970; border-radius:8px; background:transparent; color:#414942; font-family:Roboto,sans-serif; font-size:12px; font-weight:500; letter-spacing:0.5px; cursor:pointer; } .ds-chip:hover { background:rgba(31,92,69,0.06); } .ds-chip:focus-visible { outline:2px solid #1F5C45; outline-offset:2px; } .ds-chip--selected { background:#D2E8D8; border-color:transparent; color:#0C1F16; }"
+    },
+    {
+      "name": "Section Card",
+      "kind": "card",
+      "refersTo": "card-section",
+      "description": "The default container for every block of content on a screen.",
+      "html": "<section class=\"ds-card\"><header class=\"ds-card-head\"><h3 class=\"ds-card-title\">Adult profiles</h3><button class=\"ds-card-action\">Ledger</button></header><p class=\"ds-card-body\">All four adults share this ledger. Select a profile to record on their behalf.</p></section>",
+      "css": ".ds-card { background:#DCE5DB; border-radius:12px; padding:16px; display:flex; flex-direction:column; gap:12px; } .ds-card-head { display:flex; align-items:center; justify-content:space-between; gap:12px; } .ds-card-title { margin:0; font-family:Roboto,sans-serif; font-size:16px; font-weight:600; color:#191C19; } .ds-card-action { border:1px solid #717970; border-radius:9999px; background:transparent; color:#414942; font-family:Roboto,sans-serif; font-size:12px; font-weight:500; padding:6px 16px; cursor:pointer; } .ds-card-body { margin:0; font-family:Roboto,sans-serif; font-size:14px; line-height:20px; color:#414942; }"
+    },
+    {
+      "name": "Statement Card",
+      "kind": "custom",
+      "refersTo": "card-section",
+      "description": "The home balance block, the only place the app raises its voice.",
+      "html": "<section class=\"ds-statement\"><p class=\"ds-statement-eyebrow\">You are owed</p><p class=\"ds-statement-amount\">₱374.00</p><p class=\"ds-statement-meta\">1 recent outings · 4 adults</p><button class=\"ds-statement-action\">Settle up</button></section>",
+      "css": ".ds-statement { background:#B8F0D2; color:#002114; border-radius:16px; padding:20px; display:flex; flex-direction:column; gap:8px; } .ds-statement-eyebrow { margin:0; font-family:Roboto,sans-serif; font-size:12px; font-weight:500; letter-spacing:0.5px; text-transform:uppercase; } .ds-statement-amount { margin:0; font-family:Roboto,sans-serif; font-size:36px; line-height:44px; font-weight:500; } .ds-statement-meta { margin:0; font-family:Roboto,sans-serif; font-size:14px; line-height:20px; } .ds-statement-action { min-height:48px; margin-top:4px; border:1px solid rgba(0,33,20,0.5); border-radius:9999px; background:transparent; color:#002114; font-family:Roboto,sans-serif; font-size:14px; font-weight:500; cursor:pointer; } .ds-statement-action:hover { background:rgba(0,33,20,0.06); }"
+    },
+    {
+      "name": "Outlined Text Field",
+      "kind": "input",
+      "refersTo": "field-outlined",
+      "description": "Every value the owner types: total, tax, item name, amount.",
+      "html": "<label class=\"ds-field\"><span class=\"ds-field-label\">Total</span><span class=\"ds-field-prefix\">₱</span><input class=\"ds-field-input\" value=\"825\" inputmode=\"decimal\" /></label>",
+      "css": ".ds-field { display:flex; align-items:center; gap:6px; min-height:56px; padding:0 16px; border:1px solid #717970; border-radius:4px; background:transparent; font-family:Roboto,sans-serif; position:relative; } .ds-field:focus-within { border-color:#1F5C45; box-shadow:inset 0 0 0 1px #1F5C45; } .ds-field-label { position:absolute; top:-8px; left:12px; padding:0 4px; background:#F7FBF4; color:#414942; font-size:12px; letter-spacing:0.4px; } .ds-field-prefix { color:#414942; font-size:16px; } .ds-field-input { flex:1; border:none; outline:none; background:transparent; color:#191C19; font-family:Roboto,sans-serif; font-size:16px; }"
+    },
+    {
+      "name": "Navigation Bar",
+      "kind": "nav",
+      "refersTo": "chip-filter",
+      "description": "Five destinations on every main screen; hidden inside the wizard and detail routes.",
+      "html": "<nav class=\"ds-nav\"><a class=\"ds-nav-item ds-nav-item--active\"><span class=\"ds-nav-icon\">⌂</span><span class=\"ds-nav-label\">Home</span></a><a class=\"ds-nav-item\"><span class=\"ds-nav-icon\">☰</span><span class=\"ds-nav-label\">Students</span></a><a class=\"ds-nav-item\"><span class=\"ds-nav-icon\">▣</span><span class=\"ds-nav-label\">Ledger</span></a><a class=\"ds-nav-item\"><span class=\"ds-nav-icon\">◷</span><span class=\"ds-nav-label\">History</span></a><a class=\"ds-nav-item\"><span class=\"ds-nav-icon\">⚙</span><span class=\"ds-nav-label\">Settings</span></a></nav>",
+      "css": ".ds-nav { display:flex; align-items:stretch; justify-content:space-around; background:#F7FBF4; border-top:1px solid rgba(113,121,112,0.24); padding:8px 0; } .ds-nav-item { display:flex; flex-direction:column; align-items:center; gap:2px; min-width:56px; min-height:48px; justify-content:center; color:#414942; text-decoration:none; cursor:pointer; } .ds-nav-icon { font-size:20px; line-height:1; } .ds-nav-label { font-family:Roboto,sans-serif; font-size:12px; font-weight:500; letter-spacing:0.5px; } .ds-nav-item--active { color:#1F5C45; } .ds-nav-item--active .ds-nav-icon { background:#D2E8D8; border-radius:9999px; padding:4px 12px; }"
+    },
+    {
+      "name": "Extended FAB",
+      "kind": "custom",
+      "refersTo": "button-filled",
+      "description": "One primary action, Home only: start an outing.",
+      "html": "<button class=\"ds-fab\"><span class=\"ds-fab-icon\" aria-hidden=\"true\">＋</span>New outing</button>",
+      "css": ".ds-fab { display:inline-flex; align-items:center; gap:8px; min-height:56px; padding:0 20px; border:none; border-radius:16px; background:#B8F0D2; color:#002114; font-family:Roboto,sans-serif; font-size:14px; font-weight:500; box-shadow:0 1px 3px rgba(0,0,0,0.16); cursor:pointer; transition:background-color 120ms ease; } .ds-fab:hover { background:#a3e4c3; } .ds-fab:focus-visible { outline:2px solid #1F5C45; outline-offset:2px; } .ds-fab-icon { font-size:18px; line-height:1; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Corner Table",
+    "overview": "Salo looks like the table felt calm down after the plates were cleared: paper-quiet surfaces, a green you would find on a linen napkin rather than a bank logo, and numbers big enough to read from a hand's width away. Nothing on screen competes with the bill. The interface is a place where five people lean in to agree on a number, so the design spends its boldness on legibility and exactness and keeps everything else still.\n\nThe system is Material 3 with the volume turned down. There is one accent family, one typeface, and one shape language: softly rounded rectangles that echo a folded receipt rather than a card grid. Density is generous on purpose — 16 dp screen gutters, 12 dp between blocks, 16 dp inside cards — so a thumb at the table never hits two targets at once. Screens read top to bottom as a single column; the only persistent chrome is the top app bar and the bottom navigation.\n\nWarmth comes from space and typographic confidence, not from decoration. There are no gradients, no illustrations, no marketing furniture, and no shadows at rest. A ₱825.00 in display size is the loudest thing the product ever says.",
+    "keyCharacteristics": [
+      "One green accent family, used sparingly; neutral paper carries the page.",
+      "Material 3 tonal surfaces instead of shadows; 1 dp hairlines for separation.",
+      "Money gets display and headline sizes; prose stays at body and label.",
+      "Fully rounded pills for actions, 12–16 dp corners for containers, 4 dp on fields.",
+      "Dark theme is a real scheme, not an inversion."
+    ],
+    "rules": [
+      { "name": "The One Green Rule", "body": "The green family marks state and action only — balances, primary buttons, selected profile, the FAB. It never becomes a background wash or a decorative fill.", "section": "colors" },
+      { "name": "The Wallpaper Exception", "body": "On Android 12+ the runtime derives the whole scheme from the user's wallpaper by default. That is allowed to replace this palette wholesale; identity survives through type, spacing, shape, and the calm density of the layout, never through a hard-coded green.", "section": "colors" },
+      { "name": "The One Big Number Rule", "body": "A screen may promote exactly one figure to display or headline treatment — usually the balance or the receipt total. Item rows and secondary amounts stay at title or body size so the eye has one destination.", "section": "typography" },
+      { "name": "The Flat-By-Default Rule", "body": "If separation needs a shadow, the surface roles were chosen wrong. Fix the tonal step, not the elevation.", "section": "elevation" },
+      { "name": "The Receipt Rule", "body": "A corner radius above 16 dp belongs only to pills. Nothing should look like a bubble; the form language is a folded receipt, not a chat app.", "section": "shapes" }
+    ],
+    "dos": [
+      "Do keep the amount column right-aligned and set in title or body weight, so columns of pesos line up down the screen.",
+      "Do use surfaceContainerLow for cards and surfaceContainerLowest for rows inside them; that two-step tonal difference is the whole depth system.",
+      "Do reserve display size for one number per screen.",
+      "Do keep destructive and owing states in error; the rest of the screen stays neutral.",
+      "Do let the platform control color on Android 12+; dynamic color is a supported mode, not a bug.",
+      "Do respect 48 dp targets: icon buttons carry 48 dp touch bounds even when the glyph is 24 dp."
+    ],
+    "donts": [
+      "Don't add drop shadows, gradients, glass, or glow to communicate elevation.",
+      "Don't introduce a second accent color; green and red cover state, everything else is neutral.",
+      "Don't use corner radii above 16 dp outside pills.",
+      "Don't set money in a decorative or condensed face; Roboto's tabular figures are the identity.",
+      "Don't uppercase body copy; uppercase belongs to labels and eyebrows only.",
+      "Don't put more than one primary filled button on a screen; alternatives are outlined or text."
+    ]
+  }
+}
