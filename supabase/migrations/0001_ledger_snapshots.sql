@@ -15,36 +15,41 @@ create index if not exists ledger_snapshots_owner_created_idx
 
 alter table public.ledger_snapshots enable row level security;
 
+-- Policies wrap auth.uid() in a scalar subquery so Postgres evaluates it once
+-- per statement (RLS initplan) instead of once per row.
 drop policy if exists "owner can read own snapshots" on public.ledger_snapshots;
 create policy "owner can read own snapshots"
   on public.ledger_snapshots for select
-  using (auth.uid() = user_id);
+  using ((select auth.uid()) = user_id);
 
 drop policy if exists "owner can insert own snapshots" on public.ledger_snapshots;
 create policy "owner can insert own snapshots"
   on public.ledger_snapshots for insert
-  with check (auth.uid() = user_id);
+  with check ((select auth.uid()) = user_id);
 
 drop policy if exists "owner can update own snapshots" on public.ledger_snapshots;
 create policy "owner can update own snapshots"
   on public.ledger_snapshots for update
-  using (auth.uid() = user_id)
-  with check (auth.uid() = user_id);
+  using ((select auth.uid()) = user_id)
+  with check ((select auth.uid()) = user_id);
 
 drop policy if exists "owner can delete own snapshots" on public.ledger_snapshots;
 create policy "owner can delete own snapshots"
   on public.ledger_snapshots for delete
-  using (auth.uid() = user_id);
+  using ((select auth.uid()) = user_id);
 
+-- Signed-out clients have no business touching this table at all.
 revoke all on public.ledger_snapshots from anon;
 grant select, insert, update, delete on public.ledger_snapshots to authenticated;
 
--- Optional retention helper. The Android app also prunes older snapshots after
--- a successful upload; this function is available for manual maintenance.
+-- Retention helper. The Android app calls this after a successful upload;
+-- it is also safe to call manually from the dashboard SQL editor.
+-- SECURITY INVOKER: the delete only targets rows the caller can already see
+-- and delete under RLS, so no elevated privileges are needed.
 create or replace function public.prune_ledger_snapshots(p_keep integer default 30)
 returns integer
 language plpgsql
-security definer
+security invoker
 set search_path = public
 as $$
 declare
@@ -68,5 +73,5 @@ begin
 end;
 $$;
 
-revoke all on function public.prune_ledger_snapshots(integer) from public;
+revoke all on function public.prune_ledger_snapshots(integer) from public, anon;
 grant execute on function public.prune_ledger_snapshots(integer) to authenticated;

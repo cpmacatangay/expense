@@ -102,7 +102,9 @@ specs/
 ## Supabase backup
 
 1. Create a Supabase project.
-2. Apply `supabase/migrations/0001_ledger_snapshots.sql`.
+2. Apply every file in `supabase/migrations/` in filename order (currently
+   `0001_ledger_snapshots.sql` then `0002_prune_snapshots_invoker.sql`). The SQL Editor is
+   enough; each file is idempotent.
 3. Disable sign-ups and provision the owner's Google account.
 4. Add these ignored values to `local.properties`:
 
