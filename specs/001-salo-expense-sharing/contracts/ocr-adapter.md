@@ -15,7 +15,7 @@ data class OcrInput(
 )
 ```
 
-The app captures an image with CameraX and keeps it in app-private storage. OCR may use the captured
+The app captures an image with the system camera and keeps it in app-private storage. OCR may use the captured
 bitmap or the local URI.
 
 ## Output

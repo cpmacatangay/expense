@@ -33,7 +33,7 @@ security scoped to the owner account, WorkManager retry
 **Auth**: Google Credential Manager ID token → Supabase `signInWithIdToken`; one authorized owner
 account only
 
-**OCR**: CameraX capture + ML Kit Text Recognition v2, on-device only
+**OCR**: System camera capture + ML Kit Text Recognition v2, on-device only
 
 **Sharing/Export**: Android share sheet with FileProvider for recap text/image; Storage Access
 Framework for CSV/JSON export
@@ -217,7 +217,7 @@ create table public.ledger_snapshots (
 
 ### 7. OCR
 
-- CameraX preview and capture.
+- System camera capture through ActivityResultContracts.TakePicture and a FileProvider URI.
 - ML Kit Text Recognition v2 on the captured bitmap.
 - Parser ported from the previous implementation in Git history, with fixtures for Philippine
   receipts.
@@ -298,7 +298,7 @@ Assignment control:
 
 ### M2 — OCR and history
 
-- CameraX + ML Kit OCR.
+- System camera capture + ML Kit OCR.
 - Receipt parser fixtures.
 - Item review from OCR.
 - History, per-student totals, CSV/JSON export.

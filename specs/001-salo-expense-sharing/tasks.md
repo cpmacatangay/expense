@@ -25,7 +25,7 @@
 - [x] T010 Create the root Gradle Android project (`settings.gradle.kts`, `build.gradle.kts`, `gradle.properties`, Gradle wrapper).
 - [x] T011 Add the `app` module with `applicationId = "ph.salo.app"`.
 - [x] T012 Configure `compileSdk 37`, `targetSdk 37`, `minSdk 37`, JDK 21, and Kotlin/Compose compiler versions.
-- [x] T013 Add a Gradle version catalog for Compose, Room, Hilt, WorkManager, Navigation, Kotlinx Serialization, CameraX, ML Kit, Supabase, and test libraries.
+- [x] T013 Add a Gradle version catalog for Compose, Room, Hilt, WorkManager, Navigation, Kotlinx Serialization, ML Kit, Credential Manager, Supabase, and test libraries.
 - [x] T014 Create `SaloApplication` and register it in `AndroidManifest.xml`.
 - [x] T015 Configure Hilt application and modules.
 - [x] T016 Create the single `MainActivity` with edge-to-edge Compose content.
@@ -57,94 +57,94 @@
 
 ## Phase 3: Room persistence and repositories
 
-- [ ] T039 Create `AdultProfileEntity`, `StudentEntity`, `OutingEntity`, `ReceiptEntity`, and `ReceiptItemEntity`.
-- [ ] T040 Create `CoverageEntity`, `ShareEntity`, `SettlementEntity`, `AuditEventEntity`, and `BackupStateEntity`.
-- [ ] T041 Add `assignmentType`, `assignedAdultId`, and `assignedStudentId` to receipt items.
-- [ ] T042 Add the share breakdown fields: own items, student items, shared head, adjustments, gap, and final total.
-- [ ] T043 Create Room DAOs for profiles, students, outings, receipts, items, coverage, shares, settlements, audit events, and backup state.
-- [ ] T044 Create the Room database, converters, and schema export.
-- [ ] T045 Add a migration policy and initial schema version.
-- [ ] T046 Seed the four adult profiles: CP, Mai, Kent, Llanmer.
-- [ ] T047 Implement `AdultProfileRepository` with the profile switcher state.
-- [ ] T048 Implement `StudentRepository` with add, edit, archive, reactivate, and the 1–10 limit.
-- [ ] T049 Implement `OutingRepository` for draft creation, details, receipt, items, finalization, and snapshot persistence.
-- [ ] T050 Implement `ReceiptItemRepository` for add, edit, delete, split, merge, quantity, and assignment.
-- [ ] T051 Implement `CoverageRepository` for present students and one-adult-per-student mapping.
-- [ ] T052 Implement `ShareRepository` for persisted share breakdowns and finalized snapshots.
-- [ ] T053 Implement `SettlementRepository` for full/partial payments, history, and voiding.
-- [ ] T054 Implement `BackupStateRepository` for last success, last attempt, status, error, and snapshot id.
+- [x] T039 Create `AdultProfileEntity`, `StudentEntity`, `OutingEntity`, `ReceiptEntity`, and `ReceiptItemEntity`.
+- [x] T040 Create `CoverageEntity`, `ShareEntity`, `SettlementEntity`, `AuditEventEntity`, and `BackupStateEntity`.
+- [x] T041 Add `assignmentType`, `assignedAdultId`, and `assignedStudentId` to receipt items.
+- [x] T042 Add the share breakdown fields: own items, student items, shared head, adjustments, gap, and final total.
+- [x] T043 Create Room DAOs for profiles, students, outings, receipts, items, coverage, shares, settlements, audit events, and backup state.
+- [x] T044 Create the Room database, converters, and schema export.
+- [x] T045 Add a migration policy and initial schema version.
+- [x] T046 Seed the four adult profiles: CP, Mai, Kent, Llanmer.
+- [x] T047 Implement `AdultProfileRepository` with the profile switcher state.
+- [x] T048 Implement `StudentRepository` with add, edit, archive, reactivate, and the 1–10 limit.
+- [x] T049 Implement `OutingRepository` for draft creation, details, receipt, items, finalization, and snapshot persistence.
+- [x] T050 Implement `ReceiptItemRepository` for add, edit, delete, split, merge, quantity, and assignment.
+- [x] T051 Implement `CoverageRepository` for present students and one-adult-per-student mapping.
+- [x] T052 Implement `ShareRepository` for persisted share breakdowns and finalized snapshots.
+- [x] T053 Implement `SettlementRepository` for full/partial payments, history, and voiding.
+- [x] T054 Implement `BackupStateRepository` for last success, last attempt, status, error, and snapshot id.
 - [ ] T055 Add Room DAO tests for item assignment, coverage, share persistence, settlements, and backup state.
 - [ ] T056 Add repository tests for validation, finalization, and archived-student history.
 
 ## Phase 4: Core Compose UI
 
-- [ ] T057 Build the adult profile switcher and persist the selected profile.
-- [ ] T058 Build the Home screen with balances, recent outings, backup status, and a new-outing FAB.
-- [ ] T059 Build the Students screen with add/edit/archive/reactivate.
-- [ ] T060 Build the student add/edit dialog with validation.
-- [ ] T061 Build the New Outing details step: date, place, notes, and selected adult profile.
-- [ ] T062 Build the receipt step: total, tax, service charge, discount, and manual entry.
-- [ ] T063 Build the manual item list with name, quantity, unit amount, and total amount.
-- [ ] T064 Build the item editor for add, edit, delete, split, merge, and quantity changes.
-- [ ] T065 Build the item assignment control with CP, Mai, Kent, Llanmer, student names, and Shared.
-- [ ] T066 Add clear unassigned and shared visual states.
-- [ ] T067 Mark a student present when an item is assigned to them.
-- [ ] T068 Build the present-student and coverage step with one adult per student.
-- [ ] T069 Build the review screen with per-adult breakdown: own items, student items, shared head, adjustments, gap, and final share.
-- [ ] T070 Block finalization when an item is unassigned or a present student lacks coverage.
-- [ ] T071 Build payer selection and finalize action.
-- [ ] T072 Build the Outing Detail screen with item assignments, shares, payer, and recap actions.
-- [ ] T073 Build the Ledger screen with net balances and simplified transfers.
-- [ ] T074 Build the payment dialog for full and partial settlements.
-- [ ] T075 Build settlement history with void support.
-- [ ] T076 Build the History screen with date filters and total spend.
-- [ ] T077 Build per-student history and item details.
-- [ ] T078 Build the Settings screen with profiles, group name, backup status, sign-in/out, export, and clear data.
+- [x] T057 Build the adult profile switcher and persist the selected profile.
+- [x] T058 Build the Home screen with balances, recent outings, backup status, and a new-outing FAB.
+- [x] T059 Build the Students screen with add/edit/archive/reactivate.
+- [x] T060 Build the student add/edit dialog with validation.
+- [x] T061 Build the New Outing details step: date, place, notes, and selected adult profile.
+- [x] T062 Build the receipt step: total, tax, service charge, discount, and manual entry.
+- [x] T063 Build the manual item list with name, quantity, unit amount, and total amount.
+- [x] T064 Build the item editor for add, edit, delete, split, merge, and quantity changes.
+- [x] T065 Build the item assignment control with CP, Mai, Kent, Llanmer, student names, and Shared.
+- [x] T066 Add clear unassigned and shared visual states.
+- [x] T067 Mark a student present when an item is assigned to them.
+- [x] T068 Build the present-student and coverage step with one adult per student.
+- [x] T069 Build the review screen with per-adult breakdown: own items, student items, shared head, adjustments, gap, and final share.
+- [x] T070 Block finalization when an item is unassigned or a present student lacks coverage.
+- [x] T071 Build payer selection and finalize action.
+- [x] T072 Build the Outing Detail screen with item assignments, shares, payer, and recap actions.
+- [x] T073 Build the Ledger screen with net balances and simplified transfers.
+- [x] T074 Build the payment dialog for full and partial settlements.
+- [x] T075 Build settlement history with void support.
+- [x] T076 Build the History screen with date filters and total spend.
+- [x] T077 Build per-student history and item details.
+- [x] T078 Build the Settings screen with profiles, group name, backup status, sign-in/out, export, and clear data.
 - [ ] T079 Add Compose UI tests for item assignment, shared items, auto-presence, coverage, and finalization blocking.
 
 ## Phase 5: Recap and sharing
 
-- [ ] T080 Implement the text recap from the finalized snapshot.
-- [ ] T081 Implement the image recap renderer at 1080×1350 with the Salo receipt style.
-- [ ] T082 Include item assignment summary, per-adult shares, covered students, payer, and settlement suggestions.
-- [ ] T083 Add a FileProvider and cache file for the recap image.
-- [ ] T084 Share text and image through the Android share sheet.
+- [x] T080 Implement the text recap from the finalized snapshot.
+- [x] T081 Implement the image recap renderer at 1080×1350 with the Salo receipt style.
+- [x] T082 Include item assignment summary, per-adult shares, covered students, payer, and settlement suggestions.
+- [x] T083 Add a FileProvider and cache file for the recap image.
+- [x] T084 Share text and image through the Android share sheet.
 - [ ] T085 Add tests that recap totals and item assignments match the finalized snapshot.
 
 ## Phase 6: Google auth and private Supabase backup
 
-- [ ] T086 Create the Supabase project configuration for the snapshot schema.
-- [ ] T087 Apply `0001_ledger_snapshots.sql` with the `ledger_snapshots` table and indexes.
-- [ ] T088 Add row-level security policies for owner-only select/insert/update/delete.
-- [ ] T089 Disable Supabase sign-ups and provision the owner account manually.
-- [ ] T090 Add the Supabase Kotlin client and secure session storage.
-- [ ] T091 Add Google Credential Manager sign-in.
-- [ ] T092 Exchange the Google ID token with Supabase `signInWithIdToken`.
-- [ ] T093 Restrict backup access to the configured owner email.
-- [ ] T094 Implement the versioned snapshot serializer for all ledger data.
-- [ ] T095 Exclude receipt image paths from the snapshot.
-- [ ] T096 Implement snapshot upload and retention/pruning.
-- [ ] T097 Add WorkManager backup with network constraint and exponential backoff.
-- [ ] T098 Trigger backup after finalized outings, settlements, roster changes, and profile changes.
-- [ ] T099 Add a manual "Back up now" action.
-- [ ] T100 Build the backup status UI: local-only, backing up, backed up, error.
-- [ ] T101 Implement snapshot validation and schema-version checks before restore.
-- [ ] T102 Implement restore only when the local database is empty.
+- [x] T086 Create the Supabase project configuration for the snapshot schema.
+- [x] T087 Apply `0001_ledger_snapshots.sql` with the `ledger_snapshots` table and indexes.
+- [x] T088 Add row-level security policies for owner-only select/insert/update/delete.
+- [x] T089 Disable Supabase sign-ups and provision the owner account manually.
+- [x] T090 Add the Supabase Kotlin client and secure session storage.
+- [x] T091 Add Google Credential Manager sign-in.
+- [x] T092 Exchange the Google ID token with Supabase `signInWithIdToken`.
+- [x] T093 Restrict backup access to the configured owner email.
+- [x] T094 Implement the versioned snapshot serializer for all ledger data.
+- [x] T095 Exclude receipt image paths from the snapshot.
+- [x] T096 Implement snapshot upload and retention/pruning.
+- [x] T097 Add WorkManager backup with network constraint and exponential backoff.
+- [x] T098 Trigger backup after finalized outings, settlements, roster changes, and profile changes.
+- [x] T099 Add a manual "Back up now" action.
+- [x] T100 Build the backup status UI: local-only, backing up, backed up, error.
+- [x] T101 Implement snapshot validation and schema-version checks before restore.
+- [x] T102 Implement restore only when the local database is empty.
 - [ ] T103 Block restore when local data exists and require export/clear.
-- [ ] T104 Add tests for snapshot serialization, backup retry, restore validation, empty-only restore, and unauthorized access.
-- [ ] T105 Verify local use without sign-in and backup queuing while signed out.
+- [x] T104 Add tests for snapshot serialization, backup retry, restore validation, empty-only restore, and unauthorized access.
+- [x] T105 Verify local use without sign-in and backup queuing while signed out.
 
 ## Phase 7: OCR, history, export, and audit
 
-- [ ] T106 Add CameraX capture and preview.
-- [ ] T107 Add ML Kit Text Recognition v2 on-device processing.
+- [x] T106 Add System camera capture via ActivityResultContracts.TakePicture and FileProvider.
+- [x] T107 Add ML Kit Text Recognition v2 on-device processing.
 - [ ] T108 Port the Philippine receipt parser to Kotlin.
-- [ ] T109 Add parser fixtures for VAT, service charge, discounts, quantities, comma separators, and malformed OCR.
-- [ ] T110 Feed OCR results into the item review screen.
-- [ ] T111 Keep manual item and total entry as the fallback.
-- [ ] T112 Add CSV export through the Storage Access Framework.
-- [ ] T113 Add JSON export through the Storage Access Framework.
-- [ ] T114 Include outings, items, assignments, coverage, shares, settlements, and roster in exports.
+- [x] T109 Add parser fixtures for VAT, service charge, discounts, quantities, comma separators, and malformed OCR.
+- [x] T110 Feed OCR results into the item review screen.
+- [x] T111 Keep manual item and total entry as the fallback.
+- [x] T112 Add CSV export through the Storage Access Framework.
+- [x] T113 Add JSON export through the Storage Access Framework.
+- [x] T114 Include outings, items, assignments, coverage, shares, settlements, and roster in exports.
 - [ ] T115 Add export tests.
 - [ ] T116 Implement reopen/correct with confirmation and settlement warning.
 - [ ] T117 Write audit events with the adult profile and before/after values.

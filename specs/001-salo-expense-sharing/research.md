@@ -123,7 +123,7 @@ local database.
 
 ## 9. OCR: ML Kit Text Recognition v2
 
-**Decision**: CameraX capture + ML Kit Text Recognition v2, on-device only. Parse items, quantities,
+**Decision**: System camera capture + ML Kit Text Recognition v2, on-device only. Parse items, quantities,
 tax, service, discount, and total. Full item editing.
 
 **Rationale**:

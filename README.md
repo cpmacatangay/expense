@@ -38,10 +38,12 @@ and settlements. The feature screens and persistence layer are next.
 
 ## Current implementation
 
-- Native Android Gradle project at the repository root.
+- Native Android Gradle project at the repository root, openable in Android Studio.
 - Single-activity Compose app with Material 3 theme, dynamic color, and a green fallback.
-- Navigation shell for Home, Students, Ledger, and Settings.
-- Hilt application wiring and Room/KSP/WorkManager dependencies.
+- Full navigation: Home, Students, New Outing, Outing Detail, Ledger, History, and Settings.
+- Room database, DAOs, and repositories for adults, students, outings, receipts, items,
+  coverage, shares, settlements, audit events, and backup state.
+- Hilt dependency injection, WorkManager backup scheduling, DataStore preferences and session.
 - Pure Kotlin money engine:
   - item assignment to adult, student, or shared;
   - student items charged to the covering adult;
@@ -51,10 +53,19 @@ and settlements. The feature screens and persistence layer are next.
   - exact-centavo largest-remainder rounding;
   - per-head fallback when there are no items;
   - balances and simplified settlements.
-- JUnit unit tests and deterministic randomized invariant tests for the money engine.
+- New Outing wizard: details, receipt, manual/OCR items, item editing/splitting/merging,
+  assignment, coverage, review, payer, and finalize.
+- On-device OCR using the system camera and ML Kit Text Recognition.
+- Text and 1080×1350 image recaps through the Android share sheet.
+- Ledger with balances, suggested transfers, partial payments, and void.
+- History with date filters, per-student summaries, and CSV/JSON export.
+- Private Supabase snapshot backup and restore, Google Credential Manager sign-in, retry worker,
+  and owner-only RLS. Backup is disabled until the config keys are added.
+- Adaptive launcher icon and Android 13+ monochrome themed icon.
+- JUnit tests for the money engine and receipt parser, including randomized exact-total invariants.
 
-Pending: Room schema and repositories, core Compose screens, recap sharing, Google auth/Supabase
-backup, OCR, history, export, and release signing.
+Pending: physical-device/emulator UI validation, reopen/audit UI, release signing, and instrumented
+tests. The app has been compiled, unit-tested, and linted, but not run on the S26 Ultra yet.
 
 ## Planned architecture
 
@@ -64,13 +75,13 @@ backup, OCR, history, export, and release signing.
 - Hilt for dependency injection.
 - WorkManager for retryable backup.
 - Google Credential Manager + Supabase Auth.
-- CameraX + ML Kit for OCR.
+- System camera capture + ML Kit for OCR.
 - Android share sheet for recaps; Storage Access Framework for CSV/JSON export.
 
 ## Repository layout
 
 ```text
-app/                     Android application module (to be scaffolded)
+app/                     Android application module
 gradle/                  Gradle wrapper and version catalog
 supabase/
   migrations/            Private ledger snapshot schema
@@ -91,8 +102,16 @@ specs/
 1. Create a Supabase project.
 2. Apply `supabase/migrations/0001_ledger_snapshots.sql`.
 3. Disable sign-ups and provision the owner's Google account.
-4. Put the Supabase URL and anon key in an ignored `local.properties` or `secrets.properties`.
-5. Never commit the service-role key.
+4. Add these ignored values to `local.properties`:
+
+   ```properties
+   SUPABASE_URL=https://<project>.supabase.co
+   SUPABASE_ANON_KEY=<anon-key>
+   GOOGLE_WEB_CLIENT_ID=<web-client-id>.apps.googleusercontent.com
+   OWNER_EMAIL=<your-google-account>
+   ```
+
+5. Never commit the service-role key or these values.
 
 The schema stores versioned JSON snapshots in `public.ledger_snapshots` with owner-only row-level
 security. Receipt images and credentials are never included.

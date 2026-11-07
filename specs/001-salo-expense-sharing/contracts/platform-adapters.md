@@ -21,7 +21,7 @@ data class CapturedImage(
 )
 ```
 
-- Uses CameraX preview and capture.
+- Uses System camera capture through ActivityResultContracts.TakePicture and a FileProvider URI.
 - Writes to app-private storage.
 - Requests camera permission.
 - Returns `null` when the owner cancels.
