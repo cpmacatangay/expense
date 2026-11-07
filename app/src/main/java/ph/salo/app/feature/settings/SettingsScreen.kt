@@ -28,6 +28,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -133,12 +134,6 @@ fun SettingsScreen(
                         }
                     )
                 }
-                if (session is SessionState.SignedIn) {
-                    OutlinedButton(onClick = viewModel::signOut) {
-                        Icon(Icons.Filled.Logout, contentDescription = null)
-                        Text("Sign out", modifier = Modifier.padding(start = 4.dp))
-                    }
-                }
             }
         }
 
@@ -205,11 +200,18 @@ fun SettingsScreen(
                 )
             }
             if (session is SessionState.SignedIn) {
-                Text(
-                    text = "Signed in as ${(session as SessionState.SignedIn).session.email}",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        text = "Signed in as ${(session as SessionState.SignedIn).session.email}",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.weight(1f)
+                    )
+                    TextButton(onClick = viewModel::signOut) {
+                        Icon(Icons.Filled.Logout, contentDescription = null)
+                        Text("Sign out", modifier = Modifier.padding(start = 4.dp))
+                    }
+                }
             }
             if (!viewModel.backupConfigured) {
                 Text(

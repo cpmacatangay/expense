@@ -12,10 +12,10 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccountBalanceWallet
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material.icons.filled.Group
-import androidx.compose.material.icons.filled.History
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -46,6 +46,7 @@ import java.util.Locale
 fun HomeScreen(
     selectedAdult: AdultProfileEntity?,
     onOutingClick: (String) -> Unit,
+    onNewOuting: () -> Unit,
     onLedger: () -> Unit,
     onHistory: () -> Unit,
     viewModel: HomeViewModel = hiltViewModel()
@@ -121,12 +122,12 @@ fun HomeScreen(
                         style = MaterialTheme.typography.bodyMedium
                     )
                 }
-                OutlinedButton(
-                    onClick = onLedger,
+                Button(
+                    onClick = onNewOuting,
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Icon(Icons.Filled.AccountBalanceWallet, contentDescription = null, modifier = Modifier.size(18.dp))
-                    Text("Settle up", modifier = Modifier.padding(start = 8.dp))
+                    Icon(Icons.Filled.Add, contentDescription = null, modifier = Modifier.size(18.dp))
+                    Text("New outing", modifier = Modifier.padding(start = 8.dp))
                 }
             }
         }
@@ -210,37 +211,12 @@ fun HomeScreen(
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
-                        Icon(
-                            Icons.Filled.ArrowForward,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
                     }
                 }
             }
         }
 
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            OutlinedButton(
-                onClick = onLedger,
-                modifier = Modifier.weight(1f)
-            ) {
-                Icon(Icons.Filled.AccountBalanceWallet, contentDescription = null)
-                Text("Ledger", modifier = Modifier.padding(start = 6.dp))
-            }
-            OutlinedButton(
-                onClick = onHistory,
-                modifier = Modifier.weight(1f)
-            ) {
-                Icon(Icons.Filled.History, contentDescription = null)
-                Text("History", modifier = Modifier.padding(start = 6.dp))
-            }
-        }
-
-        // Clears the extended FAB so it never covers the last row.
-        Spacer(Modifier.height(88.dp))
+        // Clears the bottom navigation inset on the last scroll position.
+        Spacer(Modifier.height(24.dp))
     }
 }

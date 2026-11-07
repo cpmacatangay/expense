@@ -199,15 +199,6 @@ fun SaloApp(
                 }
             }
         },
-        floatingActionButton = {
-            if (currentRoute == SaloDestination.Home.route) {
-                ExtendedFloatingActionButton(
-                    onClick = { navController.navigate("new_outing") },
-                    icon = { Icon(Icons.Filled.Add, contentDescription = null) },
-                    text = { Text("New outing") }
-                )
-            }
-        },
         snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { innerPadding ->
         NavHost(
@@ -219,6 +210,7 @@ fun SaloApp(
                 HomeScreen(
                     selectedAdult = selectedAdult,
                     onOutingClick = { navController.navigate("outing/$it") },
+                    onNewOuting = { navController.navigate("new_outing") },
                     onLedger = { navController.navigate(SaloDestination.Ledger.route) },
                     onHistory = { navController.navigate(SaloDestination.History.route) }
                 )

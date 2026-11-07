@@ -33,20 +33,52 @@ class SupabaseBackupClient @Inject constructor(
                 method = "POST",
                 body = body
             )
-            val root = json.parseToJsonElement(response).jsonObject
-            val token = root["access_token"]?.jsonPrimitive?.content
-                ?: throw IOException("Supabase did not return an access token.")
-            val user = root["user"]?.jsonObject
-                ?: throw IOException("Supabase did not return a user.")
-            val userId = user["id"]?.jsonPrimitive?.content
-                ?: throw IOException("Supabase did not return a user id.")
-            val email = user["email"]?.jsonPrimitive?.content
-                ?: throw IOException("Supabase did not return an email.")
-            if (config.ownerEmail.isNotEmpty() && !email.equals(config.ownerEmail, ignoreCase = true)) {
+            val session = parseTokenResponse(response)
+            if (
+                config.ownerEmail.isNotEmpty() &&
+                !session.email.equals(config.ownerEmail, ignoreCase = true)
+            ) {
                 throw IOException("This Google account is not the configured Salo owner.")
             }
-            OwnerSession(accessToken = token, userId = userId, email = email)
+            session
         }
+
+    /**
+     * Exchanges the stored refresh token for a fresh access token. Supabase rotates the
+     * refresh token on every call, so the returned session replaces the old one.
+     */
+    suspend fun refreshSession(refreshToken: String): OwnerSession =
+        withContext(Dispatchers.IO) {
+            require(refreshToken.isNotBlank()) { "No refresh token is available." }
+            val body = buildJsonObject { put("refresh_token", refreshToken) }.toString()
+            val response = request(
+                url = "${config.supabaseUrl}/auth/v1/token?grant_type=refresh_token",
+                method = "POST",
+                body = body
+            )
+            parseTokenResponse(response)
+        }
+
+    private fun parseTokenResponse(response: String): OwnerSession {
+        val root = json.parseToJsonElement(response).jsonObject
+        val token = root["access_token"]?.jsonPrimitive?.content
+            ?: throw IOException("Supabase did not return an access token.")
+        val refreshToken = root["refresh_token"]?.jsonPrimitive?.content.orEmpty()
+        val expiresIn = root["expires_in"]?.jsonPrimitive?.content?.toLongOrNull() ?: 3600L
+        val user = root["user"]?.jsonObject
+            ?: throw IOException("Supabase did not return a user.")
+        val userId = user["id"]?.jsonPrimitive?.content
+            ?: throw IOException("Supabase did not return a user id.")
+        val email = user["email"]?.jsonPrimitive?.content
+            ?: throw IOException("Supabase did not return an email.")
+        return OwnerSession(
+            accessToken = token,
+            refreshToken = refreshToken,
+            expiresAtMillis = System.currentTimeMillis() + expiresIn * 1000L,
+            userId = userId,
+            email = email
+        )
+    }
 
     suspend fun uploadSnapshot(
         session: OwnerSession,

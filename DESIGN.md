@@ -141,7 +141,8 @@ A calm green-on-paper palette, with a single warm red reserved for money the own
 - **Ledger Green** (#1F5C45): the brand and the "you are owed" state. Filled buttons, the primary
   avatar, the app mark, positive balances.
 - **Ledger Green Light** (#B8F0D2): primary containers in the light scheme. In dark, `Ledger Green
-  Light` becomes the primary text-on-surface accent while `#005139` fills containers.
+  Light` becomes the primary text-on-surface accent while `#005139` fills containers. It also marks
+  the one committing action on Home.
 - **On Ledger Green** (#FFFFFF) and **On Ledger Green Light** (#002114): text on the two greens.
 
 ### Secondary
@@ -202,7 +203,8 @@ or body size so the eye has one destination.
 
 A single scrollable column inside a Scaffold, with a top app bar and a bottom navigation bar of five
 destinations. Horizontal screen padding is 16 dp; content blocks stack with 12 dp gaps; cards pad
-16 dp internally. The primary action is an extended FAB pinned bottom-end on Home only.
+16 dp internally. The primary action lives inside the Home statement card as a full-width filled
+button, not as a floating action: at large font scales a FAB permanently covered the last row.
 
 Money rows use a two-column contract: label or name on the left, amount flush right, never a third
 column. Long lists (students, outings, payment history) are `LazyColumn`; the rest are
@@ -275,8 +277,8 @@ bubble; the form language is a folded receipt, not a chat app.
 ### Statement Card (signature)
 The home balance block: a `primaryContainer` card, 20 dp padding, an uppercase label
 (`ALL SETTLED` / `YOU ARE OWED` / `YOU OWE`), the balance in display size, a one-line summary
-(`1 recent outings · 4 adults`), and one full-width outlined action (`Settle up`). It is the only
-place the app raises its voice.
+(`1 recent outing · 4 adults`), and one full-width filled action (`New outing`). It is the only
+place the app raises its voice, and it carries the primary action so nothing floats over content.
 
 ### Recap Image (signature)
 A 1080×1350 PNG rendered on-device for sharing: `Cool Paper` ground, `Ledger Green` wordmark, the

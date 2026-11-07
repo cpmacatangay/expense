@@ -126,16 +126,39 @@
       }
     },
     "typographyMeta": {
-      "display": { "displayName": "Display", "purpose": "The one figure that answers how much: home balance, receipt total." },
-      "headline": { "displayName": "Headline", "purpose": "Screen titles and the top of the split review." },
-      "title": { "displayName": "Title", "purpose": "Section headings, names, and amounts inside rows." },
-      "body": { "displayName": "Body", "purpose": "Explanatory sentences and values inside rows." },
-      "label": { "displayName": "Label", "purpose": "Uppercase eyebrows, chip text, captions, metadata." }
+      "display": {
+        "displayName": "Display",
+        "purpose": "The one figure that answers how much: home balance, receipt total."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Screen titles and the top of the split review."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Section headings, names, and amounts inside rows."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Explanatory sentences and values inside rows."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Uppercase eyebrows, chip text, captions, metadata."
+      }
     },
     "shadows": [],
     "motion": [
-      { "name": "state-layer", "value": "ripple, 200ms", "purpose": "Press feedback on every tappable surface; Material ripple and state layers only, never a color shift or lift." },
-      { "name": "screen-transition", "value": "fade-through, 300ms, cubic-bezier(0.2, 0, 0, 1)", "purpose": "Navigation between destinations; honors the system Remove animations setting." }
+      {
+        "name": "state-layer",
+        "value": "ripple, 200ms",
+        "purpose": "Press feedback on every tappable surface; Material ripple and state layers only, never a color shift or lift."
+      },
+      {
+        "name": "screen-transition",
+        "value": "fade-through, 300ms, cubic-bezier(0.2, 0, 0, 1)",
+        "purpose": "Navigation between destinations; honors the system Remove animations setting."
+      }
     ]
   },
   "components": [
@@ -177,7 +200,7 @@
       "refersTo": "card-section",
       "description": "The home balance block, the only place the app raises its voice.",
       "html": "<section class=\"ds-statement\"><p class=\"ds-statement-eyebrow\">You are owed</p><p class=\"ds-statement-amount\">₱374.00</p><p class=\"ds-statement-meta\">1 recent outings · 4 adults</p><button class=\"ds-statement-action\">Settle up</button></section>",
-      "css": ".ds-statement { background:#B8F0D2; color:#002114; border-radius:16px; padding:20px; display:flex; flex-direction:column; gap:8px; } .ds-statement-eyebrow { margin:0; font-family:Roboto,sans-serif; font-size:12px; font-weight:500; letter-spacing:0.5px; text-transform:uppercase; } .ds-statement-amount { margin:0; font-family:Roboto,sans-serif; font-size:36px; line-height:44px; font-weight:500; } .ds-statement-meta { margin:0; font-family:Roboto,sans-serif; font-size:14px; line-height:20px; } .ds-statement-action { min-height:48px; margin-top:4px; border:1px solid rgba(0,33,20,0.5); border-radius:9999px; background:transparent; color:#002114; font-family:Roboto,sans-serif; font-size:14px; font-weight:500; cursor:pointer; } .ds-statement-action:hover { background:rgba(0,33,20,0.06); }"
+      "css": ".ds-statement { background:#B8F0D2; color:#002114; border-radius:16px; padding:20px; display:flex; flex-direction:column; gap:8px; } .ds-statement-eyebrow { margin:0; font-family:Roboto,sans-serif; font-size:12px; font-weight:500; letter-spacing:0.5px; text-transform:uppercase; } .ds-statement-amount { margin:0; font-family:Roboto,sans-serif; font-size:36px; line-height:44px; font-weight:500; } .ds-statement-meta { margin:0; font-family:Roboto,sans-serif; font-size:14px; line-height:20px; } .ds-statement-action { min-height:48px; margin-top:4px; border:none; border-radius:9999px; background:#1F5C45; color:#FFFFFF; font-family:Roboto,sans-serif; font-size:14px; font-weight:500; cursor:pointer; } .ds-statement-action:hover { background:#17493a; }"
     },
     {
       "name": "Outlined Text Field",
@@ -194,14 +217,6 @@
       "description": "Five destinations on every main screen; hidden inside the wizard and detail routes.",
       "html": "<nav class=\"ds-nav\"><a class=\"ds-nav-item ds-nav-item--active\"><span class=\"ds-nav-icon\">⌂</span><span class=\"ds-nav-label\">Home</span></a><a class=\"ds-nav-item\"><span class=\"ds-nav-icon\">☰</span><span class=\"ds-nav-label\">Students</span></a><a class=\"ds-nav-item\"><span class=\"ds-nav-icon\">▣</span><span class=\"ds-nav-label\">Ledger</span></a><a class=\"ds-nav-item\"><span class=\"ds-nav-icon\">◷</span><span class=\"ds-nav-label\">History</span></a><a class=\"ds-nav-item\"><span class=\"ds-nav-icon\">⚙</span><span class=\"ds-nav-label\">Settings</span></a></nav>",
       "css": ".ds-nav { display:flex; align-items:stretch; justify-content:space-around; background:#F7FBF4; border-top:1px solid rgba(113,121,112,0.24); padding:8px 0; } .ds-nav-item { display:flex; flex-direction:column; align-items:center; gap:2px; min-width:56px; min-height:48px; justify-content:center; color:#414942; text-decoration:none; cursor:pointer; } .ds-nav-icon { font-size:20px; line-height:1; } .ds-nav-label { font-family:Roboto,sans-serif; font-size:12px; font-weight:500; letter-spacing:0.5px; } .ds-nav-item--active { color:#1F5C45; } .ds-nav-item--active .ds-nav-icon { background:#D2E8D8; border-radius:9999px; padding:4px 12px; }"
-    },
-    {
-      "name": "Extended FAB",
-      "kind": "custom",
-      "refersTo": "button-filled",
-      "description": "One primary action, Home only: start an outing.",
-      "html": "<button class=\"ds-fab\"><span class=\"ds-fab-icon\" aria-hidden=\"true\">＋</span>New outing</button>",
-      "css": ".ds-fab { display:inline-flex; align-items:center; gap:8px; min-height:56px; padding:0 20px; border:none; border-radius:16px; background:#B8F0D2; color:#002114; font-family:Roboto,sans-serif; font-size:14px; font-weight:500; box-shadow:0 1px 3px rgba(0,0,0,0.16); cursor:pointer; transition:background-color 120ms ease; } .ds-fab:hover { background:#a3e4c3; } .ds-fab:focus-visible { outline:2px solid #1F5C45; outline-offset:2px; } .ds-fab-icon { font-size:18px; line-height:1; }"
     }
   ],
   "narrative": {
@@ -215,11 +230,31 @@
       "Dark theme is a real scheme, not an inversion."
     ],
     "rules": [
-      { "name": "The One Green Rule", "body": "The green family marks state and action only — balances, primary buttons, selected profile, the FAB. It never becomes a background wash or a decorative fill.", "section": "colors" },
-      { "name": "The Wallpaper Exception", "body": "On Android 12+ the runtime derives the whole scheme from the user's wallpaper by default. That is allowed to replace this palette wholesale; identity survives through type, spacing, shape, and the calm density of the layout, never through a hard-coded green.", "section": "colors" },
-      { "name": "The One Big Number Rule", "body": "A screen may promote exactly one figure to display or headline treatment — usually the balance or the receipt total. Item rows and secondary amounts stay at title or body size so the eye has one destination.", "section": "typography" },
-      { "name": "The Flat-By-Default Rule", "body": "If separation needs a shadow, the surface roles were chosen wrong. Fix the tonal step, not the elevation.", "section": "elevation" },
-      { "name": "The Receipt Rule", "body": "A corner radius above 16 dp belongs only to pills. Nothing should look like a bubble; the form language is a folded receipt, not a chat app.", "section": "shapes" }
+      {
+        "name": "The One Green Rule",
+        "body": "The green family marks state and action only — balances, primary buttons, selected profile, the FAB. It never becomes a background wash or a decorative fill.",
+        "section": "colors"
+      },
+      {
+        "name": "The Wallpaper Exception",
+        "body": "On Android 12+ the runtime derives the whole scheme from the user's wallpaper by default. That is allowed to replace this palette wholesale; identity survives through type, spacing, shape, and the calm density of the layout, never through a hard-coded green.",
+        "section": "colors"
+      },
+      {
+        "name": "The One Big Number Rule",
+        "body": "A screen may promote exactly one figure to display or headline treatment — usually the balance or the receipt total. Item rows and secondary amounts stay at title or body size so the eye has one destination.",
+        "section": "typography"
+      },
+      {
+        "name": "The Flat-By-Default Rule",
+        "body": "If separation needs a shadow, the surface roles were chosen wrong. Fix the tonal step, not the elevation.",
+        "section": "elevation"
+      },
+      {
+        "name": "The Receipt Rule",
+        "body": "A corner radius above 16 dp belongs only to pills. Nothing should look like a bubble; the form language is a folded receipt, not a chat app.",
+        "section": "shapes"
+      }
     ],
     "dos": [
       "Do keep the amount column right-aligned and set in title or body weight, so columns of pesos line up down the screen.",
