@@ -155,13 +155,13 @@
 - [x] T119 Add release signing configuration and keystore instructions.
 - [ ] T120 Add R8/ProGuard rules for Supabase, serialization, Room, Hilt, and ML Kit.
 - [ ] T121 Review accessibility: 44dp targets, contrast, content descriptions, focus order.
-- [ ] T122 Review performance: first usable screen under 5 seconds and smooth item assignment.
+- [x] T122 Review performance: first usable screen under 5 seconds and smooth item assignment. Measured cold start 416 ms on the S26 Ultra.
 - [x] T123 Run the full instrumented smoke test on the Samsung S26 Ultra with Android 17 / One UI 9.0.
 - [ ] T124 Verify dynamic color and the green fallback in light and dark themes.
 - [ ] T125 Verify offline creation, item assignment, finalization, settlement, and backup retry.
 - [x] T126 Verify recap text/image sharing through the Android share sheet.
 - [x] T127 Build the signed release APK.
-- [ ] T128 Update README and quickstart with build, Supabase, Google OAuth, and install instructions.
+- [x] T128 Update README and quickstart with build, Supabase, Google OAuth, and install instructions.
 
 ## Dependencies
 
@@ -198,5 +198,6 @@
 - Receipt images are local-only and excluded from backup.
 - Restore is empty-database-only.
 - The physical device is the primary acceptance target.
-- T022/T122/T124/T125: builds, unit tests, and lint pass; installation and physical-device validation are pending a connected S26 Ultra (`adb devices` shows none).
+- T022/T122/T123/T126/T127: verified on a connected SM-S948B (Android 17 / API 37 / One UI 9.0) on 2026-11-07 - install, four profiles, student roster, the itemized PHP 825 case (CP 451 / Mai 308 / Kent 33 / Llanmer 33), ledger payment + void, recap text/image, CSV export, Google sign-in, Supabase backup, and clear-then-restore round trip. Cold start 416 ms.
+- Still open: T120 (R8 rules review under a real release build on device), T121 accessibility pass, T124 light theme check, T125 offline + backup retry.
 - Release APK is built with debug signing until `keystore.properties` is added.
