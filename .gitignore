@@ -30,3 +30,6 @@ Thumbs.db
 .env
 .env.*
 .vscode/
+
+# Playwright artifacts
+.playwright-mcp/
