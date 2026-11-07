@@ -3,7 +3,7 @@ project_id = "salo"
 [api]
 enabled = true
 port = 54321
-schemas = ["public", "storage"]
+schemas = ["public"]
 extra_search_path = ["public", "extensions"]
 max_rows = 1000
 
@@ -20,16 +20,14 @@ enabled = true
 port = 54324
 
 [storage]
-enabled = true
-file_size_limit = "10MiB"
+enabled = false
 
 [auth]
 enabled = true
-site_url = "http://localhost:5173"
-additional_redirect_urls = ["http://localhost:5173/auth/callback"]
+site_url = "http://localhost"
 jwt_expiry = 3600
-enable_signup = true
+enable_signup = false
 
 [auth.email]
-enable_signup = true
+enable_signup = false
 enable_confirmations = false

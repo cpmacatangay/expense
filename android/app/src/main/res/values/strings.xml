@@ -1,7 +1,0 @@
-<?xml version='1.0' encoding='utf-8'?>
-<resources>
-    <string name="app_name">Salo</string>
-    <string name="title_activity_main">Salo</string>
-    <string name="package_name">ph.salo.app</string>
-    <string name="custom_url_scheme">ph.salo.app</string>
-</resources>

@@ -1,128 +1,115 @@
-# Contract: Platform Adapters
+# Contract: Android Platform Adapters
 
-**Module**: `src/lib/platform/` | **Consumers**: receipt capture, auth, sharing, settings
+**Consumers**: camera, sharing, export, auth, and backup features
 
-Feature code depends on these interfaces, never on Capacitor or browser APIs directly. The adapter
-factory selects the implementation at runtime:
+Platform capabilities are isolated behind small interfaces so the domain and UI layers stay
+testable. All implementations are Android-native.
 
-```ts
-const isNative = Capacitor.isNativePlatform();
-```
+## Camera
 
-## Camera and Image Capture
-
-```ts
-interface CapturedImage {
-  blob: Blob;
-  width: number;
-  height: number;
-  mime: 'image/jpeg' | 'image/png';
-  source: 'camera' | 'gallery';
-}
-
+```kotlin
 interface CameraAdapter {
-  capture(): Promise<CapturedImage | null>; // null when the user cancels
-  pick(): Promise<CapturedImage | null>;
+    suspend fun captureReceipt(): CapturedImage?
 }
+
+data class CapturedImage(
+    val uri: Uri,
+    val path: String,
+    val mimeType: String,
+    val width: Int,
+    val height: Int
+)
 ```
 
-- **Android**: `@capacitor/camera` with `CameraSource.Camera` / `CameraSource.Photos`, quality 90,
-  URI result, converted to a Blob.
-- **Web/PWA**: `<input type="file" accept="image/*" capture="environment">` for capture and a
-  gallery input without `capture`. Use `createImageBitmap` for EXIF-correct decoding.
-- Permission denial returns a typed error (`camera.permission_denied`) that the UI explains.
+- Uses CameraX preview and capture.
+- Writes to app-private storage.
+- Requests camera permission.
+- Returns `null` when the owner cancels.
+- Falls back to the photo picker if permission is denied.
 
-## Photo Storage
+## Sharing
 
-```ts
-interface PhotoStore {
-  save(id: string, outingId: string, blob: Blob): Promise<void>;
-  load(id: string): Promise<Blob | null>;
-  remove(id: string): Promise<void>;
-  markUploaded(id: string, remotePath: string): Promise<void>;
-}
-```
-
-- Both targets store the compressed blob in IndexedDB (`LocalPhoto`).
-- Remote copies live in the private Supabase bucket; viewing uses signed URLs.
-- A local copy is the fallback when the remote upload is pending or fails.
-
-## Share
-
-```ts
+```kotlin
 interface ShareAdapter {
-  shareText(text: string): Promise<boolean>;
-  shareImage(blob: Blob, filename: string, text?: string): Promise<boolean>;
-  copyText(text: string): Promise<boolean>;
-  downloadImage(blob: Blob, filename: string): Promise<void>;
+    fun shareText(text: String, subject: String)
+    fun shareImage(uri: Uri, mimeType: String, subject: String)
+    fun copyText(text: String)
 }
 ```
 
-- **Android**: `@capacitor/share` for text and files.
-- **Web/PWA**: `navigator.share` for text and files when available; fall back to
-  `navigator.clipboard.writeText` and an image download link.
-- The feature layer builds the recap content; the adapter only delivers it.
+- Uses `Intent.ACTION_SEND` and the Android share sheet.
+- Images use a FileProvider URI.
+- No network service.
+
+## Export
+
+```kotlin
+interface ExportAdapter {
+    suspend fun exportCsv(fileName: String, csv: String): Boolean
+    suspend fun exportJson(fileName: String, json: String): Boolean
+}
+```
+
+- Uses the Storage Access Framework (`ACTION_CREATE_DOCUMENT`).
+- No broad storage permissions.
+- Returns `false` when the owner cancels.
 
 ## Authentication
 
-```ts
+```kotlin
 interface AuthAdapter {
-  signIn(): Promise<void>;
-  signOut(): Promise<void>;
-  getSession(): Promise<Session | null>;
-  onAuthStateChange(callback: (session: Session | null) => void): () => void;
+    suspend fun signInWithGoogle(): GoogleSession?
+    suspend fun signOut()
+    fun currentSession(): GoogleSession?
+}
+
+data class GoogleSession(
+    val email: String,
+    val idToken: String,
+    val supabaseAccessToken: String?
+)
+```
+
+- Uses Google Credential Manager.
+- Exchanges the ID token with Supabase Auth.
+- Stores the session in encrypted storage.
+- Rejects any account other than the configured owner.
+- Local ledger use does not require a session.
+
+## Backup
+
+```kotlin
+interface BackupAdapter {
+    suspend fun uploadSnapshot(snapshot: LedgerSnapshot): BackupResult
+    suspend fun latestSnapshot(): LedgerSnapshot?
+    suspend fun deleteSnapshots()
+}
+
+sealed interface BackupResult {
+    data class Success(val snapshotId: String) : BackupResult
+    data class Failure(val message: String, val retryable: Boolean) : BackupResult
 }
 ```
 
-- **Web/PWA**: Supabase `signInWithOAuth({ provider: 'google' })` with a redirect to
-  `/auth/callback`.
-- **Android**: `@capgo/capacitor-social-login` Google sign-in with the web client ID as the server
-  client ID, then `supabase.auth.signInWithIdToken`.
-- Both adapters end with the same Supabase session shape.
+- Uses Supabase Postgrest with the authenticated owner session.
+- Uploads versioned JSON snapshots.
+- Enforces RLS; the client never uses a service-role key.
+- Restore fetches the latest valid snapshot.
+- Restore is blocked unless the local database is empty.
 
-## Install and Platform Info
+## Local storage
 
-```ts
-interface InstallAdapter {
-  platform: 'android' | 'ios' | 'web';
-  isStandalone(): boolean;
-  canPromptInstall(): boolean;
-  promptInstall(): Promise<boolean>;
-  instructions(): string | null;
-}
-```
+- Receipt images live in `filesDir/receipts/` or `cacheDir` as appropriate.
+- Room owns ledger data.
+- DataStore owns the selected adult profile and simple preferences.
+- No receipt image path is written to the backup payload.
 
-- Android native: `isStandalone()` is true; no install prompt is shown.
-- Android Chrome PWA: use `beforeinstallprompt` when available.
-- iOS Safari: show the Share → Add to Home Screen instructions.
-- The settings screen always offers manual install instructions as a fallback.
+## Error handling
 
-## Error Contract
-
-All adapters return typed errors instead of throwing raw platform errors:
-
-```ts
-type PlatformErrorCode =
-  | 'camera.permission_denied'
-  | 'camera.unavailable'
-  | 'share.unavailable'
-  | 'share.cancelled'
-  | 'auth.cancelled'
-  | 'auth.failed'
-  | 'storage.quota_exceeded'
-  | 'ocr.unavailable'
-  | 'ocr.failed';
-
-class PlatformError extends Error {
-  code: PlatformErrorCode;
-  cause?: unknown;
-}
-```
-
-The UI maps each code to a short, actionable message and never exposes raw stack traces.
-
-## Test Requirements
-
-- Web adapter tests in Playwright with a mocked camera input and Web Share API.
-- Android adapter manual tests: camera permission, photo capture, share sheet, Google sign-in.
-- Fallback tests: denied permission, cancelled share, unavailable clipboard, quota exceeded.
+- Camera denied: offer gallery/manual entry.
+- Share unavailable: copy text and show a message.
+- Export canceled: no error toast; leave data unchanged.
+- Auth canceled: return to local mode; backup remains queued as local-only.
+- Auth denied: show a clear unauthorized-account message.
+- Backup failure: keep local data, set `ERROR`, schedule retry.
+- Restore blocked: explain that local data must be exported or cleared first.

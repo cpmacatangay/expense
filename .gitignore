@@ -1,22 +1,32 @@
-node_modules/
-dist/
-coverage/
-.vite/
-.env
-.env.local
-.env.*.local
+# Gradle / Android
+.gradle/
+build/
+app/build/
+local.properties
+secrets.properties
+*.iml
+.idea/
+captures/
+.externalNativeBuild/
+.cxx/
+*.apk
+*.aab
+*.ap_
+*.dex
+*.class
+*.jks
+*.keystore
+app/release/
+
+# Kotlin
+.kotlin/
+
+# Logs and OS files
 *.log
 .DS_Store
 Thumbs.db
+
+# Environment and editor files
+.env
+.env.*
 .vscode/
-.idea/
-playwright-report/
-test-results/
-.playwright-mcp/
-android/.gradle/
-android/build/
-android/app/build/
-android/local.properties
-android/key.properties
-*.jks
-*.keystore

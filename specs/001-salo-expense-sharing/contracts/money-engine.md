@@ -1,136 +1,209 @@
 # Contract: Money Engine
 
-**Module**: `src/lib/money/` | **Consumers**: outing wizard, ledger, reports, tests
+**Module**: `core/money` | **Consumers**: outing review, finalization, ledger, recap, tests
 
-The money engine is pure TypeScript with no browser, React, or Supabase dependencies. It is the only
-place that computes peso amounts.
+The money engine is pure Kotlin with no Android, Room, Supabase, or Compose dependencies. It is the
+only place that computes peso amounts.
 
 ## Types
 
-```ts
-type Centavos = number; // integer, 0 <= value <= Number.MAX_SAFE_INTEGER
+```kotlin
+typealias Centavos = Long
 
-interface SplitInput {
-  totalCentavos: Centavos;
-  memberIds: readonly [string, string, string];
-  presentStudentIds: readonly string[];
-  coverageByStudent: Readonly<Record<string, string>>; // studentId -> memberId
-}
+enum class ItemAssignmentType { ADULT, STUDENT, SHARED, UNASSIGNED }
 
-interface ShareDraft {
-  memberId: string;
-  ownHead: 1;
-  coveredStudents: number;
-  heads: number;
-  amountCentavos: Centavos;
-}
+data class AdultRef(val id: String, val name: String, val order: Int)
 
-interface SplitResult {
-  headcount: number;             // 4 + presentStudentIds.length
-  perHeadCentavos: Centavos;     // floor(total / headcount), display only
-  shares: ShareDraft[];          // one entry per memberId (four in the Salo group), ordered by memberIds
-  remainderCentavos: Centavos;   // total - perHeadCentavos * headcount
-}
+data class StudentRef(val id: String, val name: String)
 
-interface Balance {
-  memberId: string;
-  paidCentavos: Centavos;
-  owedCentavos: Centavos;
-  settledOutCentavos: Centavos;
-  settledInCentavos: Centavos;
-  netCentavos: Centavos; // positive = is owed, negative = owes
-}
+data class ReceiptItemInput(
+    val id: String,
+    val name: String,
+    val quantity: Int,
+    val unitAmountCentavos: Centavos,
+    val amountCentavos: Centavos,
+    val assignmentType: ItemAssignmentType,
+    val assignedAdultId: String? = null,
+    val assignedStudentId: String? = null
+)
 
-interface Transfer {
-  fromMemberId: string;
-  toMemberId: string;
-  amountCentavos: Centavos;
-}
+data class AllocationInput(
+    val receiptTotalCentavos: Centavos,
+    val adults: List<AdultRef>,
+    val presentStudents: List<StudentRef>,
+    val coverageByStudent: Map<String, String>, // studentId -> adultId
+    val items: List<ReceiptItemInput>,
+    val taxCentavos: Centavos,
+    val serviceChargeCentavos: Centavos,
+    val discountCentavos: Centavos
+)
 
-interface FairnessTally {
-  memberId: string;
-  studentHeads: number;
-  amountCoveredCentavos: Centavos;
+data class ShareAllocation(
+    val adultId: String,
+    val ownItemsCentavos: Centavos,
+    val studentItemsCentavos: Centavos,
+    val sharedHeadCentavos: Centavos,
+    val coveredStudentSharedCentavos: Centavos,
+    val adjustmentCentavos: Centavos,
+    val gapCentavos: Centavos,
+    val totalCentavos: Centavos,
+    val isPayer: Boolean
+)
+
+data class AllocationResult(
+    val shares: List<ShareAllocation>,
+    val headcount: Int,
+    val itemSubtotalCentavos: Centavos,
+    val appliedAdjustmentCentavos: Centavos,
+    val gapCentavos: Centavos
+)
+
+sealed interface AllocationIssue {
+    data class MissingAmount(val itemId: String) : AllocationIssue
+    data class UnknownAdult(val itemId: String, val adultId: String) : AllocationIssue
+    data class UnknownStudent(val itemId: String, val studentId: String) : AllocationIssue
+    data class UnassignedItem(val itemId: String) : AllocationIssue
+    data class MissingCoverage(val studentId: String) : AllocationIssue
+    data object NoAdults : AllocationIssue
+    data object InvalidTotal : AllocationIssue
+    data class InvalidItemAmount(val itemId: String) : AllocationIssue
+    data class DuplicateCoverage(val studentId: String) : AllocationIssue
 }
 ```
 
 ## Functions
 
-### `splitOuting(input: SplitInput): SplitResult`
+### `validate(input: AllocationInput): List<AllocationIssue>`
 
-- Requires `totalCentavos > 0`.
-- Requires at least two unique `memberIds`.
-- Requires `coverageByStudent` to contain exactly one entry per present student, with a member id
-  from `memberIds`.
-- Computes `headcount = memberIds.length + presentStudentIds.length` (7 with four adults and three
-  present students).
-- Computes `perHeadCentavos = Math.floor(totalCentavos / headcount)`.
-- Computes each raw share as `totalCentavos * heads / headcount`.
-- Floors each exact share, then distributes the remaining centavos one at a time to the shares with
-  the largest fractional remainder.
-- Tie-break for equal remainders is stable member order as supplied in `memberIds`.
-- Guarantees `sum(shares.amountCentavos) === totalCentavos`.
-- Does not mutate input.
+Returns an empty list when the input can be allocated. Checks:
 
-### `validateSplit(result: SplitResult, input: SplitInput): ValidationIssue[]`
+- `receiptTotalCentavos > 0`.
+- Exactly four adult refs; at least one adult.
+- Item amounts are non-negative integers.
+- Every item is `ADULT`, `STUDENT`, or `SHARED`; `UNASSIGNED` is an issue.
+- `ADULT` has a known `assignedAdultId` and no `assignedStudentId`.
+- `STUDENT` has a known `assignedStudentId` and no `assignedAdultId`.
+- `SHARED` has neither id.
+- Every present student has exactly one covering adult in `coverageByStudent`.
+- Every coverage adult is a known adult.
+- Coverage does not reference a non-present student.
+- Payer is validated by the caller; the engine only allocates.
 
-Returns an empty array when all invariants hold. Issues include:
+### `allocate(input: AllocationInput, payerId: String): AllocationResult`
 
-- total is not a positive integer number of centavos;
-- coverage is missing, duplicated, or references an unknown member/student;
-- headcount mismatch;
-- share sum mismatch;
-- more than one payer marker (payer is stored separately on the outing).
+Preconditions: `validate(input)` is empty.
 
-### `computeBalances(outings, shares, settlements, memberIds): Balance[]`
+Steps:
+
+1. **Adult items**
+   - For each `ADULT` item, add `amountCentavos` to `ownItems` of the assigned adult.
+
+2. **Student items**
+   - For each `STUDENT` item, add `amountCentavos` to `studentItems` of the covering adult.
+
+3. **Shared items**
+   - `headcount = adults.size + presentStudents.size`.
+   - For each adult, own head share = `sharedItemTotal / headcount`.
+   - For each present student, their head share is added to the covering adult's
+     `coveredStudentSharedCentavos`.
+   - Use largest-remainder rounding so shared allocations sum exactly to `sharedItemTotal`.
+
+4. **Pre-adjustment subtotal**
+   - `base = ownItems + studentItems + sharedHead + coveredStudentShared`.
+
+5. **Adjustments**
+   - `adjustment = tax + serviceCharge - discount`.
+   - If `sum(base) > 0`, allocate `adjustment` proportionally to `base` using largest-remainder
+     rounding.
+   - If `sum(base) == 0`, allocate `adjustment` per head across adults.
+   - Negative adjustments use the absolute value for ranking and apply the sign.
+
+6. **Total gap**
+   - `preTotal = sum(base) + adjustment`.
+   - `gap = receiptTotal - preTotal`.
+   - If `gap != 0`, distribute it proportionally to `base + adjustment` using largest-remainder
+     rounding.
+   - If all weights are zero, distribute per head across adults.
+
+7. **Final shares**
+   - `total = base + adjustment + gap`.
+   - Assert `sum(total) == receiptTotal`.
+   - Assert each `total` is an integer centavo.
+
+8. **No-items fallback**
+   - If `items.isEmpty()`, skip item allocation and split `receiptTotal` per head across adults,
+     adding each student's head to the covering adult.
+   - This is equivalent to treating the whole total as a shared item.
+
+9. **Ordering**
+   - Return shares in the stable adult `order`.
+   - Return `headcount`, `itemSubtotalCentavos`, `appliedAdjustmentCentavos`, and `gapCentavos`.
+
+### `computeBalances(outings, shares, settlements, adultIds): List<Balance>`
 
 - Considers only finalized, non-deleted outings.
-- `paidCentavos` = sum of totals where the member is the payer.
-- `owedCentavos` = sum of the member's share amounts.
-- `settledOutCentavos` = sum of non-voided settlements from the member.
-- `settledInCentavos` = sum of non-voided settlements to the member.
+- `paidCentavos` = sum of totals where the adult is payer.
+- `owedCentavos` = sum of the adult's finalized share totals.
+- `settledOutCentavos` = sum of non-voided settlements from the adult.
+- `settledInCentavos` = sum of non-voided settlements to the adult.
 - `netCentavos = paid - owed + settledOut - settledIn`.
-- Returns one entry per member, ordered by `memberIds`.
+- Returns one entry per adult in stable order.
 
-### `suggestSettlements(balances): Transfer[]`
+### `suggestSettlements(balances): List<Transfer>`
 
-- Splits balances into debtors (`net < 0`) and creditors (`net > 0`).
-- Greedily matches the largest debtor to the largest creditor, transferring
-  `min(abs(debt), credit)`.
-- Returns transfers in centavos. The sum of transfers settles every balance to zero.
-- Ignores zero balances.
+- Split into debtors (`net < 0`) and creditors (`net > 0`).
+- Greedily match the largest debtor to the largest creditor.
+- Transfer `min(abs(debt), credit)`.
+- Ignore zero balances.
+- Sum of transfers settles every balance to zero.
 
-### `computeFairness(outings, shares, coverage, range): FairnessTally[]`
+## Rounding Contract
 
-- Considers finalized, non-deleted outings within `range.start` and `range.end` inclusive.
-- For each coverage row, adds one student head and `outing.perHeadCentavos` to the covering adult.
-- Returns one entry per member, ordered by `memberIds`.
-- The amount is a tracking metric; the authoritative money is in `shares`.
-
-### `autoAssign(presentStudentIds, memberIds, fairness, lastCoveredByStudent): Record<string, string>`
-
-- Ranks adults by `studentHeads` ascending, then `amountCoveredCentavos` ascending, then the
-  least-recently-covered date for the specific student ascending, then member order.
-- Assigns each student in roster order to the current best adult and updates that adult's local
-  tally before the next student.
-- Returns a complete mapping of every present student to exactly one adult.
-- A manual assignment always overrides the result.
+```kotlin
+/**
+ * Splits [amount] into [weights.size] integer parts proportional to [weights].
+ * - If all weights are zero, uses equal weights.
+ * - Floors each exact share, then distributes the remaining centavos to the largest
+ *   fractional remainders.
+ * - Ties break by the supplied stable order.
+ * - Negative [amount] is allocated by absolute value and the sign is reapplied.
+ * - The returned parts always sum exactly to [amount].
+ */
+fun allocateProportionally(amount: Centavos, weights: List<Centavos>): List<Centavos>
+```
 
 ## Invariants
 
-1. Every amount is an integer number of centavos.
-2. `sum(shares.amountCentavos) === totalCentavos` for every successful split.
-3. Each present student appears exactly once in coverage.
-4. `sum(heads) === headcount`.
-5. All four adults are present and have `ownHead = 1`.
-6. The engine never reads or writes storage, network, or UI state.
-7. Rounding is deterministic for the same input and member order.
+1. `sum(result.shares.totalCentavos) == input.receiptTotalCentavos`.
+2. Every share is an integer centavo.
+3. `sum(ownItems + studentItems + sharedHead + coveredStudentShared) == sum(item.amountCentavos)`.
+4. `sum(adjustment) == tax + serviceCharge - discount`.
+5. `sum(gap) == receiptTotal - (itemSubtotal + adjustment)`.
+6. No item is assigned to more than one person.
+7. Every present student has exactly one covering adult.
+8. A student-assigned item is charged to the covering adult.
+9. Shared items are split per head across all present people.
+10. The no-items fallback produces a per-head split.
+11. Negative discounts and negative gaps are handled without losing a centavo.
+12. The function does not mutate its input.
 
-## Test Requirements
+## Worked Example
 
-- Unit tests for 1, 2, and 3 students, equal and unequal coverage.
-- Rounding cases where the total does not divide evenly (e.g., ₱1,000 across 7 heads).
-- Property tests with fast-check: random totals, attendance, and coverage always produce a valid
-  split whose shares sum to the total.
-- Balance and settlement tests with multiple payers, partial payments, and voided settlements.
-- Fairness tests across date ranges and tie-break cases.
+Four adults, two present students: Ana covered by CP, Ben covered by Mai.
+
+| Item | Amount | Assignment |
+|---|---:|---|
+| CP meal | ₱200 | CP |
+| Mai meal | ₱100 | Mai |
+| Ana meal | ₱150 | Ana |
+| Ben meal | ₱120 | Ben |
+| Shared rice | ₱180 | Shared |
+
+- Headcount = 6; shared rice = ₱30 per head.
+- CP base = ₱200 + ₱150 + ₱30 + ₱30 = ₱410.
+- Mai base = ₱100 + ₱120 + ₱30 + ₱30 = ₱280.
+- Kent base = ₱30.
+- Llanmer base = ₱30.
+- Food subtotal = ₱750. Tax ₱75 is allocated proportionally:
+  - CP ₱41, Mai ₱28, Kent ₱3, Llanmer ₱3.
+- Final shares sum to ₱825.

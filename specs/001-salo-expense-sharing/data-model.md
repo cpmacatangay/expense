@@ -1,358 +1,217 @@
-# Data Model: Salo — Student Meal Expense Sharing
+# Data Model: Salo — Android Meal Ledger
 
-**Feature**: `001-salo-expense-sharing` | **Date**: 2026-11-07
+**Feature**: `001-salo-expense-sharing` | **Storage**: Room (local source of truth), Supabase JSONB snapshot (private backup)
 
-## Conventions
+All money fields are integer centavos (`Long`). All ids are UUID strings. Timestamps are ISO-8601
+strings or epoch milliseconds, stored consistently in Room.
 
-- All identifiers are client-generated UUID v4 values so records can be created offline.
-- All monetary values are integer centavos (`bigint` in Postgres, `number` in TypeScript). Floating
-  point is never used for money.
-- Timestamps are `timestamptz` in UTC; date-only fields are `date` in the group's local calendar.
-- Deletions are soft (`deleted_at`) so sync and history remain recoverable.
-- `updated_at` is maintained by a Postgres trigger and used for conflict resolution.
-- The shared database is the source of truth; IndexedDB mirrors the same shapes locally.
+## Entities
 
-## Shared Entities
+### AdultProfile
 
-### Group
+One of the four local profiles on the owner's phone.
 
-Represents the private circle.
-
-| Field | Type | Constraints |
+| Field | Type | Rules |
 |---|---|---|
-| `id` | uuid | Primary key |
-| `name` | text | Not null, default `Salo` |
-| `currency` | char(3) | Not null, default `PHP` |
-| `created_by` | uuid | References `auth.users(id)` |
-| `created_at` | timestamptz | Not null, default now |
-| `updated_at` | timestamptz | Not null, default now |
-
-**Validation**: exactly one group is used by the app. `currency` is fixed to `PHP` in the UI.
-
-### GroupMember (Adult)
-
-Represents one of the four adults.
-
-| Field | Type | Constraints |
-|---|---|---|
-| `id` | uuid | Primary key |
-| `group_id` | uuid | Not null, references `groups(id)` on delete cascade |
-| `user_id` | uuid | Nullable until the adult signs in; references `auth.users(id)` |
-| `display_name` | text | Not null |
-| `email` | citext | Not null, unique within the group |
-| `role` | text | Not null, default `adult`, check in (`adult`) |
-| `created_at` | timestamptz | Not null, default now |
-| `updated_at` | timestamptz | Not null, default now |
-
-**Validation**: a group has exactly four non-deleted members. `email` must match the Google
-account used to sign in. An invited member is linked on first sign-in by matching `email`.
+| `id` | String (UUID) | Primary key |
+| `displayName` | String | CP, Mai, Kent, Llanmer |
+| `order` | Int | Stable display/rounding order |
+| `email` | String? | Optional; not used for sign-in |
+| `isOwner` | Boolean | Exactly one owner profile |
+| `createdAt` | Long | Creation time |
+| `archivedAt` | Long? | Soft delete; the four core profiles are not archived |
 
 ### Student
 
-Represents a student who may be covered.
-
-| Field | Type | Constraints |
+| Field | Type | Rules |
 |---|---|---|
-| `id` | uuid | Primary key |
-| `group_id` | uuid | Not null, references `groups(id)` on delete cascade |
-| `name` | text | Not null, 1–80 characters |
-| `notes` | text | Nullable, max 500 characters |
-| `is_active` | boolean | Not null, default true |
-| `created_at` | timestamptz | Not null, default now |
-| `updated_at` | timestamptz | Not null, default now |
-| `deleted_at` | timestamptz | Nullable |
-
-**Validation**: the roster supports 1–10 active students. Names are display names or nicknames only;
-contact details and photos are not stored. Archiving sets `is_active = false` and preserves history.
+| `id` | String (UUID) | Primary key |
+| `name` | String | 1–40 characters |
+| `notes` | String? | Optional, minimal |
+| `active` | Boolean | 1–10 active students |
+| `createdAt` | Long | Creation time |
+| `archivedAt` | Long? | Soft delete; history remains |
 
 ### Outing
 
-Represents one meal event.
-
-| Field | Type | Constraints |
+| Field | Type | Rules |
 |---|---|---|
-| `id` | uuid | Primary key |
-| `group_id` | uuid | Not null, references `groups(id)` on delete cascade |
-| `outing_date` | date | Not null, default current date |
-| `place` | text | Nullable, max 120 characters |
-| `notes` | text | Nullable, max 500 characters |
-| `payer_member_id` | uuid | Nullable while draft; not null when final; references `group_members(id)` |
-| `status` | text | Not null, default `draft`, check in (`draft`, `final`) |
-| `total_centavos` | bigint | Not null, check > 0 |
-| `headcount` | integer | Not null when final, check >= 3 |
-| `per_head_centavos` | bigint | Nullable while draft; computed when final |
-| `created_by` | uuid | References `auth.users(id)` |
-| `created_at` | timestamptz | Not null, default now |
-| `updated_at` | timestamptz | Not null, default now |
-| `finalized_at` | timestamptz | Nullable |
-| `deleted_at` | timestamptz | Nullable |
-
-**State transitions**:
-
-```text
-draft ──finalize──▶ final
-  │                   │
-  │                   └──reopen (audited)──▶ draft
-  └──delete──▶ deleted
-```
-
-A finalized outing is an immutable snapshot. Reopening requires confirmation, warns when
-settlements exist, recomputes shares, and writes an audit event. Only draft outings may be deleted
-directly; a finalized outing must be reopened first.
+| `id` | String (UUID) | Primary key |
+| `date` | String (yyyy-MM-dd) | Required |
+| `place` | String? | Optional |
+| `notes` | String? | Optional |
+| `payerAdultId` | String | Exactly one payer |
+| `status` | Enum | `DRAFT`, `FINAL` |
+| `createdByAdultId` | String | Selected adult profile |
+| `createdAt` | Long | Creation time |
+| `finalizedAt` | Long? | Set on finalization |
+| `deletedAt` | Long? | Soft delete |
 
 ### Receipt
 
-Represents the single receipt for an outing.
-
-| Field | Type | Constraints |
+| Field | Type | Rules |
 |---|---|---|
-| `id` | uuid | Primary key |
-| `outing_id` | uuid | Not null, unique, references `outings(id)` on delete cascade |
-| `storage_path` | text | Nullable until the photo upload succeeds |
-| `merchant` | text | Nullable, max 120 characters |
-| `receipt_date` | date | Nullable |
-| `subtotal_centavos` | bigint | Nullable, check >= 0 |
-| `tax_centavos` | bigint | Nullable, check >= 0 |
-| `service_centavos` | bigint | Nullable, check >= 0 |
-| `discount_centavos` | bigint | Nullable, check >= 0 |
-| `tip_centavos` | bigint | Nullable, check >= 0 |
-| `total_centavos` | bigint | Not null, check > 0 |
-| `raw_text` | text | Nullable; retained for review and parser debugging |
-| `ocr_engine` | text | Nullable, check in (`mlkit`, `tesseract`, `manual`) |
-| `parser_version` | text | Nullable |
-| `created_at` | timestamptz | Not null, default now |
-| `updated_at` | timestamptz | Not null, default now |
-
-**Validation**: the confirmed `total_centavos` is authoritative. Line items do not need to sum to
-the total; a mismatch produces a warning, not a block. Tax, service charge, discount, and tip are
-informational because the total already includes them.
+| `id` | String (UUID) | Primary key |
+| `outingId` | String | One receipt per outing |
+| `merchant` | String? | Optional |
+| `receiptDate` | String? | Optional |
+| `imagePath` | String? | App-private local path; excluded from backup |
+| `totalCentavos` | Long | Authoritative; > 0 |
+| `taxCentavos` | Long | Default 0; non-negative |
+| `serviceChargeCentavos` | Long | Default 0; non-negative |
+| `discountCentavos` | Long | Default 0; non-negative |
+| `ocrEngine` | String? | `ML_KIT` or null |
+| `createdAt` | Long | Creation time |
 
 ### ReceiptItem
 
-Optional receipt line kept for transparency.
-
-| Field | Type | Constraints |
+| Field | Type | Rules |
 |---|---|---|
-| `id` | uuid | Primary key |
-| `receipt_id` | uuid | Not null, references `receipts(id)` on delete cascade |
-| `description` | text | Not null, 1–200 characters |
-| `quantity` | numeric(10,3) | Nullable, check > 0 |
-| `unit_price_centavos` | bigint | Nullable, check >= 0 |
-| `line_total_centavos` | bigint | Not null, check >= 0 |
-| `confidence` | numeric(4,3) | Nullable, check between 0 and 1 |
-| `sort_order` | integer | Not null, default 0 |
+| `id` | String (UUID) | Primary key |
+| `outingId` | String | Parent outing |
+| `receiptId` | String | Parent receipt |
+| `name` | String | Required |
+| `quantity` | Int | >= 1 |
+| `unitAmountCentavos` | Long | >= 0 |
+| `amountCentavos` | Long | `quantity * unitAmountCentavos` unless manually overridden |
+| `assignmentType` | Enum | `ADULT`, `STUDENT`, `SHARED`, `UNASSIGNED` |
+| `assignedAdultId` | String? | Required when `assignmentType == ADULT` |
+| `assignedStudentId` | String? | Required when `assignmentType == STUDENT` |
+| `sortOrder` | Int | Stable display order |
+| `createdAt` | Long | Creation time |
+| `updatedAt` | Long | Last edit |
 
-### OutingStudent (Attendance)
+Rules:
+- Exactly one assignee for `ADULT` and `STUDENT`.
+- `SHARED` has no adult/student id.
+- `UNASSIGNED` blocks finalization.
+- Assigning `STUDENT` auto-marks the student present.
+- Splitting an item creates two rows with new ids and independent assignments.
+- Merging requires compatible assignment or asks the owner to resolve the combined assignment.
 
-Records which students were present.
+### CoverageAssignment
 
-| Field | Type | Constraints |
+| Field | Type | Rules |
 |---|---|---|
-| `outing_id` | uuid | Not null, references `outings(id)` on delete cascade |
-| `student_id` | uuid | Not null, references `students(id)` |
-| `present` | boolean | Not null, default true |
-| Primary key | (`outing_id`, `student_id`) | |
+| `id` | String (UUID) | Primary key |
+| `outingId` | String | Parent outing |
+| `studentId` | String | Present student |
+| `adultId` | String | Covering adult |
+| `createdAt` | Long | Creation time |
 
-**Validation**: only present students appear as coverage candidates. An adults-only outing has zero
-rows.
-
-### Coverage
-
-Assigns a present student to exactly one adult.
-
-| Field | Type | Constraints |
-|---|---|---|
-| `id` | uuid | Primary key |
-| `outing_id` | uuid | Not null, references `outings(id)` on delete cascade |
-| `student_id` | uuid | Not null, references `students(id)` |
-| `member_id` | uuid | Not null, references `group_members(id)` |
-| `created_at` | timestamptz | Not null, default now |
-
-**Validation**: unique (`outing_id`, `student_id`). The member must belong to the same group as the
-outing. Every present student has exactly one coverage row at finalization.
+Unique: `(outingId, studentId)`; one adult per student per outing.
 
 ### Share
 
-The finalized amount owed by one adult for one outing.
+Persisted at finalization and immutable afterwards.
 
-| Field | Type | Constraints |
+| Field | Type | Rules |
 |---|---|---|
-| `id` | uuid | Primary key |
-| `outing_id` | uuid | Not null, references `outings(id)` on delete cascade |
-| `member_id` | uuid | Not null, references `group_members(id)` |
-| `own_head` | integer | Not null, default 1, check in (0, 1) |
-| `covered_students` | integer | Not null, check >= 0 |
-| `amount_centavos` | bigint | Not null, check >= 0 |
-| `is_payer` | boolean | Not null, default false |
-| Unique | (`outing_id`, `member_id`) | |
-
-**Validation**: `sum(amount_centavos) = outings.total_centavos`. Exactly one share per outing has
-`is_payer = true`. `own_head` is 1 for all four adults because all four are always present.
+| `id` | String (UUID) | Primary key |
+| `outingId` | String | Parent outing |
+| `adultId` | String | Adult profile |
+| `ownItemsCentavos` | Long | Items assigned directly to the adult |
+| `studentItemsCentavos` | Long | Items assigned to covered students |
+| `sharedHeadCentavos` | Long | Adult's own head share of shared items |
+| `coveredStudentSharedCentavos` | Long | Shared head shares of covered students |
+| `adjustmentCentavos` | Long | Proportional tax + service − discount |
+| `gapCentavos` | Long | Proportional receipt-total reconciliation |
+| `totalCentavos` | Long | Final share; sums exactly to receipt total |
+| `isPayer` | Boolean | One payer per outing |
+| `createdAt` | Long | Finalization time |
 
 ### Settlement
 
-A payment between two adults.
-
-| Field | Type | Constraints |
+| Field | Type | Rules |
 |---|---|---|
-| `id` | uuid | Primary key |
-| `group_id` | uuid | Not null, references `groups(id)` on delete cascade |
-| `from_member_id` | uuid | Not null, references `group_members(id)` |
-| `to_member_id` | uuid | Not null, references `group_members(id)` |
-| `amount_centavos` | bigint | Not null, check > 0 |
-| `settled_on` | date | Not null, default current date |
-| `note` | text | Nullable, max 300 characters |
-| `created_by` | uuid | References `auth.users(id)` |
-| `created_at` | timestamptz | Not null, default now |
-| `voided_at` | timestamptz | Nullable |
+| `id` | String (UUID) | Primary key |
+| `fromAdultId` | String | Paying adult |
+| `toAdultId` | String | Receiving adult |
+| `amountCentavos` | Long | > 0 |
+| `date` | String (yyyy-MM-dd) | Required |
+| `note` | String? | Optional |
+| `voidedAt` | Long? | Soft void |
+| `createdAt` | Long | Creation time |
 
-**Validation**: `from_member_id <> to_member_id`. Settlements are append-only; corrections are made
-by voiding and creating a new settlement. A voided settlement is excluded from balances.
+Settlements are append-only; voiding sets `voidedAt`.
 
 ### AuditEvent
 
-Records a correction to a finalized record.
-
-| Field | Type | Constraints |
+| Field | Type | Rules |
 |---|---|---|
-| `id` | uuid | Primary key |
-| `group_id` | uuid | Not null, references `groups(id)` on delete cascade |
-| `actor_member_id` | uuid | Not null, references `group_members(id)` |
-| `entity` | text | Not null |
-| `entity_id` | uuid | Not null |
-| `action` | text | Not null, e.g. `outing.reopened`, `outing.corrected` |
-| `payload` | jsonb | Not null; before/after values and reason |
-| `created_at` | timestamptz | Not null, default now |
+| `id` | String (UUID) | Primary key |
+| `outingId` | String | Corrected outing |
+| `actorAdultId` | String | Selected adult profile |
+| `action` | String | e.g. `REOPEN`, `CORRECT_TOTAL`, `CORRECT_COVERAGE` |
+| `beforeJson` | String | Snapshot before the change |
+| `afterJson` | String | Snapshot after the change |
+| `createdAt` | Long | Creation time |
 
-## Local-Only Entities
+### BackupState
 
-### SyncOutbox
-
-| Field | Type | Purpose |
+| Field | Type | Rules |
 |---|---|---|
-| `id` | uuid | Primary key |
-| `entity` | text | Table name |
-| `entity_id` | uuid | Row identifier |
-| `action` | text | `upsert`, `delete` |
-| `payload` | jsonb | Serialized row |
-| `created_at` | timestamptz | Ordering |
-| `attempts` | integer | Retry count |
-| `last_error` | text | Last failure |
-| `next_attempt_at` | timestamptz | Backoff |
-
-### SyncState
-
-| Field | Type | Purpose |
-|---|---|---|
-| `key` | text | Primary key, e.g. `last_pulled_at` |
-| `value` | text | Serialized value |
-
-### LocalPhoto
-
-| Field | Type | Purpose |
-|---|---|---|
-| `id` | uuid | Primary key; matches receipt id |
-| `outing_id` | uuid | Relationship |
-| `blob` | blob | Compressed JPEG |
-| `mime` | text | `image/jpeg` |
-| `uploaded` | boolean | Upload status |
-| `remote_path` | text | Supabase Storage path after upload |
+| `id` | Int | Singleton row |
+| `status` | Enum | `LOCAL_ONLY`, `BACKING_UP`, `BACKED_UP`, `ERROR` |
+| `lastSuccessAt` | Long? | Last successful snapshot |
+| `lastAttemptAt` | Long? | Last attempt |
+| `lastSnapshotId` | String? | Supabase snapshot id |
+| `lastError` | String? | Human-readable error |
+| `updatedAt` | Long | Last update |
 
 ## Relationships
 
 ```text
-Group 1 ─── * GroupMember
-Group 1 ─── * Student
-Group 1 ─── * Outing
-Outing 1 ─── 1 Receipt
-Receipt 1 ─── * ReceiptItem
-Outing 1 ─── * OutingStudent * ─── 1 Student
-Outing 1 ─── * Coverage * ─── 1 GroupMember
-Outing 1 ─── * Share * ─── 1 GroupMember
-Group 1 ─── * Settlement * ─── 1 GroupMember (from/to)
-Group 1 ─── * AuditEvent
+Ledger (single)
+├── AdultProfile (4)
+├── Student (1–10 active)
+├── Outing
+│   ├── Receipt (1)
+│   │   └── ReceiptItem (0..n)
+│   ├── CoverageAssignment (0..n)
+│   ├── Share (4 when finalized)
+│   ├── Settlement (0..n, ledger-wide)
+│   └── AuditEvent (0..n)
+└── BackupState (1)
 ```
 
-## Row-Level Security
+Settlements are ledger-wide rather than outing-specific; they reduce running balances.
 
-- A helper function `is_group_member(group_id)` returns true when the authenticated user is linked to
-  a `group_members` row in that group.
-- Select, insert, update, and delete policies on all shared tables require `is_group_member`.
-- `group_members` policies allow a member to read the group roster; only the group owner may invite
-  or remove adults.
-- Students, outings, receipts, receipt items, attendance, coverage, shares, settlements, and audit
-  events are readable and writable only by members of their group.
-- The storage bucket `receipts` is private. Object paths begin with `group_id/`; storage policies
-  check `is_group_member` for the first path segment.
-- The anon key is the only Supabase credential in the client. The service-role key is used only by
-  migration and seed scripts.
+## Backup Snapshot
 
-## Storage Layout
+The Supabase payload is a versioned JSON object containing:
 
-```text
-receipts/
-└── {group_id}/
-    └── {outing_id}/
-        └── {receipt_id}.jpg
+```json
+{
+  "schemaVersion": 1,
+  "exportedAt": "2026-11-07T00:00:00Z",
+  "deviceId": "uuid",
+  "ledger": { "name": "Salo", "currency": "PHP" },
+  "adults": [],
+  "students": [],
+  "outings": [],
+  "receipts": [],
+  "items": [],
+  "coverage": [],
+  "shares": [],
+  "settlements": [],
+  "auditEvents": []
+}
 ```
 
-Photos are compressed to a maximum long edge of 1600 px at JPEG quality 0.7 before upload. The
-local IndexedDB copy is kept until the upload succeeds.
+Excluded: receipt image paths, local file URIs, Supabase session tokens, and Google credentials.
 
-## Indexes
+## Invariants
 
-- `group_members(group_id, email)` unique.
-- `students(group_id, is_active, name)`.
-- `outings(group_id, outing_date desc)` and `outings(group_id, status)`.
-- `receipts(outing_id)` unique.
-- `receipt_items(receipt_id, sort_order)`.
-- `outing_students(outing_id)`.
-- `coverage(outing_id, student_id)` unique and `coverage(outing_id, member_id)`.
-- `shares(outing_id, member_id)` unique.
-- `settlements(group_id, settled_on desc)`.
-- `audit_events(group_id, created_at desc)`.
-
-## Money Invariants
-
-These invariants are enforced by the money engine and verified in tests and database checks:
-
-1. `sum(shares.amount_centavos) = outing.total_centavos` for every finalized outing.
-2. `outing.headcount = 4 + count(present students)`.
-3. `count(coverage) = count(present students)`.
-4. `sum(own_head + covered_students) = outing.headcount`.
-5. Exactly one share per finalized outing has `is_payer = true`.
-6. Every present student is assigned to exactly one adult.
-7. `per_head_centavos` is the display value; exact shares use the largest-remainder computation.
-8. A settlement never changes a finalized share; it only changes the derived running balance.
-
-## Derived Views
-
-### Balances
-
-For each adult:
-
-```text
-paid = sum(total_centavos of finalized outings where payer = adult)
-owed = sum(shares.amount_centavos where member = adult)
-settled_out = sum(settlements.amount_centavos where from = adult and not voided)
-settled_in = sum(settlements.amount_centavos where to = adult and not voided)
-balance = paid - owed + settled_out - settled_in
-```
-
-Positive balance means the adult is owed money; negative means the adult owes money.
-
-### Fairness Tally
-
-For each finalized outing and each coverage row:
-
-```text
-student_heads += 1
-amount_covered += outing.per_head_centavos
-```
-
-Group by adult and filter by the `outing_date` range.
-
-### Settlement Suggestions
-
-Greedy matching of negative balances (debtors) to positive balances (creditors), producing a
-minimal list of transfers in centavos.
+1. Money is integer centavos; no floating point.
+2. Every finalized share sums exactly to `receipt.totalCentavos`.
+3. Every item has one assignment or is explicitly shared; unassigned items block finalization.
+4. Every present student has exactly one covering adult.
+5. Student-assigned items charge the covering adult.
+6. Shared items split per head across four adults plus present students.
+7. Adjustments and total gaps use proportional largest-remainder allocation.
+8. One payer per outing.
+9. Finalized shares and item assignments are immutable snapshots.
+10. Deleting/archiving a student does not change finalized history.
+11. Restore only occurs into an empty local database.
+12. Receipt images are local-only and never appear in the backup payload.
