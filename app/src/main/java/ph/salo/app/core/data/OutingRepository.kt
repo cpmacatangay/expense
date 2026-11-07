@@ -45,6 +45,16 @@ private data class DetailsPartial(
     val shares: List<ph.salo.app.core.database.ShareEntity>
 )
 
+/**
+ * One-shot read of everything the History screen needs, in a fixed number of queries.
+ * Previously each outing was re-read individually (six queries per outing) on every emission.
+ */
+data class HistoryAggregate(
+    val totalByOuting: Map<String, Long>,
+    val itemsByOuting: Map<String, List<ReceiptItemEntity>>,
+    val coverageByOuting: Map<String, Map<String, String>>
+)
+
 data class DraftInput(
     val outingId: String,
     val receiptId: String,
@@ -111,6 +121,23 @@ class OutingRepository @Inject constructor(
             coverage = coverageDao.getByOuting(outingId).associate { it.studentId to it.adultId },
             shares = shareDao.getByOuting(outingId),
             auditEvents = auditEventDao.getByOuting(outingId)
+        )
+    }
+
+    /**
+     * History reads all receipts, items, and coverage in three queries instead of
+     * re-reading every outing's details one by one.
+     */
+    suspend fun getHistoryAggregate(): HistoryAggregate {
+        val receipts = receiptDao.getAll()
+        val items = itemDao.getAll()
+        val coverage = coverageDao.getAll()
+        return HistoryAggregate(
+            totalByOuting = receipts.associate { it.outingId to it.totalCentavos },
+            itemsByOuting = items.groupBy { it.outingId },
+            coverageByOuting = coverage
+                .groupBy { it.outingId }
+                .mapValues { (_, rows) -> rows.associate { it.studentId to it.adultId } }
         )
     }
 

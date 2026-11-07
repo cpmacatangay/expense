@@ -4,7 +4,9 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
@@ -24,10 +26,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import ph.salo.app.R
 import ph.salo.app.core.database.AdultProfileEntity
 import ph.salo.app.core.money.formatPeso
 import ph.salo.app.ui.components.SaloAvatar
@@ -92,17 +97,30 @@ fun HomeScreen(
                 modifier = Modifier.padding(20.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Text(text = headline, style = MaterialTheme.typography.labelMedium)
-                Text(
-                    text = formatPeso(if (net < 0) -net else net),
-                    style = MaterialTheme.typography.displaySmall,
-                    fontWeight = FontWeight.SemiBold,
-                    color = amountColor
-                )
-                Text(
-                    text = "${state.recentOutings.size} recent outings · ${state.adultNames.size} adults",
-                    style = MaterialTheme.typography.bodyMedium
-                )
+                Column(
+                    modifier = Modifier.semantics(mergeDescendants = true) {},
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Text(text = headline, style = MaterialTheme.typography.labelMedium)
+                    Text(
+                        text = formatPeso(if (net < 0) -net else net),
+                        style = MaterialTheme.typography.displaySmall,
+                        fontWeight = FontWeight.SemiBold,
+                        color = amountColor
+                    )
+                    Text(
+                        text = pluralStringResource(
+                            R.plurals.recent_outings,
+                            state.recentOutings.size,
+                            state.recentOutings.size
+                        ) + " · " + pluralStringResource(
+                            R.plurals.adults,
+                            state.adultNames.size,
+                            state.adultNames.size
+                        ),
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                }
                 OutlinedButton(
                     onClick = onLedger,
                     modifier = Modifier.fillMaxWidth()
@@ -221,5 +239,8 @@ fun HomeScreen(
                 Text("History", modifier = Modifier.padding(start = 6.dp))
             }
         }
+
+        // Clears the extended FAB so it never covers the last row.
+        Spacer(Modifier.height(88.dp))
     }
 }

@@ -3,6 +3,7 @@ package ph.salo.app.ui
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
@@ -36,6 +37,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -128,7 +132,16 @@ fun SaloApp(
                         Row(
                             modifier = Modifier
                                 .padding(end = 8.dp)
-                                .clickable { expanded = true },
+                                .heightIn(min = 48.dp)
+                                .clickable(
+                                    onClickLabel = "Switch profile",
+                                    role = Role.Button
+                                ) { expanded = true }
+                                .semantics {
+                                    contentDescription =
+                                        "Switch profile. Current profile ${selectedAdult?.name ?: "none"}."
+                                }
+                                .padding(horizontal = 8.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             SaloAvatar(name = selectedAdult?.name ?: "?", size = 32.dp)

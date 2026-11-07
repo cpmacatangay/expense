@@ -1,19 +1,25 @@
 package ph.salo.app.core.money
 
+import java.util.Locale
+
 typealias Centavos = Long
+
+// The peso string must not shift with the device locale: the recap image and the
+// ledger have to agree with the printed receipt.
+private val PESO_LOCALE: Locale = Locale.forLanguageTag("en-PH")
 
 fun formatPeso(centavos: Centavos): String {
     val negative = centavos < 0
     val absolute = if (negative) -centavos else centavos
     val pesos = absolute / 100
     val cents = absolute % 100
-    val formatted = "₱%,d.%02d".format(pesos, cents)
+    val formatted = String.format(PESO_LOCALE, "₱%,d.%02d", pesos, cents)
     return if (negative) "-$formatted" else formatted
 }
 
 fun formatCentavosPlain(centavos: Centavos): String {
     val absolute = if (centavos < 0) -centavos else centavos
-    val formatted = "%d.%02d".format(absolute / 100, absolute % 100)
+    val formatted = String.format(PESO_LOCALE, "%d.%02d", absolute / 100, absolute % 100)
     return if (centavos < 0) "-$formatted" else formatted
 }
 

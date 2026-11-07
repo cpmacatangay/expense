@@ -118,9 +118,19 @@ fun SettingsScreen(
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Text(
-                        text = "LOCAL LEDGER",
+                        text = when {
+                            backupState?.status == "ERROR" -> "BACKUP ERROR"
+                            backupState?.status == "BACKED_UP" &&
+                                session is SessionState.SignedIn -> "BACKED UP"
+                            session is SessionState.SignedIn -> "SIGNED IN"
+                            else -> "LOCAL ONLY"
+                        },
                         style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.primary
+                        color = if (backupState?.status == "ERROR") {
+                            MaterialTheme.colorScheme.error
+                        } else {
+                            MaterialTheme.colorScheme.primary
+                        }
                     )
                 }
                 if (session is SessionState.SignedIn) {

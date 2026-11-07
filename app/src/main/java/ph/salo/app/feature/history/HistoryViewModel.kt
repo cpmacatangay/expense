@@ -66,14 +66,16 @@ class HistoryViewModel @Inject constructor(
                 }.getOrDefault(false)
             }
         }
-        val details = filtered.mapNotNull { outingRepository.getDetails(it.id) }
+        val aggregate = outingRepository.getHistoryAggregate()
         val studentRows = mutableMapOf<String, StudentHistory>()
         val lastDateByStudent = mutableMapOf<String, String>()
-        details.forEach { detail ->
-            val outing = detail.outing
-            detail.coverage.forEach { (studentId, adultId) ->
-                val studentName = students.firstOrNull { it.id == studentId }?.name ?: "Student"
-                val amount = detail.items
+        val studentsById = students.associateBy { it.id }
+        filtered.forEach { outing ->
+            val items = aggregate.itemsByOuting[outing.id].orEmpty()
+            val coverage = aggregate.coverageByOuting[outing.id].orEmpty()
+            coverage.forEach { (studentId, adultId) ->
+                val studentName = studentsById[studentId]?.name ?: "Student"
+                val amount = items
                     .filter { it.assignedStudentId == studentId }
                     .sumOf { it.amountCentavos }
                 val current = studentRows[studentId]
@@ -95,7 +97,7 @@ class HistoryViewModel @Inject constructor(
         }
         HistoryUiState(
             outings = filtered,
-            totalSpendCentavos = details.sumOf { it.receipt?.totalCentavos ?: 0 },
+            totalSpendCentavos = filtered.sumOf { aggregate.totalByOuting[it.id] ?: 0L },
             studentHistory = studentRows.values.sortedBy { it.studentName.lowercase() },
             adultNames = adultNames,
             range = selectedRange,

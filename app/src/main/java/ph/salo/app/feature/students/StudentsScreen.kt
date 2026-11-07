@@ -33,6 +33,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import ph.salo.app.core.database.StudentEntity
+import ph.salo.app.ui.components.ConfirmDialog
 import ph.salo.app.ui.components.EmptyState
 import ph.salo.app.ui.components.SaloAvatar
 import ph.salo.app.ui.components.SectionCard
@@ -170,23 +171,16 @@ fun StudentsScreen(
     }
 
     pendingArchive?.let { student ->
-        AlertDialog(
-            onDismissRequest = { pendingArchive = null },
-            title = { Text("Archive ${student.name}?") },
-            text = { Text("The student stays in past outings and can be restored later.") },
-            confirmButton = {
-                TextButton(onClick = {
-                    viewModel.setActive(student.id, false)
-                    pendingArchive = null
-                }) {
-                    Text("Archive")
-                }
+        ConfirmDialog(
+            title = "Archive ${student.name}?",
+            message = "The student stays in past outings and can be restored later.",
+            confirmLabel = "Archive",
+            destructive = true,
+            onConfirm = {
+                viewModel.setActive(student.id, false)
+                pendingArchive = null
             },
-            dismissButton = {
-                TextButton(onClick = { pendingArchive = null }) {
-                    Text("Cancel")
-                }
-            }
+            onDismiss = { pendingArchive = null }
         )
     }
 }

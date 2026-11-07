@@ -1,3 +1,28 @@
 <resources>
     <string name="app_name">Salo</string>
+
+    <plurals name="recent_outings">
+        <item quantity="one">%1$d recent outing</item>
+        <item quantity="other">%1$d recent outings</item>
+    </plurals>
+
+    <plurals name="adults">
+        <item quantity="one">%1$d adult</item>
+        <item quantity="other">%1$d adults</item>
+    </plurals>
+
+    <plurals name="outings">
+        <item quantity="one">%1$d outing</item>
+        <item quantity="other">%1$d outings</item>
+    </plurals>
+
+    <plurals name="student_meals">
+        <item quantity="one">%1$d student meal</item>
+        <item quantity="other">%1$d student meals</item>
+    </plurals>
+
+    <plurals name="meals">
+        <item quantity="one">%1$d meal</item>
+        <item quantity="other">%1$d meals</item>
+    </plurals>
 </resources>

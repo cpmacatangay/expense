@@ -5,12 +5,13 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DataObject
 import androidx.compose.material.icons.filled.Download
@@ -28,11 +29,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.launch
+import ph.salo.app.R
+import ph.salo.app.core.database.OutingEntity
 import ph.salo.app.core.money.formatPeso
 import ph.salo.app.ui.components.SectionCard
 
@@ -70,146 +74,193 @@ fun HistoryScreen(
         pendingJson = null
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-            .padding(16.dp),
+    LazyColumn(
+        modifier = Modifier.fillMaxSize(),
+        contentPadding = PaddingValues(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Column(modifier = Modifier.weight(1f)) {
+        item(key = "header") {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = "History",
+                        style = MaterialTheme.typography.headlineMedium,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                    Text(
+                        text = "Totals, per-student history, and exports.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+                TextButton(
+                    onClick = {
+                        scope.launch {
+                            pendingCsv = viewModel.csv()
+                            csvLauncher.launch("salo-ledger.csv")
+                        }
+                    }
+                ) {
+                    Icon(Icons.Filled.Download, contentDescription = null)
+                    Text("CSV", modifier = Modifier.padding(start = 4.dp))
+                }
+                TextButton(
+                    onClick = {
+                        scope.launch {
+                            pendingJson = viewModel.json()
+                            jsonLauncher.launch("salo-ledger.json")
+                        }
+                    }
+                ) {
+                    Icon(Icons.Filled.DataObject, contentDescription = null)
+                    Text("JSON", modifier = Modifier.padding(start = 4.dp))
+                }
+            }
+        }
+
+        item(key = "ranges") {
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                HistoryRange.entries.forEach { range ->
+                    FilterChip(
+                        selected = state.range == range,
+                        onClick = { viewModel.setRange(range) },
+                        label = { Text(range.label) }
+                    )
+                }
+            }
+        }
+
+        item(key = "total") {
+            SectionCard {
                 Text(
-                    text = "History",
+                    text = "TOTAL SPEND",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Text(
+                    text = formatPeso(state.totalSpendCentavos),
                     style = MaterialTheme.typography.headlineMedium,
                     fontWeight = FontWeight.SemiBold
                 )
+                val studentMeals = state.studentHistory.sumOf { it.meals }
                 Text(
-                    text = "Totals, per-student history, and exports.",
+                    text = pluralStringResource(R.plurals.outings, state.outings.size, state.outings.size) +
+                        " · " +
+                        pluralStringResource(R.plurals.student_meals, studentMeals, studentMeals),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
-            TextButton(
-                onClick = {
-                    scope.launch {
-                        pendingCsv = viewModel.csv()
-                        csvLauncher.launch("salo-ledger.csv")
-                    }
-                }
-            ) {
-                Icon(Icons.Filled.Download, contentDescription = null)
-                Text("CSV", modifier = Modifier.padding(start = 4.dp))
-            }
-            TextButton(
-                onClick = {
-                    scope.launch {
-                        pendingJson = viewModel.json()
-                        jsonLauncher.launch("salo-ledger.json")
-                    }
-                }
-            ) {
-                Icon(Icons.Filled.DataObject, contentDescription = null)
-                Text("JSON", modifier = Modifier.padding(start = 4.dp))
-            }
         }
 
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            HistoryRange.entries.forEach { range ->
-                FilterChip(
-                    selected = state.range == range,
-                    onClick = { viewModel.setRange(range) },
-                    label = { Text(range.label) }
+        item(key = "outings-heading") {
+            Text(
+                text = "Outings",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold,
+                modifier = Modifier.padding(top = 4.dp)
+            )
+        }
+
+        if (state.outings.isEmpty()) {
+            item(key = "outings-empty") {
+                SectionCard {
+                    Text(
+                        text = "No finalized outings in this range.",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+        } else {
+            items(state.outings, key = { it.id }) { outing ->
+                OutingHistoryCard(
+                    outing = outing,
+                    payerName = state.adultNames[outing.payerAdultId] ?: "—",
+                    onOpen = { onOutingClick(outing.id) }
                 )
             }
         }
 
-        SectionCard {
+        item(key = "students-heading") {
             Text(
-                text = "TOTAL SPEND",
-                style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                text = "Per student",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold,
+                modifier = Modifier.padding(top = 4.dp)
             )
+        }
+
+        if (state.studentHistory.isEmpty()) {
+            item(key = "students-empty") {
+                SectionCard {
+                    Text(
+                        text = "No student coverage in this range.",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+        } else {
+            items(state.studentHistory, key = { it.studentId }) { student ->
+                StudentHistoryCard(student)
+            }
+        }
+    }
+}
+
+@Composable
+private fun OutingHistoryCard(
+    outing: OutingEntity,
+    payerName: String,
+    onOpen: () -> Unit
+) {
+    SectionCard {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = outing.place ?: "Meal",
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.SemiBold
+                )
+                Text(
+                    text = "${outing.date} · paid by $payerName",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            TextButton(onClick = onOpen) {
+                Text("Open")
+            }
+        }
+    }
+}
+
+@Composable
+private fun StudentHistoryCard(student: StudentHistory) {
+    SectionCard {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = student.studentName,
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.SemiBold
+                )
+                Text(
+                    text = pluralStringResource(
+                        R.plurals.meals,
+                        student.meals,
+                        student.meals
+                    ) + " · last covered by ${student.lastCoveredBy ?: "—"}",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
             Text(
-                text = formatPeso(state.totalSpendCentavos),
-                style = MaterialTheme.typography.headlineMedium,
+                text = formatPeso(student.amountCentavos),
+                style = MaterialTheme.typography.titleSmall,
                 fontWeight = FontWeight.SemiBold
             )
-            Text(
-                text = "${state.outings.size} outings · ${state.studentHistory.sumOf { it.meals }} student meals",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        }
-
-        SectionCard(title = "Outings") {
-            if (state.outings.isEmpty()) {
-                Text(
-                    text = "No finalized outings in this range.",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            } else {
-                state.outings.forEach { outing ->
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 8.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text(
-                                text = outing.place ?: "Meal",
-                                style = MaterialTheme.typography.titleSmall,
-                                fontWeight = FontWeight.SemiBold
-                            )
-                            Text(
-                                text = "${outing.date} · paid by ${state.adultNames[outing.payerAdultId] ?: "—"}",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
-                        TextButton(onClick = { onOutingClick(outing.id) }) {
-                            Text("Open")
-                        }
-                    }
-                }
-            }
-        }
-
-        SectionCard(title = "Per student") {
-            if (state.studentHistory.isEmpty()) {
-                Text(
-                    text = "No student coverage in this range.",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            } else {
-                state.studentHistory.forEach { student ->
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text(
-                                text = student.studentName,
-                                style = MaterialTheme.typography.titleSmall,
-                                fontWeight = FontWeight.SemiBold
-                            )
-                            Text(
-                                text = "${student.meals} meals · last covered by ${student.lastCoveredBy ?: "—"}",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
-                        Text(
-                            text = formatPeso(student.amountCentavos),
-                            style = MaterialTheme.typography.titleSmall,
-                            fontWeight = FontWeight.SemiBold
-                        )
-                    }
-                }
-            }
         }
     }
 }
