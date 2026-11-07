@@ -284,6 +284,10 @@ bubble; the form language is a folded receipt, not a chat app.
   internal padding. Amount fields carry a `₱` prefix; quantity uses a numeric keyboard.
 - **Focus:** the outline thickens and takes `primary`; the floating label activates.
 - **Error / Disabled:** supporting text in `error`; disabled controls reduce to 38% opacity.
+- **Date:** the value reads as `Nov 8, 2026` and opens a compact calendar built on M3 tokens (48 dp
+  day targets, primary circle for the selection, 1 dp outline for today). It lays out only the weeks
+  the month needs; the stock `DatePickerDialog` reserves a blank sixth row on five-week months, which
+  pushed the actions too far from the last date.
 
 ### Navigation
 - **Top app bar:** small, surface-colored, the Salo mark plus wordmark on the left, the selected adult

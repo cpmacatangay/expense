@@ -20,6 +20,8 @@
     <string name="action_next">Next</string>
     <string name="action_ok">OK</string>
     <string name="date_field_pick">Pick a date</string>
+    <string name="date_previous_month">Previous month</string>
+    <string name="date_next_month">Next month</string>
     <string name="action_open">Open</string>
     <string name="action_remove">Remove</string>
     <string name="action_save">Save</string>
