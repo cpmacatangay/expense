@@ -41,8 +41,10 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import ph.salo.app.R
 import ph.salo.app.core.database.StudentEntity
 import ph.salo.app.ui.components.ConfirmDialog
+import ph.salo.app.ui.theme.SaloSpacing
 import ph.salo.app.ui.components.EmptyState
 import ph.salo.app.ui.components.SaloAvatar
+import ph.salo.app.ui.components.LoadingState
 import ph.salo.app.ui.components.SectionCard
 import ph.salo.app.ui.components.saloItemMotion
 
@@ -51,7 +53,9 @@ import ph.salo.app.ui.components.saloItemMotion
 fun StudentsScreen(
     viewModel: StudentsViewModel = hiltViewModel()
 ) {
-    val students by viewModel.students.collectAsStateWithLifecycle()
+    val studentList by viewModel.students.collectAsStateWithLifecycle()
+    val loaded = studentList != null
+    val students = studentList.orEmpty()
     val refreshing by viewModel.refreshing.collectAsStateWithLifecycle()
     val saving by viewModel.saving.collectAsStateWithLifecycle()
     val error by viewModel.error.collectAsStateWithLifecycle()
@@ -70,7 +74,7 @@ fun StudentsScreen(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 12.dp),
+                .padding(horizontal = SaloSpacing.md, vertical = SaloSpacing.sm),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Column(modifier = Modifier.weight(1f)) {
@@ -93,7 +97,7 @@ fun StudentsScreen(
                 }
             ) {
                 Icon(Icons.Filled.Add, contentDescription = null)
-                Text(stringResource(R.string.action_add), modifier = Modifier.padding(start = 6.dp))
+                Text(stringResource(R.string.action_add), modifier = Modifier.padding(start = SaloSpacing.xs))
             }
         }
 
@@ -102,10 +106,13 @@ fun StudentsScreen(
                 text = error.orEmpty(),
                 color = MaterialTheme.colorScheme.error,
                 style = MaterialTheme.typography.bodySmall,
-                modifier = Modifier.padding(horizontal = 16.dp)
+                modifier = Modifier.padding(horizontal = SaloSpacing.md)
             )
         }
 
+        if (!loaded) {
+            LoadingState()
+        } else {
         LazyColumn(
             modifier = Modifier.fillMaxWidth(),
             contentPadding = androidx.compose.foundation.layout.PaddingValues(
@@ -114,7 +121,7 @@ fun StudentsScreen(
                 top = 8.dp,
                 bottom = 96.dp
             ),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+            verticalArrangement = Arrangement.spacedBy(SaloSpacing.xs)
         ) {
             if (active.isEmpty()) {
                 item {
@@ -153,7 +160,7 @@ fun StudentsScreen(
                         text = stringResource(R.string.students_archived),
                         style = MaterialTheme.typography.titleSmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.padding(top = 16.dp, bottom = 4.dp)
+                        modifier = Modifier.padding(top = SaloSpacing.md, bottom = SaloSpacing.xxs)
                     )
                 }
                 items(archived, key = { it.id }) { student ->
@@ -169,6 +176,7 @@ fun StudentsScreen(
                     }
                 }
             }
+        }
         }
     }
     }
@@ -218,7 +226,7 @@ private fun StudentRow(
             Column(
                 modifier = Modifier
                     .weight(1f)
-                    .padding(start = 12.dp)
+                    .padding(start = SaloSpacing.sm)
             ) {
                 Text(
                     text = student.name,
@@ -265,7 +273,7 @@ private fun StudentDialog(
         onDismissRequest = { if (!saving) onDismiss() },
         title = { Text(stringResource(if (student == null) R.string.students_add_title else R.string.students_edit_title)) },
         text = {
-            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            Column(verticalArrangement = Arrangement.spacedBy(SaloSpacing.sm)) {
                 OutlinedTextField(
                     value = name,
                     onValueChange = { name = it },

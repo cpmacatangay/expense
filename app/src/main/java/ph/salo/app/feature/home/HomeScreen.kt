@@ -40,6 +40,8 @@ import ph.salo.app.R
 import ph.salo.app.core.database.AdultProfileEntity
 import ph.salo.app.core.money.formatPeso
 import ph.salo.app.ui.components.SaloAvatar
+import ph.salo.app.ui.theme.SaloSpacing
+import ph.salo.app.ui.components.LoadingState
 import ph.salo.app.ui.components.SectionCard
 import ph.salo.app.ui.components.EmptyState
 import java.time.LocalDate
@@ -83,8 +85,8 @@ fun HomeScreen(
         modifier = Modifier
             .fillMaxWidth()
             .verticalScroll(rememberScrollState())
-            .padding(horizontal = 16.dp, vertical = 12.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+            .padding(horizontal = SaloSpacing.md, vertical = SaloSpacing.sm),
+        verticalArrangement = Arrangement.spacedBy(SaloSpacing.md)
     ) {
         Column {
             Text(
@@ -106,12 +108,12 @@ fun HomeScreen(
             )
         ) {
             Column(
-                modifier = Modifier.padding(20.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
+                modifier = Modifier.padding(SaloSpacing.lg),
+                verticalArrangement = Arrangement.spacedBy(SaloSpacing.xs)
             ) {
                 Column(
                     modifier = Modifier.semantics(mergeDescendants = true) {},
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                    verticalArrangement = Arrangement.spacedBy(SaloSpacing.xs)
                 ) {
                     Text(text = headline, style = MaterialTheme.typography.labelMedium)
                     Text(
@@ -138,7 +140,7 @@ fun HomeScreen(
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Icon(Icons.Filled.Add, contentDescription = null, modifier = Modifier.size(18.dp))
-                    Text(stringResource(R.string.home_new_outing), modifier = Modifier.padding(start = 8.dp))
+                    Text(stringResource(R.string.home_new_outing), modifier = Modifier.padding(start = SaloSpacing.xs))
                 }
             }
         }
@@ -194,7 +196,9 @@ fun HomeScreen(
                 }
             }
         ) {
-            if (state.recentOutings.isEmpty()) {
+            if (!state.loaded) {
+                LoadingState()
+            } else if (state.recentOutings.isEmpty()) {
                 EmptyState(
                     icon = Icons.Filled.Group,
                     title = stringResource(R.string.home_empty_title),
@@ -206,11 +210,11 @@ fun HomeScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .clickable { onOutingClick(outing.id) }
-                            .padding(vertical = 8.dp),
+                            .padding(vertical = SaloSpacing.xs),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         SaloAvatar(name = outing.place ?: stringResource(R.string.meal_fallback), size = 40.dp)
-                        Column(modifier = Modifier.padding(start = 12.dp).weight(1f)) {
+                        Column(modifier = Modifier.padding(start = SaloSpacing.sm).weight(1f)) {
                             Text(
                                 text = outing.place ?: stringResource(R.string.meal_fallback),
                                 style = MaterialTheme.typography.titleSmall,
@@ -232,7 +236,7 @@ fun HomeScreen(
         }
 
         // Clears the bottom navigation inset on the last scroll position.
-        Spacer(Modifier.height(24.dp))
+        Spacer(Modifier.height(SaloSpacing.xl))
     }
     }
 }

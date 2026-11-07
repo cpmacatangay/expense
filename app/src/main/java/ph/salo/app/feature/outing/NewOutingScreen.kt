@@ -1,6 +1,7 @@
 package ph.salo.app.feature.outing
 
 import android.net.Uri
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedContent
@@ -68,7 +69,9 @@ import ph.salo.app.R
 import ph.salo.app.core.money.formatCentavosPlain
 import ph.salo.app.core.money.formatPeso
 import ph.salo.app.core.money.parsePesoToCentavos
+import ph.salo.app.ui.components.ConfirmDialog
 import ph.salo.app.ui.components.SaloAvatar
+import ph.salo.app.ui.theme.SaloSpacing
 import ph.salo.app.ui.components.SectionCard
 import ph.salo.app.ui.components.SelectionField
 
@@ -94,6 +97,26 @@ fun NewOutingScreen(
     var itemDialogOpen by remember { mutableStateOf(false) }
     var editingItem by remember { mutableStateOf<ItemDraft?>(null) }
     var itemToDelete by remember { mutableStateOf<ItemDraft?>(null) }
+    var confirmDiscard by remember { mutableStateOf(false) }
+
+    val hasDraft = state.step > 0 ||
+        state.items.isNotEmpty() ||
+        state.place.isNotBlank() ||
+        state.notes.isNotBlank() ||
+        state.merchant.isNotBlank() ||
+        state.totalInput.isNotBlank() ||
+        state.presentStudentIds.isNotEmpty() ||
+        state.coverage.isNotEmpty()
+
+    BackHandler(enabled = hasDraft) { confirmDiscard = true }
+
+    val leaveStep: () -> Unit = {
+        when {
+            state.step > 0 -> viewModel.back()
+            hasDraft -> confirmDiscard = true
+            else -> onBack()
+        }
+    }
 
     val scanner = rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) { success ->
         if (success) {
@@ -104,15 +127,15 @@ fun NewOutingScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(horizontal = 16.dp)
+            .padding(horizontal = SaloSpacing.md)
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(top = 8.dp),
+                .padding(top = SaloSpacing.xs),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            IconButton(onClick = { if (state.step == 0) onBack() else viewModel.back() }) {
+            IconButton(onClick = leaveStep) {
                 Icon(Icons.Filled.ArrowBack, contentDescription = stringResource(R.string.action_back))
             }
             Column(modifier = Modifier.weight(1f)) {
@@ -137,7 +160,7 @@ fun NewOutingScreen(
             progress = { (state.step + 1) / 4f },
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(vertical = 12.dp)
+                .padding(vertical = SaloSpacing.sm)
         )
 
         Column(
@@ -150,7 +173,7 @@ fun NewOutingScreen(
                     text = message,
                     color = MaterialTheme.colorScheme.error,
                     style = MaterialTheme.typography.bodySmall,
-                    modifier = Modifier.padding(bottom = 8.dp)
+                    modifier = Modifier.padding(bottom = SaloSpacing.xs)
                 )
             }
             AnimatedContent(
@@ -198,15 +221,15 @@ fun NewOutingScreen(
             }
         }
 
-        HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+        HorizontalDivider(modifier = Modifier.padding(vertical = SaloSpacing.xs))
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(bottom = 12.dp),
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                .padding(bottom = SaloSpacing.sm),
+            horizontalArrangement = Arrangement.spacedBy(SaloSpacing.sm)
         ) {
             OutlinedButton(
-                onClick = { if (state.step == 0) onBack() else viewModel.back() },
+                onClick = leaveStep,
                 modifier = Modifier.weight(1f)
             ) {
                 Text(stringResource(R.string.action_back))
@@ -256,6 +279,20 @@ fun NewOutingScreen(
                 }
                 itemDialogOpen = false
             }
+        )
+    }
+
+    if (confirmDiscard) {
+        ConfirmDialog(
+            title = stringResource(R.string.outing_discard_title),
+            message = stringResource(R.string.outing_discard_body),
+            confirmLabel = stringResource(R.string.outing_discard_confirm),
+            destructive = true,
+            onConfirm = {
+                confirmDiscard = false
+                onBack()
+            },
+            onDismiss = { confirmDiscard = false }
         )
     }
 
@@ -335,7 +372,7 @@ private fun ReceiptStep(
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.primary
             )
-            Spacer(Modifier.width(8.dp))
+            Spacer(Modifier.width(SaloSpacing.xs))
             Text(
                 text = stringResource(R.string.outing_receipt_helper),
                 style = MaterialTheme.typography.bodySmall,
@@ -350,7 +387,7 @@ private fun ReceiptStep(
             modifier = Modifier.fillMaxWidth()
         )
         AmountField(stringResource(R.string.outing_total), state.totalInput, viewModel::updateTotal)
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        Row(horizontalArrangement = Arrangement.spacedBy(SaloSpacing.xs)) {
             Box(modifier = Modifier.weight(1f)) {
                 AmountField(stringResource(R.string.outing_tax), state.taxInput, viewModel::updateTax)
             }
@@ -369,7 +406,7 @@ private fun ReceiptStep(
                 text = stringResource(
                     if (state.scanning) R.string.outing_scanning else R.string.outing_scan
                 ),
-                modifier = Modifier.padding(start = 8.dp)
+                modifier = Modifier.padding(start = SaloSpacing.xs)
             )
         }
     }
@@ -379,7 +416,7 @@ private fun ReceiptStep(
         action = {
             TextButton(onClick = onAddItem) {
                 Icon(Icons.Filled.Add, contentDescription = null)
-                Text(stringResource(R.string.action_add), modifier = Modifier.padding(start = 4.dp))
+                Text(stringResource(R.string.action_add), modifier = Modifier.padding(start = SaloSpacing.xxs))
             }
         }
     ) {
@@ -436,7 +473,7 @@ private fun ItemRow(
         modifier = Modifier.fillMaxWidth()
     ) {
         Row(
-            modifier = Modifier.padding(12.dp),
+            modifier = Modifier.padding(SaloSpacing.sm),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Column(modifier = Modifier.weight(1f)) {
@@ -545,7 +582,7 @@ private fun ReviewStep(state: NewOutingUiState, viewModel: NewOutingViewModel) {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(vertical = 6.dp)
+                        .padding(vertical = SaloSpacing.xs)
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         SaloAvatar(name = adult?.name ?: "?", size = 32.dp)
@@ -553,7 +590,7 @@ private fun ReviewStep(state: NewOutingUiState, viewModel: NewOutingViewModel) {
                             text = adult?.name ?: "—",
                             modifier = Modifier
                                 .weight(1f)
-                                .padding(start = 8.dp),
+                                .padding(start = SaloSpacing.xs),
                             style = MaterialTheme.typography.titleSmall,
                             fontWeight = FontWeight.SemiBold
                         )
@@ -629,7 +666,7 @@ private fun ItemDialog(
         text = {
             Column(
                 modifier = Modifier.verticalScroll(rememberScrollState()),
-                verticalArrangement = Arrangement.spacedBy(10.dp)
+                verticalArrangement = Arrangement.spacedBy(SaloSpacing.sm)
             ) {
                 OutlinedTextField(
                     value = name,
@@ -638,7 +675,7 @@ private fun ItemDialog(
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth()
                 )
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Row(horizontalArrangement = Arrangement.spacedBy(SaloSpacing.xs)) {
                     OutlinedTextField(
                         value = quantity,
                         onValueChange = { quantity = it.filter(Char::isDigit) },
@@ -652,7 +689,7 @@ private fun ItemDialog(
                     }
                 }
                 Text(stringResource(R.string.outing_assign_to), style = MaterialTheme.typography.labelMedium)
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Row(horizontalArrangement = Arrangement.spacedBy(SaloSpacing.xs)) {
                     FilterChip(
                         selected = type == ItemAssignmentType.ADULT,
                         onClick = { type = ItemAssignmentType.ADULT },

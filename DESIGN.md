@@ -3,7 +3,7 @@ name: Salo
 description: A private, offline-first meal ledger for four adults and the students they cover.
 colors:
   ledger-green: "#1F5C45"
-  ledger-green-light: "#B8F0D2"
+  ledger-green-light: "#B4F0CE"
   on-ledger-green: "#FFFFFF"
   on-ledger-green-light: "#002114"
   sage-secondary: "#4F6357"
@@ -155,9 +155,14 @@ A calm green-on-paper palette, with a single warm red reserved for money the own
 
 ### Neutral
 - **Cool Paper** (#F7FBF4): light background and surface; the page itself.
-- **Cool Paper Variant** (#DCE5DB): light `surfaceVariant`, section cards, dividers.
+- **Cool Paper Variant** (#DCE5DB): light `surfaceVariant`.
 - **Night Ledger** (#101410): dark background and surface.
 - **Night Ledger Variant** (#414942): dark `surfaceVariant`.
+
+### Tonal surfaces
+Elevation is carried by these roles, never by shadows. Light: `surfaceContainerLowest` #FFFFFF,
+`Low` #F1F5EF, `Container` #EBF0E9, `High` #E5EAE3, `Highest` #DFE4DD. Dark:
+`Lowest` #0B0E0A, `Low` #181C16, `Container` #1C201A, `High` #262B24, `Highest` #31362E.
 - **Ink** (#191C19): primary text in light, page text in dark as **Ink Inverse** (#E1E4DE).
 - **Ink Muted** (#414942 / #C0C9BF): supporting labels, metadata, secondary rows.
 - **Hairline** (#717970 / #8B938A): outlines around fields, chips, and outlined buttons.
@@ -169,9 +174,8 @@ A calm green-on-paper palette, with a single warm red reserved for money the own
 **The One Green Rule.** The green family marks state and action only — balances, primary buttons,
 selected profile, the FAB. It never becomes a background wash or a decorative fill.
 
-**The Wallpaper Exception.** On Android 12+ the runtime derives the whole scheme from the user's
-wallpaper by default. That is allowed to replace this palette wholesale; identity survives through
-type, spacing, shape, and the calm density of the layout, never through a hard-coded green.
+**The One Palette Rule.** The scheme is fixed. Salo does not derive colour from the wallpaper, so
+the ledger looks the same on every phone and the green always means the same thing.
 
 ## Typography
 
@@ -202,8 +206,23 @@ or body size so the eye has one destination.
 ## Layout
 
 A single scrollable column inside a Scaffold, with a top app bar and a bottom navigation bar of five
-destinations. Horizontal screen padding is 16 dp; content blocks stack with 12 dp gaps; cards pad
-16 dp internally. The primary action lives inside the Home statement card as a full-width filled
+destinations.
+
+### Spacing scale
+One scale, 4 dp base, enforced in `ui/theme/Spacing.kt` (`SaloSpacing`). No intermediate values.
+
+| Token | Value | Use |
+| --- | --- | --- |
+| `xxs` | 4 dp | icon/label pairing, hairline gaps |
+| `xs` | 8 dp | inside a control, between a chip and its text |
+| `sm` | 12 dp | stacked rows, card content rhythm |
+| `md` | 16 dp | screen gutter, card padding, section gap |
+| `lg` | 20 dp | statement card padding |
+| `xl` | 24 dp | between major blocks |
+| `xxl` | 32 dp | above a screen title, empty states |
+| `xxxl` | 48 dp | minimum touch target, large separation |
+
+Horizontal screen padding is `md`; content blocks stack with `sm`; cards pad `md` internally. The primary action lives inside the Home statement card as a full-width filled
 button, not as a floating action: at large font scales a FAB permanently covered the last row.
 
 Money rows use a two-column contract: label or name on the left, amount flush right, never a third
@@ -294,7 +313,7 @@ It follows this document's palette and spacing at print scale rather than screen
   two-step tonal difference is the whole depth system.
 - **Do** reserve display size for one number per screen.
 - **Do** keep destructive and owing states in `error`; the rest of the screen stays neutral.
-- **Do** let the platform control color on Android 12+; dynamic color is a supported mode, not a bug.
+- **Do** use the Salo scheme on every device. Dynamic color is deliberately off; a wallpaper-derived palette would break the brand and the meaning of green/red.
 - **Do** respect 48 dp targets: icon buttons carry 48 dp touch bounds even when the glyph is 24 dp.
 
 ### Don't:

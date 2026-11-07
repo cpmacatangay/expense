@@ -2,10 +2,14 @@ package ph.salo.app.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-// Salo green seed — light
+// Salo visual system: "The Corner Table".
+// Green seed #1F5C45. Neutrals carry a faint green cast so cards sit on paper, not on gray.
+// Dynamic color is deliberately not used: the app looks the same on every phone.
+
+// ---- Light ----
 val SaloPrimary = Color(0xFF1F5C45)
 val SaloOnPrimary = Color(0xFFFFFFFF)
-val SaloPrimaryContainer = Color(0xFFB8F0D2)
+val SaloPrimaryContainer = Color(0xFFB4F0CE)
 val SaloOnPrimaryContainer = Color(0xFF002114)
 val SaloSecondary = Color(0xFF4F6357)
 val SaloOnSecondary = Color(0xFFFFFFFF)
@@ -31,7 +35,16 @@ val SaloInverseSurface = Color(0xFF2E312D)
 val SaloInverseOnSurface = Color(0xFFEFF1EC)
 val SaloInversePrimary = Color(0xFF9BD5B4)
 
-// Salo green seed — dark
+// Tonal surface levels (M3 elevation, no shadows)
+val SaloSurfaceDim = Color(0xFFD8DED7)
+val SaloSurfaceBright = Color(0xFFF7FBF4)
+val SaloSurfaceContainerLowest = Color(0xFFFFFFFF)
+val SaloSurfaceContainerLow = Color(0xFFF1F5EF)
+val SaloSurfaceContainer = Color(0xFFEBF0E9)
+val SaloSurfaceContainerHigh = Color(0xFFE5EAE3)
+val SaloSurfaceContainerHighest = Color(0xFFDFE4DD)
+
+// ---- Dark: charcoal with a green cast ----
 val SaloDarkPrimary = Color(0xFF9BD5B4)
 val SaloDarkOnPrimary = Color(0xFF003825)
 val SaloDarkPrimaryContainer = Color(0xFF005139)
@@ -59,3 +72,11 @@ val SaloDarkOutlineVariant = Color(0xFF414942)
 val SaloDarkInverseSurface = Color(0xFFE1E4DE)
 val SaloDarkInverseOnSurface = Color(0xFF2E312D)
 val SaloDarkInversePrimary = Color(0xFF1F5C45)
+
+val SaloDarkSurfaceDim = Color(0xFF101410)
+val SaloDarkSurfaceBright = Color(0xFF363A34)
+val SaloDarkSurfaceContainerLowest = Color(0xFF0B0E0A)
+val SaloDarkSurfaceContainerLow = Color(0xFF181C16)
+val SaloDarkSurfaceContainer = Color(0xFF1C201A)
+val SaloDarkSurfaceContainerHigh = Color(0xFF262B24)
+val SaloDarkSurfaceContainerHighest = Color(0xFF31362E)

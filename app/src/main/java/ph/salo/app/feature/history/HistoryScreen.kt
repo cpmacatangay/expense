@@ -42,7 +42,9 @@ import kotlinx.coroutines.launch
 import ph.salo.app.R
 import ph.salo.app.core.database.OutingEntity
 import ph.salo.app.core.money.formatPeso
+import ph.salo.app.ui.components.LoadingState
 import ph.salo.app.ui.components.SectionCard
+import ph.salo.app.ui.theme.SaloSpacing
 import ph.salo.app.ui.components.saloItemMotion
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -55,8 +57,10 @@ fun HistoryScreen(
     val refreshing by viewModel.refreshing.collectAsStateWithLifecycle()
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
+    val exportFailedMessage = stringResource(R.string.settings_export_failed)
     val csvFileName = stringResource(R.string.history_export_csv_name)
     val jsonFileName = stringResource(R.string.history_export_json_name)
+    var exportError by remember { mutableStateOf<String?>(null) }
     var pendingCsv by remember { mutableStateOf<String?>(null) }
     var pendingJson by remember { mutableStateOf<String?>(null) }
 
@@ -91,7 +95,7 @@ fun HistoryScreen(
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
         contentPadding = PaddingValues(16.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
+        verticalArrangement = Arrangement.spacedBy(SaloSpacing.sm)
     ) {
         item(key = "header") {
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -110,30 +114,46 @@ fun HistoryScreen(
                 TextButton(
                     onClick = {
                         scope.launch {
-                            pendingCsv = viewModel.csv()
-                            csvLauncher.launch(csvFileName)
+                            exportError = null
+                            runCatching { viewModel.csv() }
+                                .onSuccess {
+                                    pendingCsv = it
+                                    csvLauncher.launch(csvFileName)
+                                }
+                                .onFailure {
+                                    exportError = it.message
+                                        ?: exportFailedMessage
+                                }
                         }
                     }
                 ) {
                     Icon(Icons.Filled.Download, contentDescription = null)
-                    Text(stringResource(R.string.history_csv), modifier = Modifier.padding(start = 4.dp))
+                    Text(stringResource(R.string.history_csv), modifier = Modifier.padding(start = SaloSpacing.xxs))
                 }
                 TextButton(
                     onClick = {
                         scope.launch {
-                            pendingJson = viewModel.json()
-                            jsonLauncher.launch(jsonFileName)
+                            exportError = null
+                            runCatching { viewModel.json() }
+                                .onSuccess {
+                                    pendingJson = it
+                                    jsonLauncher.launch(jsonFileName)
+                                }
+                                .onFailure {
+                                    exportError = it.message
+                                        ?: exportFailedMessage
+                                }
                         }
                     }
                 ) {
                     Icon(Icons.Filled.DataObject, contentDescription = null)
-                    Text(stringResource(R.string.history_json), modifier = Modifier.padding(start = 4.dp))
+                    Text(stringResource(R.string.history_json), modifier = Modifier.padding(start = SaloSpacing.xxs))
                 }
             }
         }
 
         item(key = "ranges") {
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Row(horizontalArrangement = Arrangement.spacedBy(SaloSpacing.xs)) {
                 HistoryRange.entries.forEach { range ->
                     FilterChip(
                         selected = state.range == range,
@@ -141,6 +161,16 @@ fun HistoryScreen(
                         label = { Text(range.label()) }
                     )
                 }
+            }
+        }
+
+        exportError?.let { message ->
+            item(key = "export-error") {
+                Text(
+                    text = message,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.error
+                )
             }
         }
 
@@ -172,11 +202,13 @@ fun HistoryScreen(
                 text = stringResource(R.string.history_outings),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.SemiBold,
-                modifier = Modifier.padding(top = 4.dp)
+                modifier = Modifier.padding(top = SaloSpacing.xxs)
             )
         }
 
-        if (state.outings.isEmpty()) {
+        if (!state.loaded) {
+            item(key = "outings-loading") { LoadingState() }
+        } else if (state.outings.isEmpty()) {
             item(key = "outings-empty") {
                 SectionCard {
                     Text(
@@ -203,11 +235,13 @@ fun HistoryScreen(
                 text = stringResource(R.string.history_per_student),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.SemiBold,
-                modifier = Modifier.padding(top = 4.dp)
+                modifier = Modifier.padding(top = SaloSpacing.xxs)
             )
         }
 
-        if (state.studentHistory.isEmpty()) {
+        if (!state.loaded) {
+            item(key = "students-loading") { LoadingState() }
+        } else if (state.studentHistory.isEmpty()) {
             item(key = "students-empty") {
                 SectionCard {
                     Text(

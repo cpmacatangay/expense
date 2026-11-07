@@ -14,6 +14,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
@@ -32,10 +33,11 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.dp
 import ph.salo.app.R
 import ph.salo.app.core.money.Centavos
+import ph.salo.app.ui.theme.SaloSpacing
 import ph.salo.app.core.money.formatPeso
+import androidx.compose.ui.unit.dp
 
 @Composable
 fun SaloAvatar(name: String, size: Dp = 40.dp) {
@@ -68,8 +70,8 @@ fun SectionCard(
         )
     ) {
         Column(
-            modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+            modifier = Modifier.padding(SaloSpacing.md),
+            verticalArrangement = Arrangement.spacedBy(SaloSpacing.sm)
         ) {
             if (title != null || action != null) {
                 Row(
@@ -104,9 +106,9 @@ fun EmptyState(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 32.dp, horizontal = 16.dp),
+            .padding(vertical = SaloSpacing.xxl, horizontal = SaloSpacing.md),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(8.dp)
+        verticalArrangement = Arrangement.spacedBy(SaloSpacing.xs)
     ) {
         Icon(
             imageVector = icon,
@@ -187,7 +189,7 @@ fun LabelValueRow(label: String, value: String) {
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.weight(1f)
         )
-        Spacer(Modifier.width(12.dp))
+        Spacer(Modifier.width(SaloSpacing.sm))
         Text(
             text = value,
             style = MaterialTheme.typography.bodyMedium,
@@ -232,5 +234,20 @@ fun SelectionField(
                 )
             }
         }
+    }
+}
+/** Placeholder for the first frame before a local query has emitted. */
+@Composable
+fun LoadingState(modifier: Modifier = Modifier) {
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(vertical = SaloSpacing.xxl),
+        contentAlignment = Alignment.Center
+    ) {
+        CircularProgressIndicator(
+            strokeWidth = 3.dp,
+            modifier = Modifier.size(28.dp)
+        )
     }
 }

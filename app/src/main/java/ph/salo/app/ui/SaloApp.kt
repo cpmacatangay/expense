@@ -12,7 +12,9 @@ import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
@@ -71,6 +73,7 @@ import ph.salo.app.feature.outing.OutingDetailScreen
 import ph.salo.app.feature.settings.SettingsScreen
 import ph.salo.app.feature.students.StudentsScreen
 import ph.salo.app.ui.components.SaloAvatar
+import ph.salo.app.ui.theme.SaloSpacing
 
 private sealed class SaloDestination(
     val route: String,
@@ -132,7 +135,7 @@ fun SaloApp(
                             tint = MaterialTheme.colorScheme.primary,
                             modifier = Modifier
                                 .size(30.dp)
-                                .padding(end = 8.dp)
+                                .padding(end = SaloSpacing.xs)
                         )
                         Text(
                             text = stringResource(R.string.app_name),
@@ -146,7 +149,7 @@ fun SaloApp(
                     Box {
                         Row(
                             modifier = Modifier
-                                .padding(end = 8.dp)
+                                .padding(end = SaloSpacing.xs)
                                 .heightIn(min = 48.dp)
                                 .clickable(
                                     onClickLabel = switchProfileAction,
@@ -155,14 +158,14 @@ fun SaloApp(
                                 .semantics {
                                     contentDescription = switchProfileDescription
                                 }
-                                .padding(horizontal = 8.dp),
+                                .padding(horizontal = SaloSpacing.xs),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             SaloAvatar(name = selectedAdult?.name ?: "?", size = 32.dp)
                             Text(
                                 text = selectedAdult?.name ?: "",
                                 style = MaterialTheme.typography.labelLarge,
-                                modifier = Modifier.padding(start = 6.dp)
+                                modifier = Modifier.padding(start = SaloSpacing.xs)
                             )
                         }
                         DropdownMenu(
@@ -214,7 +217,10 @@ fun SaloApp(
                 }
             }
         },
-        snackbarHost = { SnackbarHost(snackbarHostState) }
+        snackbarHost = { SnackbarHost(snackbarHostState) },
+        // safeDrawing covers the status bar, navigation bar, cutout and the keyboard, so screens
+        // whose bars are hidden still lay out inside the safe area.
+        contentWindowInsets = WindowInsets.safeDrawing
     ) { innerPadding ->
         NavHost(
             navController = navController,

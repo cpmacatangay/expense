@@ -258,6 +258,11 @@
     <string name="settings_clear_title">Clear local data?</string>
     <string name="settings_clear_body">All local ledger data will be removed. Export first if you need a copy.</string>
     <string name="settings_clear_confirm">Clear data</string>
+    <string name="settings_export_failed">Could not export the ledger.</string>
+    <string name="outing_discard_title">Discard this outing?</string>
+    <string name="outing_discard_body">The details you entered will not be saved.</string>
+    <string name="outing_discard_confirm">Discard</string>
+    <string name="outing_keep_editing">Keep editing</string>
 
     <!-- Messages raised from view models -->
     <string name="msg_signed_in">Signed in. Run a backup to sync this ledger.</string>

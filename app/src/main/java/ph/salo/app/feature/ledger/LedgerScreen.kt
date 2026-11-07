@@ -45,7 +45,9 @@ import ph.salo.app.core.database.SettlementEntity
 import ph.salo.app.core.money.formatPeso
 import ph.salo.app.core.money.parsePesoToCentavos
 import ph.salo.app.ui.components.ConfirmDialog
+import ph.salo.app.ui.theme.SaloSpacing
 import ph.salo.app.ui.components.SaloAvatar
+import ph.salo.app.ui.components.LoadingState
 import ph.salo.app.ui.components.SectionCard
 import ph.salo.app.ui.components.saloItemMotion
 import ph.salo.app.ui.components.SelectionField
@@ -72,7 +74,7 @@ fun LedgerScreen(
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
         contentPadding = PaddingValues(16.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
+        verticalArrangement = Arrangement.spacedBy(SaloSpacing.sm)
     ) {
         item(key = "header") {
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -92,7 +94,7 @@ fun LedgerScreen(
                     Icon(Icons.Filled.Payments, contentDescription = null)
                     Text(
                         text = stringResource(R.string.ledger_payment),
-                        modifier = Modifier.padding(start = 6.dp)
+                        modifier = Modifier.padding(start = SaloSpacing.xs)
                     )
                 }
             }
@@ -110,7 +112,9 @@ fun LedgerScreen(
 
         item(key = "balances") {
             SectionCard(title = stringResource(R.string.ledger_balances)) {
-                if (state.balances.isEmpty()) {
+                if (!state.loaded) {
+                    LoadingState()
+                } else if (state.balances.isEmpty()) {
                     Text(
                         text = stringResource(R.string.ledger_balances_empty),
                         style = MaterialTheme.typography.bodyMedium,
@@ -124,7 +128,7 @@ fun LedgerScreen(
                             Column(
                                 modifier = Modifier
                                     .weight(1f)
-                                    .padding(start = 10.dp)
+                                    .padding(start = SaloSpacing.sm)
                             ) {
                                 Text(
                                     text = if (balance.adultId == selectedAdult?.id) {
@@ -166,7 +170,9 @@ fun LedgerScreen(
 
         item(key = "transfers") {
             SectionCard(title = stringResource(R.string.ledger_transfers)) {
-                if (state.transfers.isEmpty()) {
+                if (!state.loaded) {
+                    LoadingState()
+                } else if (state.transfers.isEmpty()) {
                     Text(
                         text = stringResource(R.string.ledger_all_settled),
                         style = MaterialTheme.typography.bodyMedium,
@@ -205,11 +211,13 @@ fun LedgerScreen(
                 text = stringResource(R.string.ledger_history),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.SemiBold,
-                modifier = Modifier.padding(top = 4.dp)
+                modifier = Modifier.padding(top = SaloSpacing.xxs)
             )
         }
 
-        if (state.settlements.isEmpty()) {
+        if (!state.loaded) {
+            item(key = "history-loading") { LoadingState() }
+        } else if (state.settlements.isEmpty()) {
             item(key = "history-empty") {
                 SectionCard {
                     Text(
@@ -346,7 +354,7 @@ private fun PaymentDialog(
         text = {
             Column(
                 modifier = Modifier.verticalScroll(rememberScrollState()),
-                verticalArrangement = Arrangement.spacedBy(10.dp)
+                verticalArrangement = Arrangement.spacedBy(SaloSpacing.sm)
             ) {
                 SelectionField(
                     label = stringResource(R.string.ledger_from),

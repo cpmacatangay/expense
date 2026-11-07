@@ -1,14 +1,10 @@
 package ph.salo.app.ui.theme
 
-import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
-import androidx.compose.material3.dynamicDarkColorScheme
-import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.platform.LocalContext
 
 private val LightColorScheme = lightColorScheme(
     primary = SaloPrimary,
@@ -33,6 +29,13 @@ private val LightColorScheme = lightColorScheme(
     onSurface = SaloOnSurface,
     surfaceVariant = SaloSurfaceVariant,
     onSurfaceVariant = SaloOnSurfaceVariant,
+    surfaceDim = SaloSurfaceDim,
+    surfaceBright = SaloSurfaceBright,
+    surfaceContainerLowest = SaloSurfaceContainerLowest,
+    surfaceContainerLow = SaloSurfaceContainerLow,
+    surfaceContainer = SaloSurfaceContainer,
+    surfaceContainerHigh = SaloSurfaceContainerHigh,
+    surfaceContainerHighest = SaloSurfaceContainerHighest,
     outline = SaloOutline,
     outlineVariant = SaloOutlineVariant,
     inverseSurface = SaloInverseSurface,
@@ -63,6 +66,13 @@ private val DarkColorScheme = darkColorScheme(
     onSurface = SaloDarkOnSurface,
     surfaceVariant = SaloDarkSurfaceVariant,
     onSurfaceVariant = SaloDarkOnSurfaceVariant,
+    surfaceDim = SaloDarkSurfaceDim,
+    surfaceBright = SaloDarkSurfaceBright,
+    surfaceContainerLowest = SaloDarkSurfaceContainerLowest,
+    surfaceContainerLow = SaloDarkSurfaceContainerLow,
+    surfaceContainer = SaloDarkSurfaceContainer,
+    surfaceContainerHigh = SaloDarkSurfaceContainerHigh,
+    surfaceContainerHighest = SaloDarkSurfaceContainerHighest,
     outline = SaloDarkOutline,
     outlineVariant = SaloDarkOutlineVariant,
     inverseSurface = SaloDarkInverseSurface,
@@ -73,21 +83,12 @@ private val DarkColorScheme = darkColorScheme(
 @Composable
 fun SaloTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    dynamicColor: Boolean = true,
     content: @Composable () -> Unit
 ) {
-    val colorScheme = when {
-        dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
-            val context = LocalContext.current
-            if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
-        }
-
-        darkTheme -> DarkColorScheme
-        else -> LightColorScheme
-    }
-
+    // Dynamic color is intentionally not offered: Salo's palette is the product's identity and
+    // must not vary with the phone's wallpaper.
     MaterialTheme(
-        colorScheme = colorScheme,
+        colorScheme = if (darkTheme) DarkColorScheme else LightColorScheme,
         typography = SaloTypography,
         content = content
     )

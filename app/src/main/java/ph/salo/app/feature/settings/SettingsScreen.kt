@@ -48,6 +48,7 @@ import ph.salo.app.R
 import ph.salo.app.core.backup.SessionState
 import ph.salo.app.feature.app.AppViewModel
 import ph.salo.app.ui.components.ConfirmDialog
+import ph.salo.app.ui.theme.SaloSpacing
 import ph.salo.app.ui.components.LabelValueRow
 import ph.salo.app.ui.components.SaloAvatar
 import ph.salo.app.ui.components.SectionCard
@@ -60,8 +61,12 @@ fun SettingsScreen(
     val selectedAdult by viewModel.selectedAdult.collectAsStateWithLifecycle()
     val backupState by viewModel.backupState.collectAsStateWithLifecycle()
     val session by viewModel.session.collectAsStateWithLifecycle()
+    val backingUp = backupState?.status == "BACKING_UP"
+    var exportError by remember { mutableStateOf<String?>(null) }
+    var exporting by remember { mutableStateOf(false) }
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
+    val exportFailedMessage = stringResource(R.string.settings_export_failed)
     var showClearConfirm by remember { mutableStateOf(false) }
     val csvFileName = stringResource(R.string.history_export_csv_name)
     val jsonFileName = stringResource(R.string.history_export_json_name)
@@ -95,8 +100,8 @@ fun SettingsScreen(
         modifier = Modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
+            .padding(SaloSpacing.md),
+        verticalArrangement = Arrangement.spacedBy(SaloSpacing.sm)
     ) {
         Text(
             text = stringResource(R.string.settings_title),
@@ -110,7 +115,7 @@ fun SettingsScreen(
                 Column(
                     modifier = Modifier
                         .weight(1f)
-                        .padding(start = 12.dp)
+                        .padding(start = SaloSpacing.sm)
                 ) {
                     Text(
                         text = selectedAdult?.name ?: "—",
@@ -151,7 +156,7 @@ fun SettingsScreen(
                     Column(
                         modifier = Modifier
                             .weight(1f)
-                            .padding(start = 10.dp)
+                            .padding(start = SaloSpacing.sm)
                     ) {
                         Text(
                             text = adult.name,
@@ -211,9 +216,9 @@ fun SettingsScreen(
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.weight(1f)
                     )
-                    TextButton(onClick = viewModel::signOut) {
+                    TextButton(onClick = viewModel::signOut, enabled = !backingUp) {
                         Icon(Icons.Filled.Logout, contentDescription = null)
-                        Text(stringResource(R.string.settings_sign_out), modifier = Modifier.padding(start = 4.dp))
+                        Text(stringResource(R.string.settings_sign_out), modifier = Modifier.padding(start = SaloSpacing.xxs))
                     }
                 }
             }
@@ -224,18 +229,29 @@ fun SettingsScreen(
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Row(horizontalArrangement = Arrangement.spacedBy(SaloSpacing.xs)) {
                 if (session is SessionState.SignedIn) {
-                    Button(onClick = viewModel::backupNow, modifier = Modifier.weight(1f)) {
+                    Button(
+                        onClick = viewModel::backupNow,
+                        enabled = !backingUp,
+                        modifier = Modifier.weight(1f)
+                    ) {
                         Icon(Icons.Filled.CloudUpload, contentDescription = null)
-                        Text(stringResource(R.string.settings_back_up), modifier = Modifier.padding(start = 4.dp))
+                        Text(
+                            text = stringResource(
+                                if (backingUp) R.string.settings_backup_running
+                                else R.string.settings_back_up
+                            ),
+                            modifier = Modifier.padding(start = SaloSpacing.xxs)
+                        )
                     }
                     OutlinedButton(
                         onClick = { viewModel.restoreLatest() },
+                        enabled = !backingUp,
                         modifier = Modifier.weight(1f)
                     ) {
                         Icon(Icons.Filled.Restore, contentDescription = null)
-                        Text(stringResource(R.string.settings_restore), modifier = Modifier.padding(start = 4.dp))
+                        Text(stringResource(R.string.settings_restore), modifier = Modifier.padding(start = SaloSpacing.xxs))
                     }
                 } else {
                     Button(
@@ -246,7 +262,7 @@ fun SettingsScreen(
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Icon(Icons.Filled.Login, contentDescription = null)
-                        Text(stringResource(R.string.settings_sign_in), modifier = Modifier.padding(start = 6.dp))
+                        Text(stringResource(R.string.settings_sign_in), modifier = Modifier.padding(start = SaloSpacing.xs))
                     }
                 }
             }
@@ -258,35 +274,64 @@ fun SettingsScreen(
         }
 
         SectionCard(title = stringResource(R.string.settings_export)) {
+            exportError?.let {
+                Text(
+                    text = it,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.error
+                )
+            }
             Text(
                 text = stringResource(R.string.settings_export_helper),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Row(horizontalArrangement = Arrangement.spacedBy(SaloSpacing.xs)) {
                 OutlinedButton(
                     onClick = {
                         scope.launch {
-                            pendingCsv = viewModel.csv()
-                            csvLauncher.launch(csvFileName)
+                            exportError = null
+                            exporting = true
+                            runCatching { viewModel.csv() }
+                                .onSuccess {
+                                    pendingCsv = it
+                                    csvLauncher.launch(csvFileName)
+                                }
+                                .onFailure {
+                                    exportError = it.message
+                                        ?: exportFailedMessage
+                                }
+                            exporting = false
                         }
                     },
+                    enabled = !exporting,
                     modifier = Modifier.weight(1f)
                 ) {
                     Icon(Icons.Filled.Download, contentDescription = null)
-                    Text(stringResource(R.string.history_csv), modifier = Modifier.padding(start = 4.dp))
+                    Text(stringResource(R.string.history_csv), modifier = Modifier.padding(start = SaloSpacing.xxs))
                 }
                 OutlinedButton(
                     onClick = {
                         scope.launch {
-                            pendingJson = viewModel.json()
-                            jsonLauncher.launch(jsonFileName)
+                            exportError = null
+                            exporting = true
+                            runCatching { viewModel.json() }
+                                .onSuccess {
+                                    pendingJson = it
+                                    jsonLauncher.launch(jsonFileName)
+                                }
+                                .onFailure {
+                                    exportError = it.message
+                                        ?: exportFailedMessage
+                                }
+                            exporting = false
                         }
                     },
+                    enabled = !exporting,
                     modifier = Modifier.weight(1f)
                 ) {
                     Icon(Icons.Filled.DataObject, contentDescription = null)
-                    Text(stringResource(R.string.history_json), modifier = Modifier.padding(start = 4.dp))
+                    Text(stringResource(R.string.history_json), modifier = Modifier.padding(start = SaloSpacing.xxs))
                 }
             }
         }
@@ -297,7 +342,7 @@ fun SettingsScreen(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Icon(Icons.Filled.Delete, contentDescription = null)
-                Text(stringResource(R.string.settings_clear), modifier = Modifier.padding(start = 6.dp))
+                Text(stringResource(R.string.settings_clear), modifier = Modifier.padding(start = SaloSpacing.xs))
             }
             Text(
                 text = stringResource(R.string.settings_clear_helper),
@@ -341,4 +386,3 @@ private fun Context.findActivity(): Activity? {
     }
     return null
 }
-

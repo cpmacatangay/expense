@@ -79,8 +79,8 @@ a past mistake can be reopened, corrected, and audited instead of silently forke
 - Name: **Salo**. Application label and launcher name are `Salo`.
 - Voice: plain, compact, quietly confident. Philippine context — pesos, "outing", "students",
   "covered by". No hedging, no exclamation marks, no growth-marketing language.
-- A green identity: seed `#1F5C45` with a wallpaper-derived dynamic scheme where the device supports
-  it.
+- A green identity: a fixed scheme seeded from `#1F5C45`. The app deliberately does not use
+  wallpaper-derived dynamic color.
 - The mark is an abstract "S" built from two rounded strokes, shipped as an adaptive icon with a
   monochrome themed layer.
 - Interface language is English. Currency formatting is `₱1,234.56`.

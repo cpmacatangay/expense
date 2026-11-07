@@ -43,6 +43,7 @@ import ph.salo.app.R
 import ph.salo.app.core.money.formatPeso
 import ph.salo.app.core.recap.RecapTextBuilder
 import ph.salo.app.ui.components.ConfirmDialog
+import ph.salo.app.ui.theme.SaloSpacing
 import ph.salo.app.ui.components.LabelValueRow
 import ph.salo.app.ui.components.SaloAvatar
 import ph.salo.app.ui.components.SectionCard
@@ -69,7 +70,7 @@ fun OutingDetailScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(24.dp),
+                .padding(SaloSpacing.xl),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
@@ -82,8 +83,8 @@ fun OutingDetailScreen(
         modifier = Modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
+            .padding(SaloSpacing.md),
+        verticalArrangement = Arrangement.spacedBy(SaloSpacing.sm)
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             IconButton(onClick = onBack) {
@@ -133,7 +134,7 @@ fun OutingDetailScreen(
                 Column(
                     modifier = Modifier
                         .weight(1f)
-                        .padding(start = 12.dp)
+                        .padding(start = SaloSpacing.sm)
                 ) {
                     Text(stringResource(R.string.detail_total), style = MaterialTheme.typography.labelMedium)
                     Text(
@@ -162,20 +163,20 @@ fun OutingDetailScreen(
             }
         }
 
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        Row(horizontalArrangement = Arrangement.spacedBy(SaloSpacing.xs)) {
             OutlinedButton(
                 onClick = { viewModel.shareText(context) },
                 modifier = Modifier.weight(1f)
             ) {
                 Icon(Icons.Filled.Share, contentDescription = null)
-                Text(stringResource(R.string.detail_share_text), modifier = Modifier.padding(start = 6.dp))
+                Text(stringResource(R.string.detail_share_text), modifier = Modifier.padding(start = SaloSpacing.xs))
             }
             OutlinedButton(
                 onClick = { viewModel.shareImage(context) },
                 modifier = Modifier.weight(1f)
             ) {
                 Icon(Icons.Filled.Download, contentDescription = null)
-                Text(stringResource(R.string.detail_save_image), modifier = Modifier.padding(start = 6.dp))
+                Text(stringResource(R.string.detail_save_image), modifier = Modifier.padding(start = SaloSpacing.xs))
             }
         }
         TextButton(
@@ -186,7 +187,7 @@ fun OutingDetailScreen(
             modifier = Modifier.fillMaxWidth()
         ) {
             Icon(Icons.Filled.ContentCopy, contentDescription = null)
-            Text(stringResource(R.string.detail_copy_recap), modifier = Modifier.padding(start = 6.dp))
+            Text(stringResource(R.string.detail_copy_recap), modifier = Modifier.padding(start = SaloSpacing.xs))
         }
 
         SectionCard(title = stringResource(R.string.detail_split)) {
@@ -197,7 +198,7 @@ fun OutingDetailScreen(
                     Column(
                         modifier = Modifier
                             .weight(1f)
-                            .padding(start = 8.dp)
+                            .padding(start = SaloSpacing.xs)
                     ) {
                         Text(
                             text = if (share.isPayer) stringResource(R.string.detail_paid_suffix, name) else name,
@@ -317,5 +318,3 @@ fun OutingDetailScreen(
         )
     }
 }
-
-

@@ -24,9 +24,9 @@ class StudentsViewModel @Inject constructor(
 ) : ViewModel() {
     private val refreshTick = MutableStateFlow(0)
 
-    val students: StateFlow<List<StudentEntity>> = refreshTick
+    val students: StateFlow<List<StudentEntity>?> = refreshTick
         .flatMapLatest { repository.observeAll() }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
 
     private val _refreshing = MutableStateFlow(false)
     val refreshing: StateFlow<Boolean> = _refreshing

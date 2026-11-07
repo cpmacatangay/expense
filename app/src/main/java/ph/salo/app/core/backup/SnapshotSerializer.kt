@@ -17,6 +17,9 @@ import ph.salo.app.core.database.SettlementDao
 import ph.salo.app.core.database.ShareDao
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
+import kotlinx.serialization.json.jsonNull
 
 @Singleton
 class SnapshotSerializer @Inject constructor(

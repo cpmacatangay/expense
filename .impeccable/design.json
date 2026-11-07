@@ -236,11 +236,6 @@
         "section": "colors"
       },
       {
-        "name": "The Wallpaper Exception",
-        "body": "On Android 12+ the runtime derives the whole scheme from the user's wallpaper by default. That is allowed to replace this palette wholesale; identity survives through type, spacing, shape, and the calm density of the layout, never through a hard-coded green.",
-        "section": "colors"
-      },
-      {
         "name": "The One Big Number Rule",
         "body": "A screen may promote exactly one figure to display or headline treatment — usually the balance or the receipt total. Item rows and secondary amounts stay at title or body size so the eye has one destination.",
         "section": "typography"
@@ -254,6 +249,11 @@
         "name": "The Receipt Rule",
         "body": "A corner radius above 16 dp belongs only to pills. Nothing should look like a bubble; the form language is a folded receipt, not a chat app.",
         "section": "shapes"
+      },
+      {
+        "name": "The One Palette Rule",
+        "body": "The scheme is fixed. Salo does not derive colour from the wallpaper, so the ledger looks the same on every phone and the green always means the same thing.",
+        "section": "colors"
       }
     ],
     "dos": [
@@ -261,7 +261,7 @@
       "Do use surfaceContainerLow for cards and surfaceContainerLowest for rows inside them; that two-step tonal difference is the whole depth system.",
       "Do reserve display size for one number per screen.",
       "Do keep destructive and owing states in error; the rest of the screen stays neutral.",
-      "Do let the platform control color on Android 12+; dynamic color is a supported mode, not a bug.",
+      "Do use the Salo scheme on every device. Dynamic color is deliberately off; a wallpaper-derived palette would break the brand and the meaning of green/red.",
       "Do respect 48 dp targets: icon buttons carry 48 dp touch bounds even when the glyph is 24 dp."
     ],
     "donts": [

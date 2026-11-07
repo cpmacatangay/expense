@@ -1,10 +1,10 @@
 package ph.salo.app.ui.components
 
 import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.ui.Modifier
+import androidx.compose.animation.core.spring
 
 /**
  * Shared enter, exit, and placement motion for rows in lazy lists.
