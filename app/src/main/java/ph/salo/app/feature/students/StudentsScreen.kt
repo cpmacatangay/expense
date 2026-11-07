@@ -1,6 +1,7 @@
 package ph.salo.app.feature.students
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -43,6 +44,7 @@ import ph.salo.app.ui.components.ConfirmDialog
 import ph.salo.app.ui.components.EmptyState
 import ph.salo.app.ui.components.SaloAvatar
 import ph.salo.app.ui.components.SectionCard
+import ph.salo.app.ui.components.saloItemMotion
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -132,14 +134,16 @@ fun StudentsScreen(
                 }
             } else {
                 items(active, key = { it.id }) { student ->
-                    StudentRow(
-                        student = student,
-                        onEdit = {
-                            editing = student
-                            dialogOpen = true
-                        },
-                        onArchive = { pendingArchive = student }
-                    )
+                    Box(saloItemMotion()) {
+                        StudentRow(
+                            student = student,
+                            onEdit = {
+                                editing = student
+                                dialogOpen = true
+                            },
+                            onArchive = { pendingArchive = student }
+                        )
+                    }
                 }
             }
 
@@ -153,14 +157,16 @@ fun StudentsScreen(
                     )
                 }
                 items(archived, key = { it.id }) { student ->
-                    StudentRow(
-                        student = student,
-                        onEdit = {
-                            editing = student
-                            dialogOpen = true
-                        },
-                        onRestore = { viewModel.setActive(student.id, true) }
-                    )
+                    Box(saloItemMotion()) {
+                        StudentRow(
+                            student = student,
+                            onEdit = {
+                                editing = student
+                                dialogOpen = true
+                            },
+                            onRestore = { viewModel.setActive(student.id, true) }
+                        )
+                    }
                 }
             }
         }

@@ -3,6 +3,15 @@ package ph.salo.app.feature.outing
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.ContentTransform
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -144,29 +153,48 @@ fun NewOutingScreen(
                     modifier = Modifier.padding(bottom = 8.dp)
                 )
             }
-            when (state.step) {
-                0 -> DetailsStep(state, viewModel)
-                1 -> ReceiptStep(
-                    state = state,
-                    viewModel = viewModel,
-                    onScan = {
-                        val uri = viewModel.createCaptureUri()
-                        captureUri = uri
-                        scanner.launch(uri)
-                    },
-                    onAddItem = {
-                        editingItem = null
-                        itemDialogOpen = true
-                    },
-                    onEditItem = {
-                        editingItem = it
-                        itemDialogOpen = true
-                    },
-                    onDeleteItem = { itemToDelete = it }
-                )
+            AnimatedContent(
+                targetState = state.step,
+                transitionSpec = {
+                    val forward = targetState > initialState
+                    val direction = if (forward) 1 else -1
+                    // Slide only: crossfading two full screens ghosts the forms together.
+                    val enter = slideInHorizontally(
+                        animationSpec = tween(240, easing = FastOutSlowInEasing),
+                        initialOffsetX = { width -> direction * width }
+                    )
+                    val exit = slideOutHorizontally(
+                        animationSpec = tween(240, easing = FastOutSlowInEasing),
+                        targetOffsetX = { width -> -direction * width }
+                    )
+                    ContentTransform(enter, exit, sizeTransform = null)
+                },
+                label = "wizardStep"
+            ) { step ->
+                when (step) {
+                    0 -> DetailsStep(state, viewModel)
+                    1 -> ReceiptStep(
+                        state = state,
+                        viewModel = viewModel,
+                        onScan = {
+                            val uri = viewModel.createCaptureUri()
+                            captureUri = uri
+                            scanner.launch(uri)
+                        },
+                        onAddItem = {
+                            editingItem = null
+                            itemDialogOpen = true
+                        },
+                        onEditItem = {
+                            editingItem = it
+                            itemDialogOpen = true
+                        },
+                        onDeleteItem = { itemToDelete = it }
+                    )
 
-                2 -> CoverageStep(state, viewModel)
-                3 -> ReviewStep(state, viewModel)
+                    2 -> CoverageStep(state, viewModel)
+                    else -> ReviewStep(state, viewModel)
+                }
             }
         }
 

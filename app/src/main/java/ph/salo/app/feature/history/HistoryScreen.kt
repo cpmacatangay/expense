@@ -4,6 +4,7 @@ import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -42,6 +43,7 @@ import ph.salo.app.R
 import ph.salo.app.core.database.OutingEntity
 import ph.salo.app.core.money.formatPeso
 import ph.salo.app.ui.components.SectionCard
+import ph.salo.app.ui.components.saloItemMotion
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -186,11 +188,13 @@ fun HistoryScreen(
             }
         } else {
             items(state.outings, key = { it.id }) { outing ->
-                OutingHistoryCard(
-                    outing = outing,
-                    payerName = state.adultNames[outing.payerAdultId] ?: "—",
-                    onOpen = { onOutingClick(outing.id) }
-                )
+                Box(saloItemMotion()) {
+                    OutingHistoryCard(
+                        outing = outing,
+                        payerName = state.adultNames[outing.payerAdultId] ?: "—",
+                        onOpen = { onOutingClick(outing.id) }
+                    )
+                }
             }
         }
 
@@ -215,7 +219,9 @@ fun HistoryScreen(
             }
         } else {
             items(state.studentHistory, key = { it.studentId }) { student ->
-                StudentHistoryCard(student)
+                Box(saloItemMotion()) {
+                    StudentHistoryCard(student)
+                }
             }
         }
     }

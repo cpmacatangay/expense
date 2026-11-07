@@ -1,6 +1,14 @@
 package ph.salo.app.ui
 
 import androidx.annotation.StringRes
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -211,9 +219,29 @@ fun SaloApp(
         NavHost(
             navController = navController,
             startDestination = SaloDestination.Home.route,
-            modifier = Modifier.padding(innerPadding)
+            modifier = Modifier.padding(innerPadding),
+            enterTransition = {
+                slideInHorizontally(
+                    animationSpec = tween(300, easing = FastOutSlowInEasing),
+                    initialOffsetX = { fullWidth -> fullWidth / 4 }
+                ) + fadeIn(tween(200))
+            },
+            exitTransition = { fadeOut(tween(150)) },
+            popEnterTransition = { fadeIn(tween(200)) },
+            popExitTransition = {
+                slideOutHorizontally(
+                    animationSpec = tween(300, easing = FastOutSlowInEasing),
+                    targetOffsetX = { fullWidth -> fullWidth / 4 }
+                ) + fadeOut(tween(150))
+            }
         ) {
-            composable(SaloDestination.Home.route) {
+            composable(
+                route = SaloDestination.Home.route,
+                enterTransition = { EnterTransition.None },
+                exitTransition = { ExitTransition.None },
+                popEnterTransition = { EnterTransition.None },
+                popExitTransition = { ExitTransition.None }
+            ) {
                 HomeScreen(
                     selectedAdult = selectedAdult,
                     onOutingClick = { navController.navigate("outing/$it") },
@@ -222,16 +250,40 @@ fun SaloApp(
                     onHistory = { navController.navigate(SaloDestination.History.route) }
                 )
             }
-            composable(SaloDestination.Students.route) {
+            composable(
+                route = SaloDestination.Students.route,
+                enterTransition = { EnterTransition.None },
+                exitTransition = { ExitTransition.None },
+                popEnterTransition = { EnterTransition.None },
+                popExitTransition = { ExitTransition.None }
+            ) {
                 StudentsScreen()
             }
-            composable(SaloDestination.Ledger.route) {
+            composable(
+                route = SaloDestination.Ledger.route,
+                enterTransition = { EnterTransition.None },
+                exitTransition = { ExitTransition.None },
+                popEnterTransition = { EnterTransition.None },
+                popExitTransition = { ExitTransition.None }
+            ) {
                 LedgerScreen(selectedAdult = selectedAdult)
             }
-            composable(SaloDestination.History.route) {
+            composable(
+                route = SaloDestination.History.route,
+                enterTransition = { EnterTransition.None },
+                exitTransition = { ExitTransition.None },
+                popEnterTransition = { EnterTransition.None },
+                popExitTransition = { ExitTransition.None }
+            ) {
                 HistoryScreen(onOutingClick = { navController.navigate("outing/$it") })
             }
-            composable(SaloDestination.Settings.route) {
+            composable(
+                route = SaloDestination.Settings.route,
+                enterTransition = { EnterTransition.None },
+                exitTransition = { ExitTransition.None },
+                popEnterTransition = { EnterTransition.None },
+                popExitTransition = { ExitTransition.None }
+            ) {
                 SettingsScreen()
             }
             composable(

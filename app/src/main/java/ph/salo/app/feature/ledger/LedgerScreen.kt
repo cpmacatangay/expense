@@ -1,6 +1,7 @@
 package ph.salo.app.feature.ledger
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -46,6 +47,7 @@ import ph.salo.app.core.money.parsePesoToCentavos
 import ph.salo.app.ui.components.ConfirmDialog
 import ph.salo.app.ui.components.SaloAvatar
 import ph.salo.app.ui.components.SectionCard
+import ph.salo.app.ui.components.saloItemMotion
 import ph.salo.app.ui.components.SelectionField
 import java.time.LocalDate
 
@@ -219,12 +221,14 @@ fun LedgerScreen(
             }
         } else {
             items(state.settlements, key = { it.id }) { settlement ->
-                SettlementHistoryCard(
-                    settlement = settlement,
-                    fromName = state.adultNames[settlement.fromAdultId] ?: "—",
-                    toName = state.adultNames[settlement.toAdultId] ?: "—",
-                    onVoid = { voiding = settlement }
-                )
+                Box(saloItemMotion()) {
+                    SettlementHistoryCard(
+                        settlement = settlement,
+                        fromName = state.adultNames[settlement.fromAdultId] ?: "—",
+                        toName = state.adultNames[settlement.toAdultId] ?: "—",
+                        onVoid = { voiding = settlement }
+                    )
+                }
             }
         }
     }
