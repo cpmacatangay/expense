@@ -1,5 +1,6 @@
 package ph.salo.app.ui
 
+import androidx.annotation.StringRes
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -37,6 +38,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -64,14 +66,14 @@ import ph.salo.app.ui.components.SaloAvatar
 
 private sealed class SaloDestination(
     val route: String,
-    val label: String,
+    @StringRes val labelRes: Int,
     val icon: ImageVector
 ) {
-    data object Home : SaloDestination("home", "Home", Icons.Filled.Home)
-    data object Students : SaloDestination("students", "Students", Icons.Filled.Group)
-    data object Ledger : SaloDestination("ledger", "Ledger", Icons.Filled.AccountBalanceWallet)
-    data object History : SaloDestination("history", "History", Icons.Filled.History)
-    data object Settings : SaloDestination("settings", "Settings", Icons.Filled.Settings)
+    data object Home : SaloDestination("home", R.string.nav_home, Icons.Filled.Home)
+    data object Students : SaloDestination("students", R.string.nav_students, Icons.Filled.Group)
+    data object Ledger : SaloDestination("ledger", R.string.nav_ledger, Icons.Filled.AccountBalanceWallet)
+    data object History : SaloDestination("history", R.string.nav_history, Icons.Filled.History)
+    data object Settings : SaloDestination("settings", R.string.nav_settings, Icons.Filled.Settings)
 }
 
 // Declared outside the sealed class on purpose. A companion-object initializer inside
@@ -98,6 +100,11 @@ fun SaloApp(
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = backStackEntry?.destination
     val currentRoute = currentDestination?.route ?: SaloDestination.Home.route
+    val switchProfileAction = stringResource(R.string.switch_profile_action)
+    val switchProfileDescription = stringResource(
+        R.string.switch_profile_description,
+        selectedAdult?.name ?: "—"
+    )
 
     LaunchedEffect(message) {
         val text = message ?: return@LaunchedEffect
@@ -120,7 +127,7 @@ fun SaloApp(
                                 .padding(end = 8.dp)
                         )
                         Text(
-                            text = "Salo",
+                            text = stringResource(R.string.app_name),
                             style = MaterialTheme.typography.titleLarge,
                             fontWeight = FontWeight.SemiBold
                         )
@@ -134,12 +141,11 @@ fun SaloApp(
                                 .padding(end = 8.dp)
                                 .heightIn(min = 48.dp)
                                 .clickable(
-                                    onClickLabel = "Switch profile",
+                                    onClickLabel = switchProfileAction,
                                     role = Role.Button
                                 ) { expanded = true }
                                 .semantics {
-                                    contentDescription =
-                                        "Switch profile. Current profile ${selectedAdult?.name ?: "none"}."
+                                    contentDescription = switchProfileDescription
                                 }
                                 .padding(horizontal = 8.dp),
                             verticalAlignment = Alignment.CenterVertically
@@ -191,9 +197,9 @@ fun SaloApp(
                                 }
                             },
                             icon = {
-                                Icon(destination.icon, contentDescription = destination.label)
+                                Icon(destination.icon, contentDescription = stringResource(destination.labelRes))
                             },
-                            label = { Text(destination.label) }
+                            label = { Text(stringResource(destination.labelRes)) }
                         )
                     }
                 }

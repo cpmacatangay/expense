@@ -1,9 +1,11 @@
 package ph.salo.app.feature.app
 
 import android.app.Activity
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -11,6 +13,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import ph.salo.app.R
 import ph.salo.app.core.backup.BackupManager
 import ph.salo.app.core.backup.BackupOutcome
 import ph.salo.app.core.backup.RestoreResult
@@ -25,6 +28,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class AppViewModel @Inject constructor(
+    @ApplicationContext private val context: Context,
     adultRepository: AdultProfileRepository,
     private val profilePreferences: ProfilePreferences,
     private val backupManager: BackupManager,
@@ -73,22 +77,22 @@ class AppViewModel @Inject constructor(
     fun signIn(activity: Activity) {
         viewModelScope.launch {
             backupManager.signIn(activity)
-                .onSuccess { _message.value = "Signed in. Run a backup to sync this ledger." }
-                .onFailure { _message.value = it.message ?: "Sign-in failed." }
+                .onSuccess { _message.value = context.getString(R.string.msg_signed_in) }
+                .onFailure { _message.value = it.message ?: context.getString(R.string.msg_sign_in_failed) }
         }
     }
 
     fun signOut() {
         viewModelScope.launch {
             backupManager.signOut()
-            _message.value = "Signed out. Data stays on this phone."
+            _message.value = context.getString(R.string.msg_signed_out)
         }
     }
 
     fun backupNow() {
         viewModelScope.launch {
             when (val outcome = backupManager.backupNow()) {
-                is BackupOutcome.Success -> _message.value = "Backup complete."
+                is BackupOutcome.Success -> _message.value = context.getString(R.string.msg_backup_complete)
                 is BackupOutcome.LocalOnly -> _message.value = outcome.message
                 is BackupOutcome.Error -> _message.value = outcome.message
             }
@@ -100,10 +104,10 @@ class AppViewModel @Inject constructor(
             backupManager.restoreLatest()
                 .onSuccess {
                     _message.value =
-                        "Restored ${it.outings} outings, ${it.students} students, ${it.adults} adults."
+                        context.getString(R.string.msg_restored, it.outings, it.students, it.adults)
                     onRestored(it)
                 }
-                .onFailure { _message.value = it.message ?: "Restore failed." }
+                .onFailure { _message.value = it.message ?: context.getString(R.string.msg_restore_failed) }
         }
     }
 
@@ -112,9 +116,9 @@ class AppViewModel @Inject constructor(
             runCatching {
                 localDataManager.clearAndReseed()
             }.onSuccess {
-                _message.value = "Local data cleared. The four adult profiles were restored."
+                _message.value = context.getString(R.string.msg_local_cleared)
             }.onFailure {
-                _message.value = it.message ?: "Could not clear local data."
+                _message.value = it.message ?: context.getString(R.string.msg_clear_failed)
             }
         }
     }

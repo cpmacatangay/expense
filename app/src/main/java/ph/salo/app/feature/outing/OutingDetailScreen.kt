@@ -31,12 +31,15 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import ph.salo.app.R
 import ph.salo.app.core.money.formatPeso
 import ph.salo.app.core.recap.RecapTextBuilder
 import ph.salo.app.ui.components.ConfirmDialog
@@ -70,7 +73,7 @@ fun OutingDetailScreen(
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text("Loading outing…")
+            Text(stringResource(R.string.detail_loading))
         }
         return
     }
@@ -84,11 +87,11 @@ fun OutingDetailScreen(
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             IconButton(onClick = onBack) {
-                Icon(Icons.Filled.ArrowBack, contentDescription = "Back")
+                Icon(Icons.Filled.ArrowBack, contentDescription = stringResource(R.string.action_back))
             }
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = current.outing.place ?: "Meal",
+                    text = current.outing.place ?: stringResource(R.string.meal_fallback),
                     style = MaterialTheme.typography.headlineSmall,
                     fontWeight = FontWeight.SemiBold
                 )
@@ -99,7 +102,7 @@ fun OutingDetailScreen(
                 )
             }
             IconButton(onClick = { confirmDelete = true }) {
-                Icon(Icons.Filled.Delete, contentDescription = "Remove outing")
+                Icon(Icons.Filled.Delete, contentDescription = stringResource(R.string.detail_remove_description))
             }
         }
 
@@ -116,7 +119,7 @@ fun OutingDetailScreen(
                 onClick = { confirmReopen = true },
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text("Reopen and edit")
+                Text(stringResource(R.string.detail_reopen))
             }
         }
 
@@ -132,14 +135,26 @@ fun OutingDetailScreen(
                         .weight(1f)
                         .padding(start = 12.dp)
                 ) {
-                    Text("TOTAL", style = MaterialTheme.typography.labelMedium)
+                    Text(stringResource(R.string.detail_total), style = MaterialTheme.typography.labelMedium)
                     Text(
                         text = formatPeso(current.receipt?.totalCentavos ?: 0),
                         style = MaterialTheme.typography.headlineMedium,
                         fontWeight = FontWeight.SemiBold
                     )
                     Text(
-                        text = "${current.items.size} items · ${current.items.count { it.assignmentType == "SHARED" }} shared",
+                        text = stringResource(
+                            R.string.detail_items_shared,
+                            pluralStringResource(
+                                R.plurals.items_count,
+                                current.items.size,
+                                current.items.size
+                            ),
+                            pluralStringResource(
+                                R.plurals.shared_count,
+                                current.items.count { it.assignmentType == "SHARED" },
+                                current.items.count { it.assignmentType == "SHARED" }
+                            )
+                        ),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -153,14 +168,14 @@ fun OutingDetailScreen(
                 modifier = Modifier.weight(1f)
             ) {
                 Icon(Icons.Filled.Share, contentDescription = null)
-                Text("Share text", modifier = Modifier.padding(start = 6.dp))
+                Text(stringResource(R.string.detail_share_text), modifier = Modifier.padding(start = 6.dp))
             }
             OutlinedButton(
                 onClick = { viewModel.shareImage(context) },
                 modifier = Modifier.weight(1f)
             ) {
                 Icon(Icons.Filled.Download, contentDescription = null)
-                Text("Save image", modifier = Modifier.padding(start = 6.dp))
+                Text(stringResource(R.string.detail_save_image), modifier = Modifier.padding(start = 6.dp))
             }
         }
         TextButton(
@@ -171,10 +186,10 @@ fun OutingDetailScreen(
             modifier = Modifier.fillMaxWidth()
         ) {
             Icon(Icons.Filled.ContentCopy, contentDescription = null)
-            Text("Copy recap", modifier = Modifier.padding(start = 6.dp))
+            Text(stringResource(R.string.detail_copy_recap), modifier = Modifier.padding(start = 6.dp))
         }
 
-        SectionCard(title = "The split") {
+        SectionCard(title = stringResource(R.string.detail_split)) {
             current.shares.forEach { share ->
                 val name = adultNames[share.adultId] ?: "—"
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -185,14 +200,19 @@ fun OutingDetailScreen(
                             .padding(start = 8.dp)
                     ) {
                         Text(
-                            text = name + if (share.isPayer) " · paid" else "",
+                            text = if (share.isPayer) stringResource(R.string.detail_paid_suffix, name) else name,
                             style = MaterialTheme.typography.titleSmall,
                             fontWeight = FontWeight.SemiBold
                         )
                         Text(
-                            text = "Own ${formatPeso(share.ownItemsCentavos)} · " +
-                                "Students ${formatPeso(share.studentItemsCentavos)} · " +
-                                "Shared ${formatPeso(share.sharedHeadCentavos + share.coveredStudentSharedCentavos)}",
+                            text = stringResource(
+                                R.string.detail_split_breakdown,
+                                formatPeso(share.ownItemsCentavos),
+                                formatPeso(share.studentItemsCentavos),
+                                formatPeso(
+                                    share.sharedHeadCentavos + share.coveredStudentSharedCentavos
+                                )
+                            ),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -207,23 +227,23 @@ fun OutingDetailScreen(
             }
         }
 
-        SectionCard(title = "Coverage") {
+        SectionCard(title = stringResource(R.string.detail_coverage)) {
             current.coverage.forEach { (studentId, adultId) ->
                 LabelValueRow(
-                    label = studentNames[studentId] ?: "Student",
+                    label = studentNames[studentId] ?: stringResource(R.string.outing_assign_student),
                     value = adultNames[adultId] ?: "—"
                 )
             }
             if (current.coverage.isEmpty()) {
                 Text(
-                    text = "No students were present.",
+                    text = stringResource(R.string.detail_coverage_empty),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
         }
 
-        SectionCard(title = "Items") {
+        SectionCard(title = stringResource(R.string.detail_items)) {
             current.items.forEach { item ->
                 Row(modifier = Modifier.fillMaxWidth()) {
                     Column(modifier = Modifier.weight(1f)) {
@@ -243,18 +263,18 @@ fun OutingDetailScreen(
             }
             if (current.items.isEmpty()) {
                 Text(
-                    text = "Per-head split, no itemized receipt.",
+                    text = stringResource(R.string.detail_items_empty),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
         }
 
-        SectionCard(title = "Settlements") {
+        SectionCard(title = stringResource(R.string.detail_settlements)) {
             val transfers = recap?.transfers.orEmpty()
             if (transfers.isEmpty()) {
                 Text(
-                    text = "All settled.",
+                    text = stringResource(R.string.detail_all_settled),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.primary
                 )
@@ -272,9 +292,9 @@ fun OutingDetailScreen(
 
     if (confirmDelete) {
         ConfirmDialog(
-            title = "Remove this outing?",
-            message = "The outing will be hidden from the ledger. This cannot be undone in the app.",
-            confirmLabel = "Remove",
+            title = stringResource(R.string.detail_remove_title),
+            message = stringResource(R.string.detail_remove_body),
+            confirmLabel = stringResource(R.string.action_remove),
             destructive = true,
             onConfirm = {
                 confirmDelete = false
@@ -286,9 +306,9 @@ fun OutingDetailScreen(
 
     if (confirmReopen) {
         ConfirmDialog(
-            title = "Reopen this outing?",
-            message = "The finalized split will be unlocked. Existing settlements remain in the ledger, and an audit event will be recorded.",
-            confirmLabel = "Reopen",
+            title = stringResource(R.string.detail_reopen_title),
+            message = stringResource(R.string.detail_reopen_body),
+            confirmLabel = stringResource(R.string.detail_reopen_confirm),
             onConfirm = {
                 confirmReopen = false
                 viewModel.reopen { onReopened(current.outing.id) }

@@ -2,10 +2,13 @@ package ph.salo.app.feature.ledger
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -18,7 +21,6 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -29,10 +31,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import ph.salo.app.R
 import ph.salo.app.core.database.AdultProfileEntity
 import ph.salo.app.core.database.SettlementEntity
 import ph.salo.app.core.money.formatPeso
@@ -54,166 +58,164 @@ fun LedgerScreen(
     var paymentOpen by remember { mutableStateOf(false) }
     var voiding by remember { mutableStateOf<SettlementEntity?>(null) }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-            .padding(16.dp),
+    LazyColumn(
+        modifier = Modifier.fillMaxSize(),
+        contentPadding = PaddingValues(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = "Ledger",
-                    style = MaterialTheme.typography.headlineMedium,
-                    fontWeight = FontWeight.SemiBold
-                )
-                Text(
-                    text = "Balances carry over until you settle.",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-            Button(onClick = { paymentOpen = true }, enabled = state.adults.size >= 2) {
-                Icon(Icons.Filled.Payments, contentDescription = null)
-                Text("Payment", modifier = Modifier.padding(start = 6.dp))
+        item(key = "header") {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = stringResource(R.string.ledger_title),
+                        style = MaterialTheme.typography.headlineMedium,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                    Text(
+                        text = stringResource(R.string.ledger_subtitle),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+                Button(onClick = { paymentOpen = true }, enabled = state.adults.size >= 2) {
+                    Icon(Icons.Filled.Payments, contentDescription = null)
+                    Text(
+                        text = stringResource(R.string.ledger_payment),
+                        modifier = Modifier.padding(start = 6.dp)
+                    )
+                }
             }
         }
 
         if (error != null) {
+            item(key = "error") {
+                Text(
+                    text = error.orEmpty(),
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.bodySmall
+                )
+            }
+        }
+
+        item(key = "balances") {
+            SectionCard(title = stringResource(R.string.ledger_balances)) {
+                if (state.balances.isEmpty()) {
+                    Text(
+                        text = stringResource(R.string.ledger_balances_empty),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                } else {
+                    state.balances.forEach { balance ->
+                        val name = state.adultNames[balance.adultId] ?: "—"
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            SaloAvatar(name = name, size = 36.dp)
+                            Column(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .padding(start = 10.dp)
+                            ) {
+                                Text(
+                                    text = if (balance.adultId == selectedAdult?.id) {
+                                        stringResource(R.string.ledger_you_suffix, name)
+                                    } else {
+                                        name
+                                    },
+                                    style = MaterialTheme.typography.titleSmall,
+                                    fontWeight = FontWeight.SemiBold
+                                )
+                                Text(
+                                    text = when {
+                                        balance.netCentavos > 0 -> stringResource(R.string.ledger_is_owed)
+                                        balance.netCentavos < 0 -> stringResource(R.string.ledger_owes)
+                                        else -> stringResource(R.string.ledger_settled)
+                                    },
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                            Text(
+                                text = formatPeso(
+                                    if (balance.netCentavos < 0) -balance.netCentavos else balance.netCentavos
+                                ),
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.SemiBold,
+                                color = when {
+                                    balance.netCentavos > 0 -> MaterialTheme.colorScheme.primary
+                                    balance.netCentavos < 0 -> MaterialTheme.colorScheme.error
+                                    else -> MaterialTheme.colorScheme.onSurface
+                                }
+                            )
+                        }
+                        HorizontalDivider()
+                    }
+                }
+            }
+        }
+
+        item(key = "transfers") {
+            SectionCard(title = stringResource(R.string.ledger_transfers)) {
+                if (state.transfers.isEmpty()) {
+                    Text(
+                        text = stringResource(R.string.ledger_all_settled),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                } else {
+                    state.transfers.forEach { transfer ->
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = state.adultNames[transfer.fromAdultId] ?: "—",
+                                modifier = Modifier.weight(1f),
+                                fontWeight = FontWeight.Medium
+                            )
+                            Icon(Icons.Filled.ArrowForward, contentDescription = null)
+                            Text(
+                                text = state.adultNames[transfer.toAdultId] ?: "—",
+                                modifier = Modifier.weight(1f),
+                                fontWeight = FontWeight.Medium
+                            )
+                            Text(
+                                text = formatPeso(transfer.amountCentavos),
+                                style = MaterialTheme.typography.titleSmall,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                        }
+                    }
+                }
+            }
+        }
+
+        item(key = "history-heading") {
             Text(
-                text = error.orEmpty(),
-                color = MaterialTheme.colorScheme.error,
-                style = MaterialTheme.typography.bodySmall
+                text = stringResource(R.string.ledger_history),
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold,
+                modifier = Modifier.padding(top = 4.dp)
             )
         }
 
-        SectionCard(title = "Net balances") {
-            if (state.balances.isEmpty()) {
-                Text(
-                    text = "No balances yet. Finalize an outing to start the ledger.",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            } else {
-                state.balances.forEach { balance ->
-                    val name = state.adultNames[balance.adultId] ?: "—"
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        SaloAvatar(name = name, size = 36.dp)
-                        Column(
-                            modifier = Modifier
-                                .weight(1f)
-                                .padding(start = 10.dp)
-                        ) {
-                            Text(
-                                text = name + if (balance.adultId == selectedAdult?.id) " (you)" else "",
-                                style = MaterialTheme.typography.titleSmall,
-                                fontWeight = FontWeight.SemiBold
-                            )
-                            Text(
-                                text = when {
-                                    balance.netCentavos > 0 -> "is owed"
-                                    balance.netCentavos < 0 -> "owes"
-                                    else -> "settled"
-                                },
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
-                        Text(
-                            text = formatPeso(if (balance.netCentavos < 0) -balance.netCentavos else balance.netCentavos),
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.SemiBold,
-                            color = when {
-                                balance.netCentavos > 0 -> MaterialTheme.colorScheme.primary
-                                balance.netCentavos < 0 -> MaterialTheme.colorScheme.error
-                                else -> MaterialTheme.colorScheme.onSurface
-                            }
-                        )
-                    }
-                    HorizontalDivider()
+        if (state.settlements.isEmpty()) {
+            item(key = "history-empty") {
+                SectionCard {
+                    Text(
+                        text = stringResource(R.string.ledger_history_empty),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
                 }
             }
-        }
-
-        SectionCard(title = "Suggested transfers") {
-            if (state.transfers.isEmpty()) {
-                Text(
-                    text = "All settled.",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.primary
+        } else {
+            items(state.settlements, key = { it.id }) { settlement ->
+                SettlementHistoryCard(
+                    settlement = settlement,
+                    fromName = state.adultNames[settlement.fromAdultId] ?: "—",
+                    toName = state.adultNames[settlement.toAdultId] ?: "—",
+                    onVoid = { voiding = settlement }
                 )
-            } else {
-                state.transfers.forEach { transfer ->
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = state.adultNames[transfer.fromAdultId] ?: "—",
-                            modifier = Modifier.weight(1f),
-                            fontWeight = FontWeight.Medium
-                        )
-                        Icon(Icons.Filled.ArrowForward, contentDescription = null)
-                        Text(
-                            text = state.adultNames[transfer.toAdultId] ?: "—",
-                            modifier = Modifier.weight(1f),
-                            fontWeight = FontWeight.Medium
-                        )
-                        Text(
-                            text = formatPeso(transfer.amountCentavos),
-                            style = MaterialTheme.typography.titleSmall,
-                            fontWeight = FontWeight.SemiBold
-                        )
-                    }
-                }
-            }
-        }
-
-        SectionCard(title = "Payment history") {
-            val settlements = state.settlements
-            if (settlements.isEmpty()) {
-                Text(
-                    text = "No payments yet.",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            } else {
-                settlements.forEach { settlement ->
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text(
-                                text = "${state.adultNames[settlement.fromAdultId] ?: "—"} → " +
-                                    (state.adultNames[settlement.toAdultId] ?: "—"),
-                                style = MaterialTheme.typography.titleSmall,
-                                fontWeight = FontWeight.SemiBold
-                            )
-                            Text(
-                                text = buildString {
-                                    append(settlement.date)
-                                    if (settlement.note != null) append(" · ${settlement.note}")
-                                    if (settlement.voidedAt != null) append(" · voided")
-                                },
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
-                        Text(
-                            text = formatPeso(settlement.amountCentavos),
-                            style = MaterialTheme.typography.titleSmall,
-                            fontWeight = FontWeight.SemiBold
-                        )
-                        if (settlement.voidedAt == null) {
-                            IconButton(onClick = { voiding = settlement }) {
-                                Icon(Icons.Filled.Undo, contentDescription = "Void payment")
-                            }
-                        }
-                    }
-                    HorizontalDivider()
-                }
             }
         }
     }
@@ -238,9 +240,9 @@ fun LedgerScreen(
 
     voiding?.let { settlement ->
         ConfirmDialog(
-            title = "Void this payment?",
-            message = "The balance will be restored as if the payment was never recorded.",
-            confirmLabel = "Void",
+            title = stringResource(R.string.ledger_void_title),
+            message = stringResource(R.string.ledger_void_body),
+            confirmLabel = stringResource(R.string.ledger_void_confirm),
             destructive = true,
             onConfirm = {
                 viewModel.voidSettlement(settlement.id)
@@ -248,6 +250,56 @@ fun LedgerScreen(
             },
             onDismiss = { voiding = null }
         )
+    }
+}
+
+@Composable
+private fun SettlementHistoryCard(
+    settlement: SettlementEntity,
+    fromName: String,
+    toName: String,
+    onVoid: () -> Unit
+) {
+    SectionCard {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            val metaBase = buildString {
+                append(settlement.date)
+                if (settlement.note != null) append(" · ${settlement.note}")
+            }
+            val meta = if (settlement.voidedAt != null) {
+                stringResource(R.string.ledger_voided_suffix, metaBase)
+            } else {
+                metaBase
+            }
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = stringResource(R.string.settlement_direction, fromName, toName),
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.SemiBold
+                )
+                Text(
+                    text = meta,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            Text(
+                text = formatPeso(settlement.amountCentavos),
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.SemiBold
+            )
+            if (settlement.voidedAt == null) {
+                IconButton(onClick = onVoid) {
+                    Icon(
+                        Icons.Filled.Undo,
+                        contentDescription = stringResource(R.string.ledger_void_description)
+                    )
+                }
+            }
+        }
     }
 }
 
@@ -270,23 +322,28 @@ private fun PaymentDialog(
     var date by remember { mutableStateOf(LocalDate.now().toString()) }
     var note by remember { mutableStateOf("") }
     var localError by remember { mutableStateOf<String?>(null) }
+    val twoAdultsMessage = stringResource(R.string.ledger_error_two_adults)
+    val amountMessage = stringResource(R.string.ledger_error_amount)
 
     AlertDialog(
         onDismissRequest = { if (!saving) onDismiss() },
-        title = { Text("Record a payment") },
+        title = { Text(stringResource(R.string.ledger_record_title)) },
         text = {
             Column(
                 modifier = Modifier.verticalScroll(rememberScrollState()),
                 verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
                 SelectionField(
-                    label = "From",
+                    label = stringResource(R.string.ledger_from),
                     value = adults.firstOrNull { it.id == from }?.name.orEmpty(),
                     options = adults.map { it.id to it.name },
-                    onSelect = { from = it; if (to == it) to = adults.firstOrNull { a -> a.id != it }?.id.orEmpty() }
+                    onSelect = {
+                        from = it
+                        if (to == it) to = adults.firstOrNull { a -> a.id != it }?.id.orEmpty()
+                    }
                 )
                 SelectionField(
-                    label = "To",
+                    label = stringResource(R.string.ledger_to),
                     value = adults.firstOrNull { it.id == to }?.name.orEmpty(),
                     options = adults.filter { it.id != from }.map { it.id to it.name },
                     onSelect = { to = it }
@@ -294,7 +351,7 @@ private fun PaymentDialog(
                 OutlinedTextField(
                     value = amount,
                     onValueChange = { amount = it },
-                    label = { Text("Amount") },
+                    label = { Text(stringResource(R.string.ledger_amount)) },
                     prefix = { Text("₱") },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth()
@@ -302,14 +359,14 @@ private fun PaymentDialog(
                 OutlinedTextField(
                     value = date,
                     onValueChange = { date = it },
-                    label = { Text("Date (YYYY-MM-DD)") },
+                    label = { Text(stringResource(R.string.ledger_date)) },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth()
                 )
                 OutlinedTextField(
                     value = note,
                     onValueChange = { note = it },
-                    label = { Text("Note (optional)") },
+                    label = { Text(stringResource(R.string.ledger_note)) },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth()
                 )
@@ -328,23 +385,29 @@ private fun PaymentDialog(
                 onClick = {
                     val parsed = parsePesoToCentavos(amount)
                     if (from.isBlank() || to.isBlank() || from == to) {
-                        localError = "Choose two different adults."
+                        localError = twoAdultsMessage
                         return@TextButton
                     }
                     if (parsed == null || parsed <= 0) {
-                        localError = "Enter a valid amount."
+                        localError = amountMessage
                         return@TextButton
                     }
                     onSave(from, to, parsed, date, note)
                 },
                 enabled = !saving
             ) {
-                Text(if (saving) "Saving…" else "Record payment")
+                Text(
+                    if (saving) {
+                        stringResource(R.string.action_saving)
+                    } else {
+                        stringResource(R.string.ledger_record_confirm)
+                    }
+                )
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss, enabled = !saving) {
-                Text("Cancel")
+                Text(stringResource(R.string.action_cancel))
             }
         }
     )

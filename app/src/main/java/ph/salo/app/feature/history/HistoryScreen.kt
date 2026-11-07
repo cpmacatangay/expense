@@ -30,6 +30,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -48,6 +49,8 @@ fun HistoryScreen(
     val state by viewModel.state.collectAsStateWithLifecycle()
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
+    val csvFileName = stringResource(R.string.history_export_csv_name)
+    val jsonFileName = stringResource(R.string.history_export_json_name)
     var pendingCsv by remember { mutableStateOf<String?>(null) }
     var pendingJson by remember { mutableStateOf<String?>(null) }
 
@@ -83,12 +86,12 @@ fun HistoryScreen(
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = "History",
+                        text = stringResource(R.string.history_title),
                         style = MaterialTheme.typography.headlineMedium,
                         fontWeight = FontWeight.SemiBold
                     )
                     Text(
-                        text = "Totals, per-student history, and exports.",
+                        text = stringResource(R.string.history_subtitle),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -97,23 +100,23 @@ fun HistoryScreen(
                     onClick = {
                         scope.launch {
                             pendingCsv = viewModel.csv()
-                            csvLauncher.launch("salo-ledger.csv")
+                            csvLauncher.launch(csvFileName)
                         }
                     }
                 ) {
                     Icon(Icons.Filled.Download, contentDescription = null)
-                    Text("CSV", modifier = Modifier.padding(start = 4.dp))
+                    Text(stringResource(R.string.history_csv), modifier = Modifier.padding(start = 4.dp))
                 }
                 TextButton(
                     onClick = {
                         scope.launch {
                             pendingJson = viewModel.json()
-                            jsonLauncher.launch("salo-ledger.json")
+                            jsonLauncher.launch(jsonFileName)
                         }
                     }
                 ) {
                     Icon(Icons.Filled.DataObject, contentDescription = null)
-                    Text("JSON", modifier = Modifier.padding(start = 4.dp))
+                    Text(stringResource(R.string.history_json), modifier = Modifier.padding(start = 4.dp))
                 }
             }
         }
@@ -124,7 +127,7 @@ fun HistoryScreen(
                     FilterChip(
                         selected = state.range == range,
                         onClick = { viewModel.setRange(range) },
-                        label = { Text(range.label) }
+                        label = { Text(range.label()) }
                     )
                 }
             }
@@ -133,7 +136,7 @@ fun HistoryScreen(
         item(key = "total") {
             SectionCard {
                 Text(
-                    text = "TOTAL SPEND",
+                    text = stringResource(R.string.history_total_spend),
                     style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -155,7 +158,7 @@ fun HistoryScreen(
 
         item(key = "outings-heading") {
             Text(
-                text = "Outings",
+                text = stringResource(R.string.history_outings),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.SemiBold,
                 modifier = Modifier.padding(top = 4.dp)
@@ -166,7 +169,7 @@ fun HistoryScreen(
             item(key = "outings-empty") {
                 SectionCard {
                     Text(
-                        text = "No finalized outings in this range.",
+                        text = stringResource(R.string.history_empty_outings),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -184,7 +187,7 @@ fun HistoryScreen(
 
         item(key = "students-heading") {
             Text(
-                text = "Per student",
+                text = stringResource(R.string.history_per_student),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.SemiBold,
                 modifier = Modifier.padding(top = 4.dp)
@@ -195,7 +198,7 @@ fun HistoryScreen(
             item(key = "students-empty") {
                 SectionCard {
                     Text(
-                        text = "No student coverage in this range.",
+                        text = stringResource(R.string.history_empty_students),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -224,13 +227,13 @@ private fun OutingHistoryCard(
                     fontWeight = FontWeight.SemiBold
                 )
                 Text(
-                    text = "${outing.date} · paid by $payerName",
+                    text = stringResource(R.string.history_paid_by, outing.date, payerName),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
             TextButton(onClick = onOpen) {
-                Text("Open")
+                Text(stringResource(R.string.action_open))
             }
         }
     }
@@ -247,11 +250,11 @@ private fun StudentHistoryCard(student: StudentHistory) {
                     fontWeight = FontWeight.SemiBold
                 )
                 Text(
-                    text = pluralStringResource(
-                        R.plurals.meals,
-                        student.meals,
-                        student.meals
-                    ) + " · last covered by ${student.lastCoveredBy ?: "—"}",
+                    text = stringResource(
+                        R.string.history_last_covered,
+                        pluralStringResource(R.plurals.meals, student.meals, student.meals),
+                        student.lastCoveredBy ?: "—"
+                    ),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -263,4 +266,11 @@ private fun StudentHistoryCard(student: StudentHistory) {
             )
         }
     }
+}
+
+@Composable
+private fun HistoryRange.label(): String = when (this) {
+    HistoryRange.THIS_MONTH -> stringResource(R.string.range_this_month)
+    HistoryRange.LAST_30_DAYS -> stringResource(R.string.range_last_30_days)
+    HistoryRange.ALL_TIME -> stringResource(R.string.range_all_time)
 }

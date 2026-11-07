@@ -1,14 +1,17 @@
 package ph.salo.app.feature.ledger
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import ph.salo.app.R
 import ph.salo.app.core.backup.BackupScheduler
 import ph.salo.app.core.data.AdultProfileRepository
 import ph.salo.app.core.data.LedgerRepository
@@ -30,6 +33,7 @@ data class LedgerUiState(
 
 @HiltViewModel
 class LedgerViewModel @Inject constructor(
+    @ApplicationContext private val context: Context,
     ledgerRepository: LedgerRepository,
     adultRepository: AdultProfileRepository,
     private val backupScheduler: BackupScheduler
@@ -73,7 +77,7 @@ class LedgerViewModel @Inject constructor(
                 backupScheduler.schedule()
                 onSaved()
             } catch (caught: Throwable) {
-                _error.value = caught.message ?: "Could not record the payment."
+                _error.value = caught.message ?: context.getString(R.string.msg_payment_failed)
             } finally {
                 _saving.value = false
             }
@@ -86,7 +90,7 @@ class LedgerViewModel @Inject constructor(
                 repository.voidSettlement(id)
                 backupScheduler.schedule()
             } catch (caught: Throwable) {
-                _error.value = caught.message ?: "Could not void the payment."
+                _error.value = caught.message ?: context.getString(R.string.msg_void_failed)
             }
         }
     }

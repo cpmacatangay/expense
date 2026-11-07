@@ -27,6 +27,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -55,9 +56,9 @@ fun HomeScreen(
     val myBalance = state.balances.firstOrNull { it.adultId == selectedAdult?.id }
     val net = myBalance?.netCentavos ?: 0L
     val headline = when {
-        net > 0 -> "YOU ARE OWED"
-        net < 0 -> "YOU OWE"
-        else -> "ALL SETTLED"
+        net > 0 -> stringResource(R.string.home_owed)
+        net < 0 -> stringResource(R.string.home_owe)
+        else -> stringResource(R.string.home_settled)
     }
     val amountColor = when {
         net > 0 -> MaterialTheme.colorScheme.primary
@@ -77,7 +78,7 @@ fun HomeScreen(
     ) {
         Column {
             Text(
-                text = "Hi, ${selectedAdult?.name ?: "Salo"}",
+                text = stringResource(R.string.home_greeting, selectedAdult?.name ?: "Salo"),
                 style = MaterialTheme.typography.headlineMedium,
                 fontWeight = FontWeight.SemiBold
             )
@@ -127,22 +128,22 @@ fun HomeScreen(
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Icon(Icons.Filled.Add, contentDescription = null, modifier = Modifier.size(18.dp))
-                    Text("New outing", modifier = Modifier.padding(start = 8.dp))
+                    Text(stringResource(R.string.home_new_outing), modifier = Modifier.padding(start = 8.dp))
                 }
             }
         }
 
         SectionCard(
-            title = "Who pays whom",
+            title = stringResource(R.string.home_who_pays),
             action = {
                 OutlinedButton(onClick = onLedger) {
-                    Text("Ledger")
+                    Text(stringResource(R.string.nav_ledger))
                 }
             }
         ) {
             if (state.transfers.isEmpty()) {
                 Text(
-                    text = "All settled.",
+                    text = stringResource(R.string.home_all_settled),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -176,18 +177,18 @@ fun HomeScreen(
         }
 
         SectionCard(
-            title = "Recent outings",
+            title = stringResource(R.string.home_recent_outings),
             action = {
                 OutlinedButton(onClick = onHistory) {
-                    Text("View all")
+                    Text(stringResource(R.string.home_view_all))
                 }
             }
         ) {
             if (state.recentOutings.isEmpty()) {
                 EmptyState(
                     icon = Icons.Filled.Group,
-                    title = "No outings yet",
-                    description = "Record the first meal to start the ledger."
+                    title = stringResource(R.string.home_empty_title),
+                    description = stringResource(R.string.home_empty_body)
                 )
             } else {
                 state.recentOutings.forEach { outing ->
@@ -198,15 +199,19 @@ fun HomeScreen(
                             .padding(vertical = 8.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        SaloAvatar(name = outing.place ?: "Meal", size = 40.dp)
+                        SaloAvatar(name = outing.place ?: stringResource(R.string.meal_fallback), size = 40.dp)
                         Column(modifier = Modifier.padding(start = 12.dp).weight(1f)) {
                             Text(
-                                text = outing.place ?: "Meal",
+                                text = outing.place ?: stringResource(R.string.meal_fallback),
                                 style = MaterialTheme.typography.titleSmall,
                                 fontWeight = FontWeight.SemiBold
                             )
                             Text(
-                                text = "${outing.date} · paid by ${state.adultNames[outing.payerAdultId] ?: "—"}",
+                                text = stringResource(
+                                    R.string.home_paid_by,
+                                    outing.date,
+                                    state.adultNames[outing.payerAdultId] ?: "—"
+                                ),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )

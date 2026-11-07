@@ -1,19 +1,23 @@
 package ph.salo.app.feature.students
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import ph.salo.app.R
 import ph.salo.app.core.data.StudentRepository
 import ph.salo.app.core.database.StudentEntity
 import javax.inject.Inject
 
 @HiltViewModel
 class StudentsViewModel @Inject constructor(
+    @ApplicationContext private val context: Context,
     private val repository: StudentRepository
 ) : ViewModel() {
     val students: StateFlow<List<StudentEntity>> = repository.observeAll()
@@ -42,7 +46,7 @@ class StudentsViewModel @Inject constructor(
                 }
                 onSaved()
             } catch (caught: Throwable) {
-                _error.value = caught.message ?: "Could not save the student."
+                _error.value = caught.message ?: context.getString(R.string.msg_student_save_failed)
             } finally {
                 _saving.value = false
             }
@@ -54,7 +58,7 @@ class StudentsViewModel @Inject constructor(
             try {
                 repository.setActive(id, active)
             } catch (caught: Throwable) {
-                _error.value = caught.message ?: "Could not update the student."
+                _error.value = caught.message ?: context.getString(R.string.msg_student_update_failed)
             }
         }
     }

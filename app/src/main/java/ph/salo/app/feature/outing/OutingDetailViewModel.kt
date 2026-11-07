@@ -5,6 +5,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -13,6 +14,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import ph.salo.app.R
 import ph.salo.app.core.data.AdultProfileRepository
 import ph.salo.app.core.data.OutingDetails
 import ph.salo.app.core.data.OutingRepository
@@ -28,6 +30,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class OutingDetailViewModel @Inject constructor(
+    @ApplicationContext private val context: Context,
     savedStateHandle: SavedStateHandle,
     private val outingRepository: OutingRepository,
     private val adultRepository: AdultProfileRepository,
@@ -75,7 +78,7 @@ class OutingDetailViewModel @Inject constructor(
             runCatching {
                 val file = RecapImageRenderer.render(context, data)
                 RecapSharer.shareImage(context, file, RecapTextBuilder.build(data))
-            }.onFailure { _message.value = it.message ?: "Could not render the recap." }
+            }.onFailure { _message.value = it.message ?: context.getString(R.string.msg_recap_failed) }
         }
     }
 
@@ -89,10 +92,10 @@ class OutingDetailViewModel @Inject constructor(
             runCatching {
                 outingRepository.reopen(outingId, actorId)
             }.onSuccess {
-                _message.value = "Outing reopened. Shares were cleared."
+                _message.value = context.getString(R.string.msg_reopened)
                 onReopened()
             }.onFailure {
-                _message.value = it.message ?: "Could not reopen the outing."
+                _message.value = it.message ?: context.getString(R.string.msg_reopen_failed)
             }
         }
     }
@@ -101,7 +104,7 @@ class OutingDetailViewModel @Inject constructor(
         viewModelScope.launch {
             runCatching { outingRepository.delete(outingId) }
                 .onSuccess { onDeleted() }
-                .onFailure { _message.value = it.message ?: "Could not remove the outing." }
+                .onFailure { _message.value = it.message ?: context.getString(R.string.msg_remove_failed) }
         }
     }
 

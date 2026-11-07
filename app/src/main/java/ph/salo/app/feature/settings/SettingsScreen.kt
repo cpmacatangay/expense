@@ -38,11 +38,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.launch
+import ph.salo.app.R
 import ph.salo.app.core.backup.SessionState
 import ph.salo.app.feature.app.AppViewModel
 import ph.salo.app.ui.components.ConfirmDialog
@@ -61,6 +63,8 @@ fun SettingsScreen(
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     var showClearConfirm by remember { mutableStateOf(false) }
+    val csvFileName = stringResource(R.string.history_export_csv_name)
+    val jsonFileName = stringResource(R.string.history_export_json_name)
     var pendingCsv by remember { mutableStateOf<String?>(null) }
     var pendingJson by remember { mutableStateOf<String?>(null) }
 
@@ -95,7 +99,7 @@ fun SettingsScreen(
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         Text(
-            text = "Settings",
+            text = stringResource(R.string.settings_title),
             style = MaterialTheme.typography.headlineMedium,
             fontWeight = FontWeight.SemiBold
         )
@@ -114,17 +118,17 @@ fun SettingsScreen(
                         fontWeight = FontWeight.SemiBold
                     )
                     Text(
-                        text = selectedAdult?.email ?: "Local profile",
+                        text = selectedAdult?.email ?: stringResource(R.string.settings_local_profile),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Text(
                         text = when {
-                            backupState?.status == "ERROR" -> "BACKUP ERROR"
+                            backupState?.status == "ERROR" -> stringResource(R.string.settings_status_error)
                             backupState?.status == "BACKED_UP" &&
-                                session is SessionState.SignedIn -> "BACKED UP"
-                            session is SessionState.SignedIn -> "SIGNED IN"
-                            else -> "LOCAL ONLY"
+                                session is SessionState.SignedIn -> stringResource(R.string.settings_status_backed_up)
+                            session is SessionState.SignedIn -> stringResource(R.string.settings_status_signed_in)
+                            else -> stringResource(R.string.settings_status_local)
                         },
                         style = MaterialTheme.typography.labelSmall,
                         color = if (backupState?.status == "ERROR") {
@@ -137,7 +141,7 @@ fun SettingsScreen(
             }
         }
 
-        SectionCard(title = "Adult profiles") {
+        SectionCard(title = stringResource(R.string.settings_adults)) {
             adults.forEach { adult ->
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -162,34 +166,34 @@ fun SettingsScreen(
                     }
                     if (adult.id == selectedAdult?.id) {
                         Text(
-                            text = "Selected",
+                            text = stringResource(R.string.settings_selected),
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.primary
                         )
                     } else {
                         OutlinedButton(onClick = { viewModel.selectAdult(adult.id) }) {
-                            Text("Use")
+                            Text(stringResource(R.string.settings_use))
                         }
                     }
                 }
                 HorizontalDivider()
             }
             Text(
-                text = "All four adults share this ledger. Select a profile to record on their behalf.",
+                text = stringResource(R.string.settings_adults_helper),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
 
-        SectionCard(title = "Private backup") {
+        SectionCard(title = stringResource(R.string.settings_backup)) {
             val status = backupState?.status ?: "LOCAL_ONLY"
             LabelValueRow(
-                label = "Status",
+                label = stringResource(R.string.settings_status_label),
                 value = when (status) {
-                    "BACKED_UP" -> "Backed up"
-                    "BACKING_UP" -> "Backing up…"
-                    "ERROR" -> "Backup error"
-                    else -> "Local only"
+                    "BACKED_UP" -> stringResource(R.string.settings_backup_backed_up)
+                    "BACKING_UP" -> stringResource(R.string.settings_backup_running)
+                    "ERROR" -> stringResource(R.string.settings_backup_error)
+                    else -> stringResource(R.string.settings_backup_local)
                 }
             )
             backupState?.lastError?.let {
@@ -202,20 +206,20 @@ fun SettingsScreen(
             if (session is SessionState.SignedIn) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
-                        text = "Signed in as ${(session as SessionState.SignedIn).session.email}",
+                        text = stringResource(R.string.settings_signed_in_as, (session as SessionState.SignedIn).session.email),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.weight(1f)
                     )
                     TextButton(onClick = viewModel::signOut) {
                         Icon(Icons.Filled.Logout, contentDescription = null)
-                        Text("Sign out", modifier = Modifier.padding(start = 4.dp))
+                        Text(stringResource(R.string.settings_sign_out), modifier = Modifier.padding(start = 4.dp))
                     }
                 }
             }
             if (!viewModel.backupConfigured) {
                 Text(
-                    text = "Add SUPABASE_URL, SUPABASE_ANON_KEY, GOOGLE_WEB_CLIENT_ID, and OWNER_EMAIL to local.properties to enable private backup.",
+                    text = stringResource(R.string.settings_backup_not_configured),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -224,14 +228,14 @@ fun SettingsScreen(
                 if (session is SessionState.SignedIn) {
                     Button(onClick = viewModel::backupNow, modifier = Modifier.weight(1f)) {
                         Icon(Icons.Filled.CloudUpload, contentDescription = null)
-                        Text("Back up", modifier = Modifier.padding(start = 4.dp))
+                        Text(stringResource(R.string.settings_back_up), modifier = Modifier.padding(start = 4.dp))
                     }
                     OutlinedButton(
                         onClick = { viewModel.restoreLatest() },
                         modifier = Modifier.weight(1f)
                     ) {
                         Icon(Icons.Filled.Restore, contentDescription = null)
-                        Text("Restore", modifier = Modifier.padding(start = 4.dp))
+                        Text(stringResource(R.string.settings_restore), modifier = Modifier.padding(start = 4.dp))
                     }
                 } else {
                     Button(
@@ -242,20 +246,20 @@ fun SettingsScreen(
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Icon(Icons.Filled.Login, contentDescription = null)
-                        Text("Sign in with Google", modifier = Modifier.padding(start = 6.dp))
+                        Text(stringResource(R.string.settings_sign_in), modifier = Modifier.padding(start = 6.dp))
                     }
                 }
             }
             Text(
-                text = "Receipt photos stay on this phone. Only ledger data is backed up. Restore is allowed only when local data is empty.",
+                text = stringResource(R.string.settings_privacy_note),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
 
-        SectionCard(title = "Export") {
+        SectionCard(title = stringResource(R.string.settings_export)) {
             Text(
-                text = "CSV and JSON include outings, items, assignments, coverage, shares, settlements, and the roster.",
+                text = stringResource(R.string.settings_export_helper),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -264,61 +268,61 @@ fun SettingsScreen(
                     onClick = {
                         scope.launch {
                             pendingCsv = viewModel.csv()
-                            csvLauncher.launch("salo-ledger.csv")
+                            csvLauncher.launch(csvFileName)
                         }
                     },
                     modifier = Modifier.weight(1f)
                 ) {
                     Icon(Icons.Filled.Download, contentDescription = null)
-                    Text("CSV", modifier = Modifier.padding(start = 4.dp))
+                    Text(stringResource(R.string.history_csv), modifier = Modifier.padding(start = 4.dp))
                 }
                 OutlinedButton(
                     onClick = {
                         scope.launch {
                             pendingJson = viewModel.json()
-                            jsonLauncher.launch("salo-ledger.json")
+                            jsonLauncher.launch(jsonFileName)
                         }
                     },
                     modifier = Modifier.weight(1f)
                 ) {
                     Icon(Icons.Filled.DataObject, contentDescription = null)
-                    Text("JSON", modifier = Modifier.padding(start = 4.dp))
+                    Text(stringResource(R.string.history_json), modifier = Modifier.padding(start = 4.dp))
                 }
             }
         }
 
-        SectionCard(title = "Data") {
+        SectionCard(title = stringResource(R.string.settings_data)) {
             OutlinedButton(
                 onClick = { showClearConfirm = true },
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Icon(Icons.Filled.Delete, contentDescription = null)
-                Text("Clear local data", modifier = Modifier.padding(start = 6.dp))
+                Text(stringResource(R.string.settings_clear), modifier = Modifier.padding(start = 6.dp))
             }
             Text(
-                text = "This removes all local outings, students, shares, and payments. The four adult profiles are restored.",
+                text = stringResource(R.string.settings_clear_helper),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
 
-        SectionCard(title = "About") {
+        SectionCard(title = stringResource(R.string.settings_about)) {
             Text(
-                text = "Salo is a private meal ledger for four adults covering students. On-device OCR, local-first data, and private backup.",
+                text = stringResource(R.string.settings_about_body),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
-            LabelValueRow(label = "Version", value = "0.1.0")
-            LabelValueRow(label = "Application id", value = "ph.salo.app")
+            LabelValueRow(label = stringResource(R.string.settings_version), value = "0.1.0")
+            LabelValueRow(label = stringResource(R.string.settings_app_id), value = "ph.salo.app")
         }
     }
 
     if (showClearConfirm) {
         ConfirmDialog(
 
-            title = "Clear local data?",
-            message = "All local ledger data will be removed. Export first if you need a copy.",
-            confirmLabel = "Clear data",
+            title = stringResource(R.string.settings_clear_title),
+            message = stringResource(R.string.settings_clear_body),
+            confirmLabel = stringResource(R.string.settings_clear_confirm),
             destructive = true,
             onConfirm = {
                 showClearConfirm = false

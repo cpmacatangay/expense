@@ -28,10 +28,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import ph.salo.app.R
 import ph.salo.app.core.database.StudentEntity
 import ph.salo.app.ui.components.ConfirmDialog
 import ph.salo.app.ui.components.EmptyState
@@ -60,12 +63,12 @@ fun StudentsScreen(
         ) {
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = "Students",
+                    text = stringResource(R.string.students_title),
                     style = MaterialTheme.typography.headlineMedium,
                     fontWeight = FontWeight.SemiBold
                 )
                 Text(
-                    text = "${active.size} active · ${archived.size} archived",
+                    text = stringResource(R.string.students_counts, pluralStringResource(R.plurals.students_active, active.size, active.size), pluralStringResource(R.plurals.students_archived_count, archived.size, archived.size)),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -78,7 +81,7 @@ fun StudentsScreen(
                 }
             ) {
                 Icon(Icons.Filled.Add, contentDescription = null)
-                Text("Add", modifier = Modifier.padding(start = 6.dp))
+                Text(stringResource(R.string.action_add), modifier = Modifier.padding(start = 6.dp))
             }
         }
 
@@ -105,14 +108,14 @@ fun StudentsScreen(
                 item {
                     EmptyState(
                         icon = Icons.Filled.Person,
-                        title = "Add your first student",
-                        description = "The roster is shared by all four adults. You can add up to 10 active students.",
+                        title = stringResource(R.string.students_empty_title),
+                        description = stringResource(R.string.students_empty_body),
                         action = {
                             Button(onClick = {
                                 editing = null
                                 dialogOpen = true
                             }) {
-                                Text("Add student")
+                                Text(stringResource(R.string.students_add))
                             }
                         }
                     )
@@ -133,7 +136,7 @@ fun StudentsScreen(
             if (archived.isNotEmpty()) {
                 item {
                     Text(
-                        text = "Archived",
+                        text = stringResource(R.string.students_archived),
                         style = MaterialTheme.typography.titleSmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.padding(top = 16.dp, bottom = 4.dp)
@@ -172,9 +175,9 @@ fun StudentsScreen(
 
     pendingArchive?.let { student ->
         ConfirmDialog(
-            title = "Archive ${student.name}?",
-            message = "The student stays in past outings and can be restored later.",
-            confirmLabel = "Archive",
+            title = stringResource(R.string.students_archive_title, student.name),
+            message = stringResource(R.string.students_archive_body),
+            confirmLabel = stringResource(R.string.students_archive_confirm),
             destructive = true,
             onConfirm = {
                 viewModel.setActive(student.id, false)
@@ -214,16 +217,16 @@ private fun StudentRow(
                 }
             }
             IconButton(onClick = onEdit) {
-                Icon(Icons.Filled.Edit, contentDescription = "Edit ${student.name}")
+                Icon(Icons.Filled.Edit, contentDescription = stringResource(R.string.students_edit_description, student.name))
             }
             if (onArchive != null) {
                 IconButton(onClick = onArchive) {
-                    Icon(Icons.Filled.Archive, contentDescription = "Archive ${student.name}")
+                    Icon(Icons.Filled.Archive, contentDescription = stringResource(R.string.students_archive_description, student.name))
                 }
             }
             if (onRestore != null) {
                 IconButton(onClick = onRestore) {
-                    Icon(Icons.Filled.Restore, contentDescription = "Restore ${student.name}")
+                    Icon(Icons.Filled.Restore, contentDescription = stringResource(R.string.students_restore_description, student.name))
                 }
             }
         }
@@ -243,20 +246,20 @@ private fun StudentDialog(
 
     AlertDialog(
         onDismissRequest = { if (!saving) onDismiss() },
-        title = { Text(if (student == null) "Add student" else "Edit student") },
+        title = { Text(stringResource(if (student == null) R.string.students_add_title else R.string.students_edit_title)) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 OutlinedTextField(
                     value = name,
                     onValueChange = { name = it },
-                    label = { Text("Name") },
+                    label = { Text(stringResource(R.string.students_name_label)) },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth()
                 )
                 OutlinedTextField(
                     value = notes,
                     onValueChange = { notes = it },
-                    label = { Text("Notes (optional)") },
+                    label = { Text(stringResource(R.string.students_notes_label)) },
                     minLines = 2,
                     modifier = Modifier.fillMaxWidth()
                 )
@@ -274,12 +277,12 @@ private fun StudentDialog(
                 onClick = { onSave(name, notes) },
                 enabled = !saving && name.isNotBlank()
             ) {
-                Text(if (saving) "Saving…" else "Save")
+                Text(stringResource(if (saving) R.string.action_saving else R.string.action_save))
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss, enabled = !saving) {
-                Text("Cancel")
+                Text(stringResource(R.string.action_cancel))
             }
         }
     )

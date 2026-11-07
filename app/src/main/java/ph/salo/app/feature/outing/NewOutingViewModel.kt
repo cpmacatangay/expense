@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import ph.salo.app.R
 import ph.salo.app.core.backup.BackupScheduler
 import ph.salo.app.core.data.AdultProfileRepository
 import ph.salo.app.core.data.DraftInput
@@ -216,14 +217,14 @@ class NewOutingViewModel @Inject constructor(
         when (current.step) {
             0 -> {
                 if (current.date.isBlank()) {
-                    _state.update { it.copy(error = "Choose a date for the outing.") }
+                    _state.update { it.copy(error = context.getString(R.string.error_choose_date)) }
                     return
                 }
             }
 
             1 -> {
                 if (current.totalCentavos <= 0) {
-                    _state.update { it.copy(error = "Enter a valid total greater than zero.") }
+                    _state.update { it.copy(error = context.getString(R.string.error_total)) }
                     return
                 }
             }
@@ -232,7 +233,7 @@ class NewOutingViewModel @Inject constructor(
                 val missing = current.presentStudentIds - current.coverage.keys
                 if (missing.isNotEmpty()) {
                     _state.update {
-                        it.copy(error = "Assign every present student to one adult.")
+                        it.copy(error = context.getString(R.string.error_coverage))
                     }
                     return
                 }
@@ -257,7 +258,7 @@ class NewOutingViewModel @Inject constructor(
         assignedStudentId: String? = null
     ) {
         if (name.isBlank()) {
-            _state.update { it.copy(error = "Enter an item name.") }
+            _state.update { it.copy(error = context.getString(R.string.error_item_name)) }
             return
         }
         val item = ItemDraft(
@@ -331,13 +332,13 @@ class NewOutingViewModel @Inject constructor(
             val second = amount - first
             val firstItem = item.copy(
                 id = UUID.randomUUID().toString(),
-                name = "${item.name} (1)",
+                name = context.getString(R.string.item_split_name, item.name, 1),
                 quantity = 1,
                 unitAmountCentavos = first
             )
             val secondItem = item.copy(
                 id = UUID.randomUUID().toString(),
-                name = "${item.name} (2)",
+                name = context.getString(R.string.item_split_name, item.name, 2),
                 quantity = 1,
                 unitAmountCentavos = second
             )
@@ -360,10 +361,10 @@ class NewOutingViewModel @Inject constructor(
                 first.assignedAdultId != second.assignedAdultId ||
                 first.assignedStudentId != second.assignedStudentId
             ) {
-                return@update current.copy(error = "Only items with the same assignment can merge.")
+                return@update current.copy(error = context.getString(R.string.error_merge_assignment))
             }
             val merged = first.copy(
-                name = "${first.name} + ${second.name}",
+                name = context.getString(R.string.item_merge_name, first.name, second.name),
                 quantity = first.quantity + second.quantity,
                 unitAmountCentavos = (first.amountCentavos + second.amountCentavos) /
                     (first.quantity + second.quantity).coerceAtLeast(1)
@@ -481,7 +482,7 @@ class NewOutingViewModel @Inject constructor(
                         items = current.items + newItems,
                         scanning = false,
                         error = if (newItems.isEmpty()) {
-                            "No items were read. You can add them manually."
+                            context.getString(R.string.error_ocr_empty)
                         } else {
                             null
                         }
@@ -492,7 +493,7 @@ class NewOutingViewModel @Inject constructor(
                 _state.update {
                     it.copy(
                         scanning = false,
-                        error = caught.message ?: "Could not read the receipt. Enter it manually."
+                        error = caught.message ?: context.getString(R.string.error_ocr_failed)
                     )
                 }
             }
@@ -509,7 +510,7 @@ class NewOutingViewModel @Inject constructor(
         val present = current.presentStudents
         if (current.presentStudentIds.any { it !in current.coverage }) {
             _state.update {
-                it.copy(split = null, splitError = "Assign every present student to one adult.")
+                it.copy(split = null, splitError = context.getString(R.string.error_coverage))
             }
             return
         }
@@ -544,7 +545,7 @@ class NewOutingViewModel @Inject constructor(
         } catch (caught: AllocationValidationException) {
             _state.update { it.copy(split = null, splitError = caught.issues.message()) }
         } catch (caught: Throwable) {
-            _state.update { it.copy(split = null, splitError = caught.message ?: "Check the split.") }
+            _state.update { it.copy(split = null, splitError = caught.message ?: context.getString(R.string.error_check_split)) }
         }
     }
 
@@ -552,25 +553,25 @@ class NewOutingViewModel @Inject constructor(
         viewModelScope.launch {
             val current = _state.value
             if (current.totalCentavos <= 0) {
-                _state.update { it.copy(error = "Enter a valid total greater than zero.") }
+                _state.update { it.copy(error = context.getString(R.string.error_total)) }
                 return@launch
             }
             if (current.presentStudentIds.any { it !in current.coverage }) {
-                _state.update { it.copy(error = "Assign every present student to one adult.") }
+                _state.update { it.copy(error = context.getString(R.string.error_coverage)) }
                 return@launch
             }
             refreshSplit()
             val preview = _state.value
             if (preview.split == null) {
                 _state.update {
-                    it.copy(error = preview.splitError ?: "Check the item assignments.")
+                    it.copy(error = preview.splitError ?: context.getString(R.string.error_item_assignments))
                 }
                 return@launch
             }
             val payerId = current.payerId
             val createdBy = current.createdByAdultId
             if (payerId == null || createdBy == null) {
-                _state.update { it.copy(error = "Choose who paid and who is recording.") }
+                _state.update { it.copy(error = context.getString(R.string.error_payer_and_recorder)) }
                 return@launch
             }
             _state.update { it.copy(saving = true, error = null) }
@@ -635,7 +636,7 @@ class NewOutingViewModel @Inject constructor(
                 _state.update {
                     it.copy(
                         saving = false,
-                        error = caught.message ?: "Could not finalize the outing."
+                        error = caught.message ?: context.getString(R.string.error_finalize_failed)
                     )
                 }
             }
@@ -647,24 +648,24 @@ class NewOutingViewModel @Inject constructor(
     }
 
     private fun List<AllocationIssue>.message(): String {
-        val issue = firstOrNull() ?: return "Check the split."
+        val issue = firstOrNull() ?: return context.getString(R.string.error_check_split)
         return when (issue) {
-            is AllocationIssue.UnassignedItem -> "Assign every item to a person or mark it shared."
-            is AllocationIssue.MissingCoverage -> "Assign every present student to one adult."
-            is AllocationIssue.InvalidTotal -> "Enter a valid total greater than zero."
-            is AllocationIssue.InvalidAdjustment -> "Tax, service, and discount must be valid."
-            is AllocationIssue.UnknownAdult -> "One item references an unknown adult."
-            is AllocationIssue.UnknownStudent -> "One item references an unknown student."
-            is AllocationIssue.InvalidItemAmount -> "One item has an invalid amount."
-            is AllocationIssue.InvalidQuantity -> "One item has an invalid quantity."
-            is AllocationIssue.NoAdults -> "The four adult profiles are missing."
-            is AllocationIssue.InvalidAdultCount -> "Salo needs exactly four adult profiles."
-            is AllocationIssue.DuplicateAdult -> "There is a duplicate adult profile."
-            is AllocationIssue.DuplicateStudent -> "There is a duplicate student."
-            is AllocationIssue.InvalidAssignment -> "One item has an invalid assignment."
-            is AllocationIssue.InvalidPayer -> "Choose a valid payer."
-            is AllocationIssue.CoverageForAbsentStudent -> "Coverage references a student who is not present."
-            is AllocationIssue.UnknownCoverageAdult -> "Coverage references an unknown adult."
+            is AllocationIssue.UnassignedItem -> context.getString(R.string.issue_unassigned_item)
+            is AllocationIssue.MissingCoverage -> context.getString(R.string.error_coverage)
+            is AllocationIssue.InvalidTotal -> context.getString(R.string.error_total)
+            is AllocationIssue.InvalidAdjustment -> context.getString(R.string.issue_invalid_adjustment)
+            is AllocationIssue.UnknownAdult -> context.getString(R.string.issue_unknown_adult)
+            is AllocationIssue.UnknownStudent -> context.getString(R.string.issue_unknown_student)
+            is AllocationIssue.InvalidItemAmount -> context.getString(R.string.issue_invalid_item_amount)
+            is AllocationIssue.InvalidQuantity -> context.getString(R.string.issue_invalid_quantity)
+            is AllocationIssue.NoAdults -> context.getString(R.string.issue_no_adults)
+            is AllocationIssue.InvalidAdultCount -> context.getString(R.string.issue_invalid_adult_count)
+            is AllocationIssue.DuplicateAdult -> context.getString(R.string.issue_duplicate_adult)
+            is AllocationIssue.DuplicateStudent -> context.getString(R.string.issue_duplicate_student)
+            is AllocationIssue.InvalidAssignment -> context.getString(R.string.issue_invalid_assignment)
+            is AllocationIssue.InvalidPayer -> context.getString(R.string.issue_invalid_payer)
+            is AllocationIssue.CoverageForAbsentStudent -> context.getString(R.string.issue_coverage_absent_student)
+            is AllocationIssue.UnknownCoverageAdult -> context.getString(R.string.issue_unknown_coverage_adult)
         }
     }
 }

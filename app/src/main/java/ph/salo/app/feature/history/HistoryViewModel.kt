@@ -16,10 +16,10 @@ import ph.salo.app.core.export.ExportManager
 import java.time.LocalDate
 import javax.inject.Inject
 
-enum class HistoryRange(val label: String) {
-    THIS_MONTH("This month"),
-    LAST_30_DAYS("Last 30 days"),
-    ALL_TIME("All time")
+enum class HistoryRange {
+    THIS_MONTH,
+    LAST_30_DAYS,
+    ALL_TIME
 }
 
 data class StudentHistory(

@@ -45,6 +45,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.foundation.text.KeyboardOptions
@@ -54,6 +55,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import ph.salo.app.core.database.AdultProfileEntity
 import ph.salo.app.core.database.StudentEntity
 import ph.salo.app.core.money.ItemAssignmentType
+import ph.salo.app.R
 import ph.salo.app.core.money.formatCentavosPlain
 import ph.salo.app.core.money.formatPeso
 import ph.salo.app.core.money.parsePesoToCentavos
@@ -61,7 +63,12 @@ import ph.salo.app.ui.components.SaloAvatar
 import ph.salo.app.ui.components.SectionCard
 import ph.salo.app.ui.components.SelectionField
 
-private val steps = listOf("Details", "Receipt & items", "Students", "Review")
+private val stepTitles = listOf(
+    R.string.outing_step_details,
+    R.string.outing_step_receipt,
+    R.string.outing_step_students,
+    R.string.outing_step_review
+)
 
 @Composable
 fun NewOutingScreen(
@@ -97,22 +104,22 @@ fun NewOutingScreen(
             verticalAlignment = Alignment.CenterVertically
         ) {
             IconButton(onClick = { if (state.step == 0) onBack() else viewModel.back() }) {
-                Icon(Icons.Filled.ArrowBack, contentDescription = "Back")
+                Icon(Icons.Filled.ArrowBack, contentDescription = stringResource(R.string.action_back))
             }
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = if (state.isEditing) "Edit outing" else "New outing",
+                    text = stringResource(if (state.isEditing) R.string.outing_edit_title else R.string.outing_new_title),
                     style = MaterialTheme.typography.headlineSmall,
                     fontWeight = FontWeight.SemiBold
                 )
                 Text(
-                    text = steps.getOrElse(state.step) { "Review" },
+                    text = stringResource(stepTitles.getOrElse(state.step) { R.string.outing_step_review }),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
             Text(
-                text = "Step ${state.step + 1}/4",
+                text = stringResource(R.string.outing_step_counter, state.step + 1),
                 style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -174,14 +181,14 @@ fun NewOutingScreen(
                 onClick = { if (state.step == 0) onBack() else viewModel.back() },
                 modifier = Modifier.weight(1f)
             ) {
-                Text("Back")
+                Text(stringResource(R.string.action_back))
             }
             if (state.step < 3) {
                 Button(
                     onClick = viewModel::next,
                     modifier = Modifier.weight(2f)
                 ) {
-                    Text("Next")
+                    Text(stringResource(R.string.action_next))
                 }
             } else {
                 Button(
@@ -189,7 +196,11 @@ fun NewOutingScreen(
                     enabled = !state.saving,
                     modifier = Modifier.weight(2f)
                 ) {
-                    Text(if (state.saving) "Finalizing…" else "Finalize outing")
+                    Text(
+                        stringResource(
+                            if (state.saving) R.string.outing_finalizing else R.string.outing_finalize
+                        )
+                    )
                 }
             }
         }
@@ -223,19 +234,19 @@ fun NewOutingScreen(
     itemToDelete?.let { item ->
         AlertDialog(
             onDismissRequest = { itemToDelete = null },
-            title = { Text("Remove ${item.name}?") },
-            text = { Text("The item will be removed from this outing.") },
+            title = { Text(stringResource(R.string.outing_item_remove_title, item.name)) },
+            text = { Text(stringResource(R.string.outing_item_remove_body)) },
             confirmButton = {
                 TextButton(onClick = {
                     viewModel.deleteItem(item.id)
                     itemToDelete = null
                 }) {
-                    Text("Remove")
+                    Text(stringResource(R.string.action_remove))
                 }
             },
             dismissButton = {
                 TextButton(onClick = { itemToDelete = null }) {
-                    Text("Cancel")
+                    Text(stringResource(R.string.action_cancel))
                 }
             }
         )
@@ -244,36 +255,36 @@ fun NewOutingScreen(
 
 @Composable
 private fun DetailsStep(state: NewOutingUiState, viewModel: NewOutingViewModel) {
-    SectionCard(title = "Meal details") {
+    SectionCard(title = stringResource(R.string.outing_meal_details)) {
         OutlinedTextField(
             value = state.date,
             onValueChange = viewModel::updateDate,
-            label = { Text("Date (YYYY-MM-DD)") },
+            label = { Text(stringResource(R.string.outing_date)) },
             singleLine = true,
             modifier = Modifier.fillMaxWidth()
         )
         OutlinedTextField(
             value = state.place,
             onValueChange = viewModel::updatePlace,
-            label = { Text("Place (optional)") },
+            label = { Text(stringResource(R.string.outing_place)) },
             singleLine = true,
             modifier = Modifier.fillMaxWidth()
         )
         OutlinedTextField(
             value = state.notes,
             onValueChange = viewModel::updateNotes,
-            label = { Text("Notes (optional)") },
+            label = { Text(stringResource(R.string.outing_notes)) },
             minLines = 2,
             modifier = Modifier.fillMaxWidth()
         )
         SelectionField(
-            label = "Recorded by",
+            label = stringResource(R.string.outing_recorded_by),
             value = state.adults.firstOrNull { it.id == state.createdByAdultId }?.name.orEmpty(),
             options = state.adults.map { it.id to it.name },
             onSelect = viewModel::setCreatedBy
         )
         Text(
-            text = "All four adults are counted in the split. You can record on behalf of the group.",
+            text = stringResource(R.string.outing_details_helper),
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
@@ -289,7 +300,7 @@ private fun ReceiptStep(
     onEditItem: (ItemDraft) -> Unit,
     onDeleteItem: (ItemDraft) -> Unit
 ) {
-    SectionCard(title = "Receipt") {
+    SectionCard(title = stringResource(R.string.outing_receipt)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Icon(
                 Icons.Filled.ReceiptLong,
@@ -298,7 +309,7 @@ private fun ReceiptStep(
             )
             Spacer(Modifier.width(8.dp))
             Text(
-                text = "The receipt total is the source of truth.",
+                text = stringResource(R.string.outing_receipt_helper),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -306,20 +317,20 @@ private fun ReceiptStep(
         OutlinedTextField(
             value = state.merchant,
             onValueChange = viewModel::updateMerchant,
-            label = { Text("Merchant (optional)") },
+            label = { Text(stringResource(R.string.outing_merchant)) },
             singleLine = true,
             modifier = Modifier.fillMaxWidth()
         )
-        AmountField("Total", state.totalInput, viewModel::updateTotal)
+        AmountField(stringResource(R.string.outing_total), state.totalInput, viewModel::updateTotal)
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             Box(modifier = Modifier.weight(1f)) {
-                AmountField("Tax", state.taxInput, viewModel::updateTax)
+                AmountField(stringResource(R.string.outing_tax), state.taxInput, viewModel::updateTax)
             }
             Box(modifier = Modifier.weight(1f)) {
-                AmountField("Service", state.serviceInput, viewModel::updateService)
+                AmountField(stringResource(R.string.outing_service), state.serviceInput, viewModel::updateService)
             }
         }
-        AmountField("Discount", state.discountInput, viewModel::updateDiscount)
+        AmountField(stringResource(R.string.outing_discount), state.discountInput, viewModel::updateDiscount)
         OutlinedButton(
             onClick = onScan,
             enabled = !state.scanning,
@@ -327,24 +338,26 @@ private fun ReceiptStep(
         ) {
             Icon(Icons.Filled.PhotoCamera, contentDescription = null)
             Text(
-                text = if (state.scanning) "Reading on-device…" else "Scan receipt",
+                text = stringResource(
+                    if (state.scanning) R.string.outing_scanning else R.string.outing_scan
+                ),
                 modifier = Modifier.padding(start = 8.dp)
             )
         }
     }
 
     SectionCard(
-        title = "Items",
+        title = stringResource(R.string.outing_items),
         action = {
             TextButton(onClick = onAddItem) {
                 Icon(Icons.Filled.Add, contentDescription = null)
-                Text("Add", modifier = Modifier.padding(start = 4.dp))
+                Text(stringResource(R.string.action_add), modifier = Modifier.padding(start = 4.dp))
             }
         }
     ) {
         if (state.items.isEmpty()) {
             Text(
-                text = "No items. The total will be split per head across the four adults and present students.",
+                text = stringResource(R.string.outing_items_empty),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -405,7 +418,12 @@ private fun ItemRow(
                     fontWeight = FontWeight.SemiBold
                 )
                 Text(
-                    text = "${item.quantity} × ${formatPeso(item.unitAmountCentavos)} · ${assignmentLabel(item, adults, students)}",
+                    text = stringResource(
+                        R.string.outing_item_row,
+                        item.quantity,
+                        formatPeso(item.unitAmountCentavos),
+                        assignmentLabel(item, adults, students)
+                    ),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -417,13 +435,13 @@ private fun ItemRow(
             )
             Box {
                 IconButton(onClick = { menuOpen = true }) {
-                    Icon(Icons.Filled.MoreVert, contentDescription = "Item actions")
+                    Icon(Icons.Filled.MoreVert, contentDescription = stringResource(R.string.outing_item_actions))
                 }
                 DropdownMenu(expanded = menuOpen, onDismissRequest = { menuOpen = false }) {
-                    DropdownMenuItem(text = { Text("Edit") }, onClick = { menuOpen = false; onEdit() })
-                    DropdownMenuItem(text = { Text("Split") }, onClick = { menuOpen = false; onSplit() })
-                    DropdownMenuItem(text = { Text("Merge with next") }, onClick = { menuOpen = false; onMerge() })
-                    DropdownMenuItem(text = { Text("Delete") }, onClick = { menuOpen = false; onDelete() })
+                    DropdownMenuItem(text = { Text(stringResource(R.string.action_edit)) }, onClick = { menuOpen = false; onEdit() })
+                    DropdownMenuItem(text = { Text(stringResource(R.string.action_split)) }, onClick = { menuOpen = false; onSplit() })
+                    DropdownMenuItem(text = { Text(stringResource(R.string.action_merge_next)) }, onClick = { menuOpen = false; onMerge() })
+                    DropdownMenuItem(text = { Text(stringResource(R.string.action_delete)) }, onClick = { menuOpen = false; onDelete() })
                 }
             }
         }
@@ -432,9 +450,9 @@ private fun ItemRow(
 
 @Composable
 private fun CoverageStep(state: NewOutingUiState, viewModel: NewOutingViewModel) {
-    SectionCard(title = "Who is present?") {
+    SectionCard(title = stringResource(R.string.outing_present_title)) {
         Text(
-            text = "All four adults are always counted. Select the students at the table, then assign each to one adult.",
+            text = stringResource(R.string.outing_present_helper),
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
@@ -456,7 +474,7 @@ private fun CoverageStep(state: NewOutingUiState, viewModel: NewOutingViewModel)
             }
             if (present) {
                 SelectionField(
-                    label = "Covered by",
+                    label = stringResource(R.string.outing_covered_by),
                     value = state.adults.firstOrNull { it.id == state.coverage[student.id] }?.name.orEmpty(),
                     options = state.adults.map { it.id to it.name },
                     onSelect = { viewModel.setCoverage(student.id, it) }
@@ -465,7 +483,7 @@ private fun CoverageStep(state: NewOutingUiState, viewModel: NewOutingViewModel)
         }
         if (state.students.none { it.active }) {
             Text(
-                text = "No active students. The total splits across the four adults.",
+                text = stringResource(R.string.outing_no_students),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -476,9 +494,13 @@ private fun CoverageStep(state: NewOutingUiState, viewModel: NewOutingViewModel)
 @Composable
 private fun ReviewStep(state: NewOutingUiState, viewModel: NewOutingViewModel) {
     val split = state.split
-    SectionCard(title = "Review") {
+    SectionCard(title = stringResource(R.string.outing_review)) {
         Text(
-            text = "${formatPeso(state.totalCentavos)} · ${split?.headcount ?: 0} heads",
+            text = stringResource(
+                R.string.outing_review_headline,
+                formatPeso(state.totalCentavos),
+                split?.headcount ?: 0
+            ),
             style = MaterialTheme.typography.headlineSmall,
             fontWeight = FontWeight.SemiBold
         )
@@ -514,10 +536,15 @@ private fun ReviewStep(state: NewOutingUiState, viewModel: NewOutingViewModel) {
                         )
                     }
                     Text(
-                        text = "Own ${formatPeso(share.ownItemsCentavos)} · " +
-                            "Students ${formatPeso(share.studentItemsCentavos)} · " +
-                            "Shared ${formatPeso(share.sharedHeadCentavos + share.coveredStudentSharedCentavos)} · " +
-                            "Adjustments ${formatPeso(share.adjustmentCentavos + share.gapCentavos)}",
+                        text = stringResource(
+                            R.string.outing_review_breakdown,
+                            formatPeso(share.ownItemsCentavos),
+                            formatPeso(share.studentItemsCentavos),
+                            formatPeso(
+                                share.sharedHeadCentavos + share.coveredStudentSharedCentavos
+                            ),
+                            formatPeso(share.adjustmentCentavos + share.gapCentavos)
+                        ),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.padding(start = 40.dp)
@@ -526,13 +553,13 @@ private fun ReviewStep(state: NewOutingUiState, viewModel: NewOutingViewModel) {
             }
         }
         SelectionField(
-            label = "Who paid?",
+            label = stringResource(R.string.outing_who_paid),
             value = state.adults.firstOrNull { it.id == state.payerId }?.name.orEmpty(),
             options = state.adults.map { it.id to it.name },
             onSelect = viewModel::setPayer
         )
         Text(
-            text = "Finalizing locks the split. You can still record settlements from the ledger.",
+            text = stringResource(R.string.outing_finalize_helper),
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
@@ -563,10 +590,14 @@ private fun ItemDialog(
     var adultId by remember(item?.id) { mutableStateOf(item?.assignedAdultId ?: adults.firstOrNull()?.id) }
     var studentId by remember(item?.id) { mutableStateOf(item?.assignedStudentId ?: students.firstOrNull { it.active }?.id) }
     var localError by remember(item?.id) { mutableStateOf<String?>(null) }
+    val nameError = stringResource(R.string.outing_error_name)
+    val unitError = stringResource(R.string.outing_error_unit)
+    val adultError = stringResource(R.string.outing_error_adult)
+    val studentError = stringResource(R.string.outing_error_student)
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text(if (item == null) "Add item" else "Edit item") },
+        title = { Text(stringResource(if (item == null) R.string.outing_item_add_title else R.string.outing_item_edit_title)) },
         text = {
             Column(
                 modifier = Modifier.verticalScroll(rememberScrollState()),
@@ -575,7 +606,7 @@ private fun ItemDialog(
                 OutlinedTextField(
                     value = name,
                     onValueChange = { name = it },
-                    label = { Text("Item") },
+                    label = { Text(stringResource(R.string.outing_item_name)) },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth()
                 )
@@ -583,36 +614,36 @@ private fun ItemDialog(
                     OutlinedTextField(
                         value = quantity,
                         onValueChange = { quantity = it.filter(Char::isDigit) },
-                        label = { Text("Qty") },
+                        label = { Text(stringResource(R.string.outing_item_qty)) },
                         singleLine = true,
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                         modifier = Modifier.weight(1f)
                     )
                     Box(modifier = Modifier.weight(2f)) {
-                        AmountField("Unit amount", unit, { unit = it })
+                        AmountField(stringResource(R.string.outing_item_unit), unit, { unit = it })
                     }
                 }
-                Text("Assign to", style = MaterialTheme.typography.labelMedium)
+                Text(stringResource(R.string.outing_assign_to), style = MaterialTheme.typography.labelMedium)
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     FilterChip(
                         selected = type == ItemAssignmentType.ADULT,
                         onClick = { type = ItemAssignmentType.ADULT },
-                        label = { Text("Adult") }
+                        label = { Text(stringResource(R.string.outing_assign_adult)) }
                     )
                     FilterChip(
                         selected = type == ItemAssignmentType.STUDENT,
                         onClick = { type = ItemAssignmentType.STUDENT },
-                        label = { Text("Student") }
+                        label = { Text(stringResource(R.string.outing_assign_student)) }
                     )
                     FilterChip(
                         selected = type == ItemAssignmentType.SHARED,
                         onClick = { type = ItemAssignmentType.SHARED },
-                        label = { Text("Shared") }
+                        label = { Text(stringResource(R.string.outing_assign_shared)) }
                     )
                 }
                 if (type == ItemAssignmentType.ADULT) {
                     SelectionField(
-                        label = "Adult",
+                        label = stringResource(R.string.outing_assign_adult),
                         value = adults.firstOrNull { it.id == adultId }?.name.orEmpty(),
                         options = adults.map { it.id to it.name },
                         onSelect = { adultId = it }
@@ -620,7 +651,7 @@ private fun ItemDialog(
                 }
                 if (type == ItemAssignmentType.STUDENT) {
                     SelectionField(
-                        label = "Student",
+                        label = stringResource(R.string.outing_assign_student),
                         value = students.firstOrNull { it.id == studentId }?.name.orEmpty(),
                         options = students.filter { it.active }.map { it.id to it.name },
                         onSelect = { studentId = it }
@@ -640,19 +671,19 @@ private fun ItemDialog(
                 onClick = {
                     val parsed = parsePesoToCentavos(unit)
                     if (name.isBlank()) {
-                        localError = "Enter an item name."
+                        localError = nameError
                         return@TextButton
                     }
                     if (parsed == null) {
-                        localError = "Enter a valid unit amount."
+                        localError = unitError
                         return@TextButton
                     }
                     if (type == ItemAssignmentType.ADULT && adultId == null) {
-                        localError = "Choose an adult."
+                        localError = adultError
                         return@TextButton
                     }
                     if (type == ItemAssignmentType.STUDENT && studentId == null) {
-                        localError = "Choose a student."
+                        localError = studentError
                         return@TextButton
                     }
                     onSave(
@@ -665,22 +696,23 @@ private fun ItemDialog(
                     )
                 }
             ) {
-                Text("Save")
+                Text(stringResource(R.string.action_save))
             }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) { Text("Cancel") }
+            TextButton(onClick = onDismiss) { Text(stringResource(R.string.action_cancel)) }
         }
     )
 }
 
+@Composable
 private fun assignmentLabel(
     item: ItemDraft,
     adults: List<AdultProfileEntity>,
     students: List<StudentEntity>
 ): String = when (item.assignmentType) {
-    ItemAssignmentType.ADULT -> adults.firstOrNull { it.id == item.assignedAdultId }?.name ?: "Adult"
-    ItemAssignmentType.STUDENT -> students.firstOrNull { it.id == item.assignedStudentId }?.name ?: "Student"
-    ItemAssignmentType.SHARED -> "Shared"
-    ItemAssignmentType.UNASSIGNED -> "Unassigned"
+    ItemAssignmentType.ADULT -> adults.firstOrNull { it.id == item.assignedAdultId }?.name ?: stringResource(R.string.outing_assign_adult)
+    ItemAssignmentType.STUDENT -> students.firstOrNull { it.id == item.assignedStudentId }?.name ?: stringResource(R.string.outing_assign_student)
+    ItemAssignmentType.SHARED -> stringResource(R.string.outing_assign_shared)
+    ItemAssignmentType.UNASSIGNED -> stringResource(R.string.outing_assign_unassigned)
 }
