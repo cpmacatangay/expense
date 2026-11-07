@@ -68,11 +68,18 @@ private sealed class SaloDestination(
     data object Ledger : SaloDestination("ledger", "Ledger", Icons.Filled.AccountBalanceWallet)
     data object History : SaloDestination("history", "History", Icons.Filled.History)
     data object Settings : SaloDestination("settings", "Settings", Icons.Filled.Settings)
-
-    companion object {
-        val main = listOf(Home, Students, Ledger, History, Settings)
-    }
 }
+
+// Declared outside the sealed class on purpose. A companion-object initializer inside
+// SaloDestination runs while that class is still initializing, so the `data object`
+// entries can be observed as null. A file-level val is initialized after the objects.
+private val mainDestinations: List<SaloDestination> = listOf(
+    SaloDestination.Home,
+    SaloDestination.Students,
+    SaloDestination.Ledger,
+    SaloDestination.History,
+    SaloDestination.Settings
+)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -96,7 +103,7 @@ fun SaloApp(
 
     Scaffold(
         topBar = {
-            if (SaloDestination.main.any { it.route == currentRoute }) {
+            if (mainDestinations.any { it.route == currentRoute }) {
                 TopAppBar(
                     title = {
                     Row(verticalAlignment = Alignment.CenterVertically) {
@@ -154,9 +161,9 @@ fun SaloApp(
             }
         },
         bottomBar = {
-            if (SaloDestination.main.any { it.route == currentRoute }) {
+            if (mainDestinations.any { it.route == currentRoute }) {
                 NavigationBar {
-                    SaloDestination.main.forEach { destination ->
+                    mainDestinations.forEach { destination ->
                         NavigationBarItem(
                             selected = currentDestination?.hierarchy?.any {
                                 it.route == destination.route
