@@ -68,6 +68,7 @@ class HistoryViewModel @Inject constructor(
         }
         val details = filtered.mapNotNull { outingRepository.getDetails(it.id) }
         val studentRows = mutableMapOf<String, StudentHistory>()
+        val lastDateByStudent = mutableMapOf<String, String>()
         details.forEach { detail ->
             val outing = detail.outing
             detail.coverage.forEach { (studentId, adultId) ->
@@ -76,12 +77,19 @@ class HistoryViewModel @Inject constructor(
                     .filter { it.assignedStudentId == studentId }
                     .sumOf { it.amountCentavos }
                 val current = studentRows[studentId]
+                val previousDate = lastDateByStudent[studentId]
+                val isNewer = previousDate == null || outing.date >= previousDate
+                if (isNewer) lastDateByStudent[studentId] = outing.date
                 studentRows[studentId] = StudentHistory(
                     studentId = studentId,
                     studentName = studentName,
                     meals = (current?.meals ?: 0) + 1,
                     amountCentavos = (current?.amountCentavos ?: 0) + amount,
-                    lastCoveredBy = adultNames[adultId] ?: current?.lastCoveredBy
+                    lastCoveredBy = if (isNewer) {
+                        adultNames[adultId] ?: current?.lastCoveredBy
+                    } else {
+                        current?.lastCoveredBy
+                    }
                 )
             }
         }
