@@ -106,7 +106,10 @@ fun DateField(
                 }
             }
         ) {
-            DatePicker(state = pickerState)
+            DatePicker(
+                state = pickerState,
+                showModeToggle = false
+            )
         }
     }
 }

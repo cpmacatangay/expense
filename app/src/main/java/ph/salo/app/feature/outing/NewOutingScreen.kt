@@ -197,7 +197,7 @@ fun NewOutingScreen(
             ) { step ->
                 // AnimatedContent's content scope is a Box; a Column keeps multi-card steps
                 // (Receipt + Items) stacked instead of overlapping.
-                Column {
+                Column(verticalArrangement = Arrangement.spacedBy(SaloSpacing.sm)) {
                     when (step) {
                     0 -> DetailsStep(state, viewModel)
                     1 -> ReceiptStep(
