@@ -18,6 +18,8 @@
     <string name="action_edit">Edit</string>
     <string name="action_merge_next">Merge with next</string>
     <string name="action_next">Next</string>
+    <string name="action_ok">OK</string>
+    <string name="date_field_pick">Pick a date</string>
     <string name="action_open">Open</string>
     <string name="action_remove">Remove</string>
     <string name="action_save">Save</string>
@@ -137,7 +139,7 @@
     <string name="ledger_from">From</string>
     <string name="ledger_to">To</string>
     <string name="ledger_amount">Amount</string>
-    <string name="ledger_date">Date (YYYY-MM-DD)</string>
+    <string name="ledger_date">Date</string>
     <string name="ledger_note">Note (optional)</string>
     <string name="ledger_error_two_adults">Choose two different adults.</string>
     <string name="ledger_error_amount">Enter a valid amount.</string>
@@ -152,7 +154,7 @@
     <string name="outing_step_students">Students</string>
     <string name="outing_step_review">Review</string>
     <string name="outing_meal_details">Meal details</string>
-    <string name="outing_date">Date (YYYY-MM-DD)</string>
+    <string name="outing_date">Date</string>
     <string name="outing_place">Place (optional)</string>
     <string name="outing_notes">Notes (optional)</string>
     <string name="outing_recorded_by">Recorded by</string>

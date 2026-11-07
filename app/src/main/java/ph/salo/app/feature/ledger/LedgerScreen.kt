@@ -45,6 +45,7 @@ import ph.salo.app.core.database.SettlementEntity
 import ph.salo.app.core.money.formatPeso
 import ph.salo.app.core.money.parsePesoToCentavos
 import ph.salo.app.ui.components.ConfirmDialog
+import ph.salo.app.ui.components.DateField
 import ph.salo.app.ui.theme.SaloSpacing
 import ph.salo.app.ui.components.SaloAvatar
 import ph.salo.app.ui.components.LoadingState
@@ -379,12 +380,10 @@ private fun PaymentDialog(
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth()
                 )
-                OutlinedTextField(
+                DateField(
+                    label = stringResource(R.string.ledger_date),
                     value = date,
-                    onValueChange = { date = it },
-                    label = { Text(stringResource(R.string.ledger_date)) },
-                    singleLine = true,
-                    modifier = Modifier.fillMaxWidth()
+                    onDateSelected = { date = it }
                 )
                 OutlinedTextField(
                     value = note,

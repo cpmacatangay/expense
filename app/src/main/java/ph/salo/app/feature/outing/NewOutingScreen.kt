@@ -70,6 +70,7 @@ import ph.salo.app.core.money.formatCentavosPlain
 import ph.salo.app.core.money.formatPeso
 import ph.salo.app.core.money.parsePesoToCentavos
 import ph.salo.app.ui.components.ConfirmDialog
+import ph.salo.app.ui.components.DateField
 import ph.salo.app.ui.components.SaloAvatar
 import ph.salo.app.ui.theme.SaloSpacing
 import ph.salo.app.ui.components.SectionCard
@@ -194,7 +195,10 @@ fun NewOutingScreen(
                 },
                 label = "wizardStep"
             ) { step ->
-                when (step) {
+                // AnimatedContent's content scope is a Box; a Column keeps multi-card steps
+                // (Receipt + Items) stacked instead of overlapping.
+                Column {
+                    when (step) {
                     0 -> DetailsStep(state, viewModel)
                     1 -> ReceiptStep(
                         state = state,
@@ -217,6 +221,7 @@ fun NewOutingScreen(
 
                     2 -> CoverageStep(state, viewModel)
                     else -> ReviewStep(state, viewModel)
+                    }
                 }
             }
         }
@@ -321,12 +326,10 @@ fun NewOutingScreen(
 @Composable
 private fun DetailsStep(state: NewOutingUiState, viewModel: NewOutingViewModel) {
     SectionCard(title = stringResource(R.string.outing_meal_details)) {
-        OutlinedTextField(
+        DateField(
+            label = stringResource(R.string.outing_date),
             value = state.date,
-            onValueChange = viewModel::updateDate,
-            label = { Text(stringResource(R.string.outing_date)) },
-            singleLine = true,
-            modifier = Modifier.fillMaxWidth()
+            onDateSelected = viewModel::updateDate
         )
         OutlinedTextField(
             value = state.place,
