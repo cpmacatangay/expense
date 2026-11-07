@@ -58,10 +58,10 @@ class AppViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            val firstAdult = adults.first().firstOrNull() ?: return@launch
+            val loadedAdults = adults.first { it.isNotEmpty() }
             val current = profilePreferences.selectedAdultId.first()
-            if (current == null || adults.first().none { it.id == current }) {
-                profilePreferences.setSelectedAdultId(firstAdult.id)
+            if (current == null || loadedAdults.none { it.id == current }) {
+                profilePreferences.setSelectedAdultId(loadedAdults.first().id)
             }
         }
     }
