@@ -188,12 +188,13 @@ fun SaloApp(
                                 it.route == destination.route
                             } == true,
                             onClick = {
+                                // Do not save/restore the stack here: in-app links to Ledger or
+                                // History push those onto the Home stack, and restoring it later
+                                // reopened the wrong tab. Pop back to the start destination and
+                                // push the tapped tab, which always lands where the user asked.
                                 navController.navigate(destination.route) {
-                                    popUpTo(navController.graph.startDestinationId) {
-                                        saveState = true
-                                    }
+                                    popUpTo(navController.graph.startDestinationId)
                                     launchSingleTop = true
-                                    restoreState = true
                                 }
                             },
                             icon = {

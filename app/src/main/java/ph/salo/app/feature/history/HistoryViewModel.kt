@@ -3,11 +3,13 @@ package ph.salo.app.feature.history
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 import ph.salo.app.core.data.AdultProfileRepository
 import ph.salo.app.core.data.OutingRepository
 import ph.salo.app.core.data.StudentRepository
@@ -48,6 +50,9 @@ class HistoryViewModel @Inject constructor(
 ) : ViewModel() {
     private val range = MutableStateFlow(HistoryRange.ALL_TIME)
     private val refresh = MutableStateFlow(0)
+
+    private val _refreshing = MutableStateFlow(false)
+    val refreshing: StateFlow<Boolean> = _refreshing
 
     val state: StateFlow<HistoryUiState> = combine(
         outingRepository.observeFinalized(),
@@ -110,7 +115,12 @@ class HistoryViewModel @Inject constructor(
     }
 
     fun refresh() {
-        refresh.value += 1
+        viewModelScope.launch {
+            _refreshing.value = true
+            refresh.value += 1
+            delay(350)
+            _refreshing.value = false
+        }
     }
 
     suspend fun csv(): String = exportManager.csv()

@@ -5,10 +5,12 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import ph.salo.app.R
@@ -34,24 +36,40 @@ data class LedgerUiState(
 @HiltViewModel
 class LedgerViewModel @Inject constructor(
     @ApplicationContext private val context: Context,
-    ledgerRepository: LedgerRepository,
-    adultRepository: AdultProfileRepository,
+    private val ledgerRepository: LedgerRepository,
+    private val adultRepository: AdultProfileRepository,
     private val backupScheduler: BackupScheduler
 ) : ViewModel() {
-    val state: StateFlow<LedgerUiState> = combine(
-        ledgerRepository.observeBalances(),
-        ledgerRepository.observeTransfers(),
-        ledgerRepository.observeSettlements(),
-        adultRepository.observeAll()
-    ) { balances, transfers, settlements, adults ->
-        LedgerUiState(
-            balances = balances,
-            transfers = transfers,
-            settlements = settlements,
-            adults = adults,
-            loaded = true
-        )
+    private val refreshTick = MutableStateFlow(0)
+
+    private val _refreshing = MutableStateFlow(false)
+    val refreshing: StateFlow<Boolean> = _refreshing
+
+    val state: StateFlow<LedgerUiState> = refreshTick.flatMapLatest {
+        combine(
+            ledgerRepository.observeBalances(),
+            ledgerRepository.observeTransfers(),
+            ledgerRepository.observeSettlements(),
+            adultRepository.observeAll()
+        ) { balances, transfers, settlements, adults ->
+            LedgerUiState(
+                balances = balances,
+                transfers = transfers,
+                settlements = settlements,
+                adults = adults,
+                loaded = true
+            )
+        }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), LedgerUiState())
+
+    fun refresh() {
+        viewModelScope.launch {
+            _refreshing.value = true
+            refreshTick.value += 1
+            delay(350)
+            _refreshing.value = false
+        }
+    }
 
     private val _saving = MutableStateFlow(false)
     val saving: StateFlow<Boolean> = _saving

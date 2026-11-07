@@ -5,9 +5,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import ph.salo.app.R
@@ -20,8 +22,23 @@ class StudentsViewModel @Inject constructor(
     @ApplicationContext private val context: Context,
     private val repository: StudentRepository
 ) : ViewModel() {
-    val students: StateFlow<List<StudentEntity>> = repository.observeAll()
+    private val refreshTick = MutableStateFlow(0)
+
+    val students: StateFlow<List<StudentEntity>> = refreshTick
+        .flatMapLatest { repository.observeAll() }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+
+    private val _refreshing = MutableStateFlow(false)
+    val refreshing: StateFlow<Boolean> = _refreshing
+
+    fun refresh() {
+        viewModelScope.launch {
+            _refreshing.value = true
+            refreshTick.value += 1
+            delay(350)
+            _refreshing.value = false
+        }
+    }
 
     private val _saving = MutableStateFlow(false)
     val saving: StateFlow<Boolean> = _saving

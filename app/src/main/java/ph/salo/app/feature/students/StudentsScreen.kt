@@ -3,6 +3,7 @@ package ph.salo.app.feature.students
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -15,10 +16,12 @@ import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Restore
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -41,11 +44,13 @@ import ph.salo.app.ui.components.EmptyState
 import ph.salo.app.ui.components.SaloAvatar
 import ph.salo.app.ui.components.SectionCard
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun StudentsScreen(
     viewModel: StudentsViewModel = hiltViewModel()
 ) {
     val students by viewModel.students.collectAsStateWithLifecycle()
+    val refreshing by viewModel.refreshing.collectAsStateWithLifecycle()
     val saving by viewModel.saving.collectAsStateWithLifecycle()
     val error by viewModel.error.collectAsStateWithLifecycle()
     val active = students.filter { it.active }
@@ -54,6 +59,11 @@ fun StudentsScreen(
     var dialogOpen by remember { mutableStateOf(false) }
     var pendingArchive by remember { mutableStateOf<StudentEntity?>(null) }
 
+    PullToRefreshBox(
+        isRefreshing = refreshing,
+        onRefresh = viewModel::refresh,
+        modifier = Modifier.fillMaxSize()
+    ) {
     Column(modifier = Modifier.fillMaxWidth()) {
         Row(
             modifier = Modifier
@@ -154,6 +164,7 @@ fun StudentsScreen(
                 }
             }
         }
+    }
     }
 
     if (dialogOpen) {
