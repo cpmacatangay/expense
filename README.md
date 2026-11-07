@@ -97,6 +97,20 @@ specs/
 The schema stores versioned JSON snapshots in `public.ledger_snapshots` with owner-only row-level
 security. Receipt images and credentials are never included.
 
+## Brand
+
+The final identity is **Salo S** — a bold custom S built from the same rounded geometry as a shared
+table. Brand sources and the full kit live in `brand/logo/`:
+
+- `brand/logo/final-salo-s.svg` — symbol master
+- `brand/logo/final-wordmark.svg` — custom wordmark
+- `brand/logo/salo-horizontal.svg` — primary lockup
+- `brand/logo/salo-stacked.svg` — stacked lockup
+- `brand/logo/kit/` — colour variants, Android adaptive icon, web icons, guidelines, and presentation
+
+The Android launcher icon has been updated to the new mark. See
+`brand/logo/kit/brand-guidelines.md` for colour, clear space, minimum sizes, and misuse rules.
+
 ## Build
 
 The Kotlin project is scaffolded at the repository root.

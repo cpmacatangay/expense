@@ -1,0 +1,29 @@
+{
+  "brand": "Salo",
+  "tagline": "A private meal ledger for shared tables",
+  "brief": "Salo is an Android-only meal ledger for four adults covering students. The owner records receipt items, assigns each item to an adult, a student, or the shared table, and shares a recap with the other adults. The identity needed to feel warm enough for a family meal and exact enough for a ledger.",
+  "adjectives": ["warm", "exact", "private", "calm", "quietly Filipino"],
+  "industry": "consumer-app",
+  "brand_color": "#1F5C45",
+  "tile_color": "#1F5C45",
+  "greyscale": false,
+  "final": true,
+  "round": 1,
+  "concepts": [
+    {
+      "name": "Salo S",
+      "symbol": "../final-salo-s.svg",
+      "lockup": "../salo-horizontal.svg",
+      "stacked": "../salo-stacked.svg",
+      "avatar": "../final-salo-s.svg",
+      "idea": "A bold custom S built from the same rounded geometry as a shared table.",
+      "rationale": [
+        "The name is the mark: Salo means to share a meal.",
+        "The S survives 16 px and works as the Android launcher icon.",
+        "Deep green and warm cream feel private and calm; terracotta is a small accent.",
+        "The custom wordmark keeps the identity from looking like a stock monogram."
+      ]
+    }
+  ],
+  "recommendation": "Salo S is the final direction. It is distinctive at app-icon size, warm without food clichés, and simple enough to become a recognizable signature for the ledger."
+}

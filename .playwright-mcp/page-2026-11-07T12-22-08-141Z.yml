@@ -1,0 +1,182 @@
+- generic [active] [ref=e1]:
+  - banner [ref=e2]:
+    - heading "Logo test sheet — Salo" [level=1] [ref=e3]
+    - generic [ref=e4]: "2 file(s) · brand colour #1F5C45 (given). Look critically; fix what fails, then re-run."
+    - list [ref=e5]:
+      - listitem [ref=e6]: Is the idea still clear at 16–24 px? Which details disappear first?
+      - listitem [ref=e7]: Does the silhouette survive the squint (blur) test?
+      - listitem [ref=e8]: Does the one-colour black version still carry the concept?
+      - listitem [ref=e9]: Does the reversed (white on dark) version look heavier? (irradiation → thin it)
+      - listitem [ref=e10]: Any unintended readings when mirrored or rotated 180°?
+      - listitem [ref=e11]: Does it hold up on the brand colour, a photo and a pattern?
+      - listitem [ref=e12]: In the favicon/app-icon tests, is the symbol optically sized and centred?
+      - listitem [ref=e13]: "On the shelf: does it stand out from the references, or blend in?"
+      - listitem [ref=e14]: "Greyscale: do colour segments still separate by value?"
+      - listitem [ref=e15]: Would you recognise it again tomorrow from memory?
+  - generic [ref=e16]:
+    - generic [ref=e17]:
+      - heading "Side by side" [level=2] [ref=e18]
+      - heading "96 px" [level=3] [ref=e19]
+      - generic [ref=e20]:
+        - generic [ref=e21]: final-salo-s
+        - generic [ref=e24]: salo-horizontal
+      - heading "32 px" [level=3] [ref=e27]
+      - generic [ref=e28]:
+        - generic [ref=e29]: final-salo-s
+        - generic [ref=e32]: salo-horizontal
+      - heading "one-colour" [level=3] [ref=e35]
+      - generic [ref=e36]:
+        - generic [ref=e37]: final-salo-s
+        - generic [ref=e40]: salo-horizontal
+      - heading "reversed" [level=3] [ref=e43]
+      - generic [ref=e44]:
+        - generic [ref=e45]: final-salo-s
+        - generic [ref=e48]: salo-horizontal
+    - generic [ref=e51]:
+      - heading "final-salo-s" [level=2] [ref=e52]
+      - heading "Scale ladder (height in px)" [level=3] [ref=e53]
+      - generic [ref=e54]:
+        - generic [ref=e55]: 16px
+        - generic [ref=e58]: 20px
+        - generic [ref=e61]: 24px
+        - generic [ref=e64]: 32px
+        - generic [ref=e67]: 48px
+        - generic [ref=e70]: 64px
+        - generic [ref=e73]: 96px
+        - generic [ref=e76]: 128px
+        - generic [ref=e79]: 256px
+      - heading "Pixel test — rendered at 16 / 32 / 48 px, enlarged" [level=3] [ref=e82]
+      - generic [ref=e83]:
+        - generic [ref=e84]: "16px on #ffffff"
+        - generic [ref=e87]: "16px on #111111"
+        - generic [ref=e90]: "32px on #ffffff"
+        - generic [ref=e93]: "32px on #111111"
+        - generic [ref=e96]: "48px on #ffffff"
+        - generic [ref=e99]: "48px on #111111"
+      - heading "Backgrounds" [level=3] [ref=e102]
+      - generic [ref=e103]:
+        - generic [ref=e104]: white
+        - generic [ref=e107]: light grey
+        - generic [ref=e110]: black
+        - generic [ref=e113]: black (original colours)
+        - generic [ref=e116]: "brand #1F5C45"
+        - generic [ref=e119]: brand (white)
+        - generic [ref=e122]: photo-like
+        - generic [ref=e125]: pattern
+      - heading "Treatments" [level=3] [ref=e128]
+      - generic [ref=e129]:
+        - generic [ref=e130]: original
+        - generic [ref=e133]: greyscale
+        - generic [ref=e136]: one-colour black
+        - generic [ref=e139]: one-colour white
+        - generic [ref=e142]: squint (blur 2px)
+        - generic [ref=e145]: squint small (blur 1px @48)
+        - generic [ref=e148]: mirrored
+        - generic [ref=e151]: rotated 180°
+      - heading "Contexts" [level=3] [ref=e154]
+      - generic [ref=e155]:
+        - generic [ref=e156]:
+          - generic [ref=e157]:
+            - generic [ref=e158]: final-salo-s — Home
+            - generic [ref=e159]: ✕
+          - generic [ref=e160]: browser tab (16 px favicon)
+        - generic [ref=e161]:
+          - generic [ref=e162]:
+            - generic [ref=e163]: app
+            - generic [ref=e165]: app
+            - generic [ref=e167]: app
+            - generic [ref=e169]: app
+            - generic [ref=e171]: app
+            - generic [ref=e173]: app
+            - generic [ref=e175]: final-salo
+            - generic [ref=e177]: app
+            - generic [ref=e179]: app
+            - generic [ref=e181]: app
+            - generic [ref=e183]: app
+            - generic [ref=e185]: app
+          - generic [ref=e187]: app icon (white symbol on brand colour)
+        - generic [ref=e188]: avatar circle crop
+        - generic [ref=e191]:
+          - generic [ref=e192]:
+            - generic [ref=e193]: Product
+            - generic [ref=e194]: Pricing
+            - generic [ref=e195]: About
+            - generic [ref=e196]: Sign up
+          - generic [ref=e197]: website header
+        - generic [ref=e198]:
+          - generic [ref=e199]: Alex MorganFounderalex@example.com · +00 000 000 000
+          - generic [ref=e201]: business card (3.5 × 2 in)
+    - generic [ref=e202]:
+      - heading "salo-horizontal" [level=2] [ref=e203]
+      - heading "Scale ladder (height in px)" [level=3] [ref=e204]
+      - generic [ref=e205]:
+        - generic [ref=e206]: 16px
+        - generic [ref=e209]: 20px
+        - generic [ref=e212]: 24px
+        - generic [ref=e215]: 32px
+        - generic [ref=e218]: 48px
+        - generic [ref=e221]: 64px
+        - generic [ref=e224]: 96px
+        - generic [ref=e227]: 128px
+        - generic [ref=e230]: 256px
+      - heading "Pixel test — rendered at 16 / 32 / 48 px, enlarged" [level=3] [ref=e233]
+      - generic [ref=e234]:
+        - generic [ref=e235]: "16px on #ffffff"
+        - generic [ref=e238]: "16px on #111111"
+        - generic [ref=e241]: "32px on #ffffff"
+        - generic [ref=e244]: "32px on #111111"
+        - generic [ref=e247]: "48px on #ffffff"
+        - generic [ref=e250]: "48px on #111111"
+      - heading "Backgrounds" [level=3] [ref=e253]
+      - generic [ref=e254]:
+        - generic [ref=e255]: white
+        - generic [ref=e258]: light grey
+        - generic [ref=e261]: black
+        - generic [ref=e264]: black (original colours)
+        - generic [ref=e267]: "brand #1F5C45"
+        - generic [ref=e270]: brand (white)
+        - generic [ref=e273]: photo-like
+        - generic [ref=e276]: pattern
+      - heading "Treatments" [level=3] [ref=e279]
+      - generic [ref=e280]:
+        - generic [ref=e281]: original
+        - generic [ref=e284]: greyscale
+        - generic [ref=e287]: one-colour black
+        - generic [ref=e290]: one-colour white
+        - generic [ref=e293]: squint (blur 2px)
+        - generic [ref=e296]: squint small (blur 1px @48)
+        - generic [ref=e299]: mirrored
+        - generic [ref=e302]: rotated 180°
+      - heading "Contexts" [level=3] [ref=e305]
+      - generic [ref=e306]:
+        - generic [ref=e307]:
+          - generic [ref=e308]:
+            - generic [ref=e309]: salo-horizontal — Home
+            - generic [ref=e310]: ✕
+          - generic [ref=e311]: browser tab (16 px favicon)
+        - generic [ref=e312]:
+          - generic [ref=e313]:
+            - generic [ref=e314]: app
+            - generic [ref=e316]: app
+            - generic [ref=e318]: app
+            - generic [ref=e320]: app
+            - generic [ref=e322]: app
+            - generic [ref=e324]: app
+            - generic [ref=e326]: salo-horiz
+            - generic [ref=e328]: app
+            - generic [ref=e330]: app
+            - generic [ref=e332]: app
+            - generic [ref=e334]: app
+            - generic [ref=e336]: app
+          - generic [ref=e338]: app icon (white symbol on brand colour)
+        - generic [ref=e339]: avatar circle crop
+        - generic [ref=e342]:
+          - generic [ref=e343]:
+            - generic [ref=e344]: Product
+            - generic [ref=e345]: Pricing
+            - generic [ref=e346]: About
+            - generic [ref=e347]: Sign up
+          - generic [ref=e348]: website header
+        - generic [ref=e349]:
+          - generic [ref=e350]: Alex MorganFounderalex@example.com · +00 000 000 000
+          - generic [ref=e352]: business card (3.5 × 2 in)
