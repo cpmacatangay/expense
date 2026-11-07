@@ -7,8 +7,12 @@ item to an adult, a student, or the shared table, and shares a recap with the ot
 ## Status
 
 The specification and plan have been revised for a native Kotlin Android app. The previous
-React/Capacitor/PWA implementation has been removed and preserved in Git history. The Kotlin
-project is not scaffolded yet.
+React/Capacitor/PWA implementation has been removed and preserved in Git history.
+
+The Kotlin project is scaffolded with Jetpack Compose, Material 3, Room, Hilt, WorkManager, and
+the navigation shell. The pure Kotlin money engine is implemented and tested, including item
+assignment, shared per-head costs, proportional adjustments, total-gap reconciliation, balances,
+and settlements. The feature screens and persistence layer are next.
 
 ## Product decisions
 
@@ -31,6 +35,26 @@ project is not scaffolded yet.
 - **Receipt photos**: local-only; never uploaded.
 - **OCR**: ML Kit Text Recognition v2, on-device.
 - **Distribution**: sideloaded APK, application id `ph.salo.app`.
+
+## Current implementation
+
+- Native Android Gradle project at the repository root.
+- Single-activity Compose app with Material 3 theme, dynamic color, and a green fallback.
+- Navigation shell for Home, Students, Ledger, and Settings.
+- Hilt application wiring and Room/KSP/WorkManager dependencies.
+- Pure Kotlin money engine:
+  - item assignment to adult, student, or shared;
+  - student items charged to the covering adult;
+  - shared items split per head;
+  - proportional tax/service/discount allocation;
+  - total-gap reconciliation;
+  - exact-centavo largest-remainder rounding;
+  - per-head fallback when there are no items;
+  - balances and simplified settlements.
+- JUnit unit tests and deterministic randomized invariant tests for the money engine.
+
+Pending: Room schema and repositories, core Compose screens, recap sharing, Google auth/Supabase
+backup, OCR, history, export, and release signing.
 
 ## Planned architecture
 
@@ -75,12 +99,31 @@ security. Receipt images and credentials are never included.
 
 ## Build
 
-Build instructions will be added when the Kotlin project is scaffolded.
+The Kotlin project is scaffolded at the repository root.
 
 ```powershell
 .\gradlew.bat assembleDebug
 adb install -r app\build\outputs\apk\debug\app-debug.apk
 ```
+
+Toolchain used by the scaffold:
+
+- Gradle 9.5.0
+- Android Gradle Plugin 9.2.1
+- Kotlin 2.2.20
+- JDK 21
+- compileSdk / targetSdk / minSdk 37
+
+KSP and Hilt currently require opting out of AGP's built-in Kotlin support, so
+`gradle.properties` contains:
+
+```properties
+android.builtInKotlin=false
+android.newDsl=false
+```
+
+These options are required until the KSP/Hilt toolchain supports built-in Kotlin.
+The app builds and produces `app/build/outputs/apk/debug/app-debug.apk`.
 
 ## Specification
 

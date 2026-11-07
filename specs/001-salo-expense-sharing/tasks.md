@@ -10,50 +10,50 @@
 
 ## Phase 0: Baseline and implementation reset
 
-- [ ] T001 Confirm the Git baseline commit exists; if not, initialize Git and commit the current tree before deleting anything.
-- [ ] T002 Delete the React application, Vite/PWA assets, Tailwind styles, and web entry points.
-- [ ] T003 Delete the Capacitor Android shell, Capacitor configuration, native web bridge, and web release docs.
-- [ ] T004 Delete web tests, Playwright/Vitest configuration, Tesseract assets, and browser OCR fixtures.
-- [ ] T005 Delete web dependencies and lockfiles (`package.json`, `package-lock.json`, `node_modules`).
-- [ ] T006 Replace `.gitignore` with an Android/Kotlin-oriented ignore list.
-- [ ] T007 Replace the old Supabase multi-user migrations and seed with the new single-owner snapshot schema.
-- [ ] T008 Rewrite `README.md` for the Android Kotlin project and mark implementation as pending.
-- [ ] T009 Commit the implementation reset as a separate commit.
+- [x] T001 Confirm the Git baseline commit exists; if not, initialize Git and commit the current tree before deleting anything.
+- [x] T002 Delete the React application, Vite/PWA assets, Tailwind styles, and web entry points.
+- [x] T003 Delete the Capacitor Android shell, Capacitor configuration, native web bridge, and web release docs.
+- [x] T004 Delete web tests, Playwright/Vitest configuration, Tesseract assets, and browser OCR fixtures.
+- [x] T005 Delete web dependencies and lockfiles (`package.json`, `package-lock.json`, `node_modules`).
+- [x] T006 Replace `.gitignore` with an Android/Kotlin-oriented ignore list.
+- [x] T007 Replace the old Supabase multi-user migrations and seed with the new single-owner snapshot schema.
+- [x] T008 Rewrite `README.md` for the Android Kotlin project and mark implementation as pending.
+- [x] T009 Commit the implementation reset as a separate commit.
 
 ## Phase 1: Android project foundation
 
-- [ ] T010 Create the root Gradle Android project (`settings.gradle.kts`, `build.gradle.kts`, `gradle.properties`, Gradle wrapper).
-- [ ] T011 Add the `app` module with `applicationId = "ph.salo.app"`.
-- [ ] T012 Configure `compileSdk 37`, `targetSdk 37`, `minSdk 37`, JDK 21, and Kotlin/Compose compiler versions.
-- [ ] T013 Add a Gradle version catalog for Compose, Room, Hilt, WorkManager, Navigation, Kotlinx Serialization, CameraX, ML Kit, Supabase, and test libraries.
-- [ ] T014 Create `SaloApplication` and register it in `AndroidManifest.xml`.
-- [ ] T015 Configure Hilt application and modules.
-- [ ] T016 Create the single `MainActivity` with edge-to-edge Compose content.
-- [ ] T017 Create the Material 3 theme with the Salo green fallback palette.
-- [ ] T018 Add dynamic color support for Android 12+ with the green fallback.
-- [ ] T019 Add light/dark color schemes and Material 3 typography.
-- [ ] T020 Create the app navigation graph and routes for Home, Students, New Outing, Outing Detail, Ledger, History, and Settings.
-- [ ] T021 Create the root `Scaffold` with Material 3 `NavigationBar` and FAB.
+- [x] T010 Create the root Gradle Android project (`settings.gradle.kts`, `build.gradle.kts`, `gradle.properties`, Gradle wrapper).
+- [x] T011 Add the `app` module with `applicationId = "ph.salo.app"`.
+- [x] T012 Configure `compileSdk 37`, `targetSdk 37`, `minSdk 37`, JDK 21, and Kotlin/Compose compiler versions.
+- [x] T013 Add a Gradle version catalog for Compose, Room, Hilt, WorkManager, Navigation, Kotlinx Serialization, CameraX, ML Kit, Supabase, and test libraries.
+- [x] T014 Create `SaloApplication` and register it in `AndroidManifest.xml`.
+- [x] T015 Configure Hilt application and modules.
+- [x] T016 Create the single `MainActivity` with edge-to-edge Compose content.
+- [x] T017 Create the Material 3 theme with the Salo green fallback palette.
+- [x] T018 Add dynamic color support for Android 12+ with the green fallback.
+- [x] T019 Add light/dark color schemes and Material 3 typography.
+- [x] T020 Create the app navigation graph and routes for Home, Students, New Outing, Outing Detail, Ledger, History, and Settings.
+- [x] T021 Create the root `Scaffold` with Material 3 `NavigationBar` and FAB.
 - [ ] T022 Build and launch the empty app on the S26 Ultra.
 
 ## Phase 2: Money engine and allocation rules
 
-- [ ] T023 Define pure Kotlin domain models for adults, students, items, coverage, shares, and allocation results.
-- [ ] T024 Implement integer-centavo helpers and peso formatting/parsing.
-- [ ] T025 Define `MoneyAllocationInput` and `MoneyAllocationResult`.
-- [ ] T026 Implement input validation: positive total, one receipt, one payer, unique item assignment, valid adult/student ids, one adult per present student.
-- [ ] T027 Implement adult-assigned item subtotals.
-- [ ] T028 Implement student-assigned item subtotals charged to the covering adult.
-- [ ] T029 Implement shared-item per-head allocation across four adults plus present students.
-- [ ] T030 Implement proportional tax, service-charge, and discount allocation.
-- [ ] T031 Implement total-gap distribution so the final shares sum exactly to the receipt total.
-- [ ] T032 Implement deterministic largest-remainder rounding with stable adult order and negative-adjustment handling.
-- [ ] T033 Implement the no-items per-head fallback.
-- [ ] T034 Add a debug assertion and production-safe check that finalized shares sum exactly to the receipt total.
-- [ ] T035 Add unit tests for adult items, student items, shared items, and mixed assignments.
-- [ ] T036 Add property tests for exact totals across randomized amounts and assignments.
-- [ ] T037 Add tests for tax, service charge, discounts, negative gaps, and zero-item fallbacks.
-- [ ] T038 Add a test case for the spec's worked example with four adults, two students, a shared item, and tax.
+- [x] T023 Define pure Kotlin domain models for adults, students, items, coverage, shares, and allocation results.
+- [x] T024 Implement integer-centavo helpers and peso formatting/parsing.
+- [x] T025 Define `MoneyAllocationInput` and `MoneyAllocationResult`.
+- [x] T026 Implement input validation: positive total, one receipt, one payer, unique item assignment, valid adult/student ids, one adult per present student.
+- [x] T027 Implement adult-assigned item subtotals.
+- [x] T028 Implement student-assigned item subtotals charged to the covering adult.
+- [x] T029 Implement shared-item per-head allocation across four adults plus present students.
+- [x] T030 Implement proportional tax, service-charge, and discount allocation.
+- [x] T031 Implement total-gap distribution so the final shares sum exactly to the receipt total.
+- [x] T032 Implement deterministic largest-remainder rounding with stable adult order and negative-adjustment handling.
+- [x] T033 Implement the no-items per-head fallback.
+- [x] T034 Add a debug assertion and production-safe check that finalized shares sum exactly to the receipt total.
+- [x] T035 Add unit tests for adult items, student items, shared items, and mixed assignments.
+- [x] T036 Add property tests for exact totals across randomized amounts and assignments.
+- [x] T037 Add tests for tax, service charge, discounts, negative gaps, and zero-item fallbacks.
+- [x] T038 Add a test case for the spec's worked example with four adults, two students, a shared item, and tax.
 
 ## Phase 3: Room persistence and repositories
 
@@ -198,3 +198,4 @@
 - Receipt images are local-only and excluded from backup.
 - Restore is empty-database-only.
 - The physical device is the primary acceptance target.
+- T022 build succeeded; installation is pending a connected S26 Ultra (`adb devices` shows none).
