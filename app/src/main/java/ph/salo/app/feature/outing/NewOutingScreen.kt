@@ -345,12 +345,6 @@ private fun DetailsStep(state: NewOutingUiState, viewModel: NewOutingViewModel) 
             minLines = 2,
             modifier = Modifier.fillMaxWidth()
         )
-        SelectionField(
-            label = stringResource(R.string.outing_recorded_by),
-            value = state.adults.firstOrNull { it.id == state.createdByAdultId }?.name.orEmpty(),
-            options = state.adults.map { it.id to it.name },
-            onSelect = viewModel::setCreatedBy
-        )
         Text(
             text = stringResource(R.string.outing_details_helper),
             style = MaterialTheme.typography.bodySmall,

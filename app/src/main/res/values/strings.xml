@@ -7,8 +7,6 @@
     <string name="nav_ledger">Ledger</string>
     <string name="nav_history">History</string>
     <string name="nav_settings">Settings</string>
-    <string name="switch_profile_description">Switch profile. Current profile %1$s.</string>
-    <string name="switch_profile_action">Switch profile</string>
 
     <!-- Shared actions -->
     <string name="action_add">Add</string>
@@ -159,8 +157,7 @@
     <string name="outing_date">Date</string>
     <string name="outing_place">Place (optional)</string>
     <string name="outing_notes">Notes (optional)</string>
-    <string name="outing_recorded_by">Recorded by</string>
-    <string name="outing_details_helper">All four adults are counted in the split. You can record on behalf of the group.</string>
+    <string name="outing_details_helper">All four adults are counted in the split.</string>
     <string name="outing_receipt">Receipt</string>
     <string name="outing_receipt_helper">The receipt total is the source of truth.</string>
     <string name="outing_merchant">Merchant (optional)</string>
@@ -232,12 +229,11 @@
     <string name="settings_status_signed_in">SIGNED IN</string>
     <string name="settings_status_backed_up">BACKED UP</string>
     <string name="settings_status_error">BACKUP ERROR</string>
-    <string name="settings_local_profile">Local profile</string>
+    <string name="settings_local_profile">Ledger owner</string>
     <string name="settings_sign_out">Sign out</string>
-    <string name="settings_adults">Adult profiles</string>
-    <string name="settings_selected">Selected</string>
-    <string name="settings_use">Use</string>
-    <string name="settings_adults_helper">All four adults share this ledger. Select a profile to record on their behalf.</string>
+    <string name="settings_adults">Participants</string>
+    <string name="settings_owner">Owner</string>
+    <string name="settings_adults_helper">All four adults share this ledger. Only the owner records outings.</string>
     <string name="settings_backup">Private backup</string>
     <string name="settings_status_label">Status</string>
     <string name="settings_backup_backed_up">Backed up</string>
@@ -284,6 +280,7 @@
     <string name="msg_recap_failed">Could not render the recap.</string>
     <string name="msg_reopened">Outing reopened. Shares were cleared.</string>
     <string name="msg_reopen_failed">Could not reopen the outing.</string>
+    <string name="msg_owner_missing">No ledger owner found.</string>
     <string name="msg_remove_failed">Could not remove the outing.</string>
     <string name="settlement_direction">%1$s → %2$s</string>
 

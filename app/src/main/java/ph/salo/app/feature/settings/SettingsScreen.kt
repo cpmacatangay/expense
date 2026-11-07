@@ -169,16 +169,12 @@ fun SettingsScreen(
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
-                    if (adult.id == selectedAdult?.id) {
+                    if (adult.isOwner) {
                         Text(
-                            text = stringResource(R.string.settings_selected),
+                            text = stringResource(R.string.settings_owner),
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.primary
                         )
-                    } else {
-                        OutlinedButton(onClick = { viewModel.selectAdult(adult.id) }) {
-                            Text(stringResource(R.string.settings_use))
-                        }
                     }
                 }
                 HorizontalDivider()

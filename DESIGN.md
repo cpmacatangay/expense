@@ -172,7 +172,7 @@ Elevation is carried by these roles, never by shadows. Light: `surfaceContainerL
 ### Named Rules
 
 **The One Green Rule.** The green family marks state and action only — balances, primary buttons,
-selected profile, the FAB. It never becomes a background wash or a decorative fill.
+the owner badge, the FAB. It never becomes a background wash or a decorative fill.
 
 **The One Palette Rule.** The scheme is fixed. Salo does not derive colour from the wallpaper, so
 the ledger looks the same on every phone and the green always means the same thing.
@@ -290,9 +290,9 @@ bubble; the form language is a folded receipt, not a chat app.
   pushed the actions too far from the last date.
 
 ### Navigation
-- **Top app bar:** small, surface-colored, the Salo mark plus wordmark on the left, the selected adult
-  avatar and name on the right opening a profile switcher. Hidden on the wizard and detail routes so
-  those screens own their own header.
+- **Top app bar:** small, surface-colored, the Salo mark plus wordmark on the left. Nothing on the
+  right: the owner is the only person who operates the ledger, so there is no profile switcher.
+  Hidden on the wizard and detail routes so those screens own their own header.
 - **Bottom navigation:** five `NavigationBarItem`s (Home, Students, Ledger, History, Settings) with
   Material icons and label-size captions; selected state fills an indicator pill. Hidden on the
   wizard, detail, and auth routes.

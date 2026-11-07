@@ -14,8 +14,7 @@ import javax.inject.Singleton
 class LocalDataManager @Inject constructor(
     private val database: SaloDatabase,
     private val adultDao: AdultProfileDao,
-    private val backupStateDao: BackupStateDao,
-    private val profilePreferences: ProfilePreferences
+    private val backupStateDao: BackupStateDao
 ) {
     suspend fun clearAndReseed() = withContext(Dispatchers.IO) {
         // Room's clearAllTables() is a blocking call and throws when invoked from the
@@ -24,7 +23,6 @@ class LocalDataManager @Inject constructor(
         val adults = defaultAdults()
         adultDao.upsertAll(adults)
         backupStateDao.upsert(BackupStateEntity())
-        profilePreferences.setSelectedAdultId(adults.first().id)
     }
 
     private fun defaultAdults(): List<AdultProfileEntity> {

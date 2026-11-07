@@ -52,8 +52,10 @@ a past mistake can be reopened, corrected, and audited instead of silently forke
 
 - **Native Android only**: Kotlin, Jetpack Compose, Material 3, `ph.salo.app`. `compileSdk`,
   `targetSdk`, and `minSdk` are all 37 (Android 17); the target device is a Samsung S26 Ultra.
-- **Exactly four adult profiles**, fixed forever: CP, Mai, Kent, Llanmer. Seeded at first launch,
-  never added, removed, or reordered. The money engine validates a four-adult set.
+- **Exactly four adult participants**, fixed forever: CP, Mai, Kent, Llanmer. Seeded at first launch,
+  never added, removed, or reordered. They are participants in the split, not accounts: only CP
+  installs and operates the app, and every outing is recorded as him. There is no profile switcher.
+  The money engine validates a four-adult set.
 - **Hybrid money model**: each item is assigned to one adult, one student, or shared; shared items
   split per head across the four adults plus present students; tax, service, and discount allocate
   proportionally; the receipt total is authoritative and any gap is distributed. All money is integer

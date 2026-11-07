@@ -10,7 +10,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -18,7 +17,6 @@ import ph.salo.app.R
 import ph.salo.app.core.data.AdultProfileRepository
 import ph.salo.app.core.data.OutingDetails
 import ph.salo.app.core.data.OutingRepository
-import ph.salo.app.core.data.ProfilePreferences
 import ph.salo.app.core.data.StudentRepository
 import ph.salo.app.core.recap.RecapBuilder
 import ph.salo.app.core.recap.RecapData
@@ -34,8 +32,7 @@ class OutingDetailViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val outingRepository: OutingRepository,
     private val adultRepository: AdultProfileRepository,
-    private val studentRepository: StudentRepository,
-    private val profilePreferences: ProfilePreferences
+    private val studentRepository: StudentRepository
 ) : ViewModel() {
     private val outingId: String = checkNotNull(savedStateHandle["outingId"])
 
@@ -84,9 +81,10 @@ class OutingDetailViewModel @Inject constructor(
 
     fun reopen(onReopened: () -> Unit) {
         viewModelScope.launch {
-            val actorId = profilePreferences.selectedAdultId.first()
+            val adults = adultRepository.getAll()
+            val actorId = adults.firstOrNull { it.isOwner }?.id ?: adults.firstOrNull()?.id
             if (actorId == null) {
-                _message.value = "Choose an adult profile first."
+                _message.value = context.getString(R.string.msg_owner_missing)
                 return@launch
             }
             runCatching {

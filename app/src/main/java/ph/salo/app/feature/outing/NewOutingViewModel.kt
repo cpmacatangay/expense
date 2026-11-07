@@ -17,7 +17,6 @@ import ph.salo.app.core.backup.BackupScheduler
 import ph.salo.app.core.data.AdultProfileRepository
 import ph.salo.app.core.data.DraftInput
 import ph.salo.app.core.data.OutingRepository
-import ph.salo.app.core.data.ProfilePreferences
 import ph.salo.app.core.data.StudentRepository
 import ph.salo.app.core.data.toRef
 import ph.salo.app.core.database.AdultProfileEntity
@@ -89,7 +88,6 @@ class NewOutingViewModel @Inject constructor(
     private val outingRepository: OutingRepository,
     private val adultRepository: AdultProfileRepository,
     private val studentRepository: StudentRepository,
-    private val profilePreferences: ProfilePreferences,
     private val receiptOcr: ReceiptOcr,
     private val receiptImageStore: ReceiptImageStore,
     private val backupScheduler: BackupScheduler
@@ -102,17 +100,17 @@ class NewOutingViewModel @Inject constructor(
         viewModelScope.launch {
             combine(
                 adultRepository.observeAll(),
-                studentRepository.observeAll(),
-                profilePreferences.selectedAdultId
-            ) { adults, students, selectedId -> Triple(adults, students, selectedId) }
-                .collect { (adults, students, selectedId) ->
+                studentRepository.observeAll()
+            ) { adults, students -> adults to students }
+                .collect { (adults, students) ->
                     _state.update { current ->
-                        val fallback = adults.firstOrNull()?.id
+                        val ownerId = adults.firstOrNull { it.isOwner }?.id
+                            ?: adults.firstOrNull()?.id
                         current.copy(
                             adults = adults,
                             students = students,
-                            payerId = current.payerId ?: selectedId ?: fallback,
-                            createdByAdultId = current.createdByAdultId ?: selectedId ?: fallback
+                            payerId = current.payerId ?: ownerId,
+                            createdByAdultId = current.createdByAdultId ?: ownerId
                         )
                     }
                 }
@@ -177,10 +175,6 @@ class NewOutingViewModel @Inject constructor(
     }
 
     fun createCaptureUri(): android.net.Uri = receiptImageStore.createCaptureUri(context)
-
-    fun setCreatedBy(id: String) {
-        _state.update { it.copy(createdByAdultId = id, payerId = it.payerId ?: id) }
-    }
 
     fun updateDate(value: String) = _state.update { it.copy(date = value) }
 

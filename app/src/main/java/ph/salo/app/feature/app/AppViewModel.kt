@@ -9,8 +9,7 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import ph.salo.app.R
@@ -20,7 +19,6 @@ import ph.salo.app.core.backup.RestoreResult
 import ph.salo.app.core.backup.SessionState
 import ph.salo.app.core.data.AdultProfileRepository
 import ph.salo.app.core.data.LocalDataManager
-import ph.salo.app.core.data.ProfilePreferences
 import ph.salo.app.core.database.AdultProfileEntity
 import ph.salo.app.core.database.BackupStateEntity
 import ph.salo.app.core.export.ExportManager
@@ -30,7 +28,6 @@ import javax.inject.Inject
 class AppViewModel @Inject constructor(
     @ApplicationContext private val context: Context,
     adultRepository: AdultProfileRepository,
-    private val profilePreferences: ProfilePreferences,
     private val backupManager: BackupManager,
     private val exportManager: ExportManager,
     private val localDataManager: LocalDataManager
@@ -39,15 +36,13 @@ class AppViewModel @Inject constructor(
     val adults: StateFlow<List<AdultProfileEntity>> = adultRepository.observeAll()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
-    val selectedAdultId: StateFlow<String?> = profilePreferences.selectedAdultId
+    /**
+     * The owner is the person who operates this ledger (CP). The other adults are participants
+     * whose share of each bill is tracked, not accounts, so there is nothing to switch between.
+     */
+    val selectedAdult: StateFlow<AdultProfileEntity?> = adults
+        .map { list -> list.firstOrNull { it.isOwner } ?: list.firstOrNull() }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
-
-    val selectedAdult: StateFlow<AdultProfileEntity?> = combine(
-        adults,
-        selectedAdultId
-    ) { adults, selectedId ->
-        adults.firstOrNull { it.id == selectedId } ?: adults.firstOrNull()
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
 
     val backupState: StateFlow<BackupStateEntity?> = backupManager.status
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
@@ -59,20 +54,6 @@ class AppViewModel @Inject constructor(
 
     private val _message = MutableStateFlow<String?>(null)
     val message: StateFlow<String?> = _message
-
-    init {
-        viewModelScope.launch {
-            val loadedAdults = adults.first { it.isNotEmpty() }
-            val current = profilePreferences.selectedAdultId.first()
-            if (current == null || loadedAdults.none { it.id == current }) {
-                profilePreferences.setSelectedAdultId(loadedAdults.first().id)
-            }
-        }
-    }
-
-    fun selectAdult(id: String) {
-        viewModelScope.launch { profilePreferences.setSelectedAdultId(id) }
-    }
 
     fun signIn(activity: Activity) {
         viewModelScope.launch {
