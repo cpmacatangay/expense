@@ -60,6 +60,8 @@ class BackupManager @Inject constructor(
             val deviceId = sessionStore.deviceId()
             val payload = serializer.build(deviceId)
             val snapshotId = supabase.uploadSnapshot(session, deviceId, payload)
+            // Retention is best-effort; a prune failure must not fail the backup.
+            runCatching { supabase.pruneSnapshots(session) }
             stateRepository.markSuccess(snapshotId)
             BackupOutcome.Success(snapshotId)
         } catch (caught: Throwable) {

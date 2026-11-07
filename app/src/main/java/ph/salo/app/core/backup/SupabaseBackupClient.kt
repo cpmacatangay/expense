@@ -94,6 +94,22 @@ class SupabaseBackupClient @Inject constructor(
         Unit
     }
 
+    suspend fun pruneSnapshots(session: OwnerSession, keep: Int = RETAINED_SNAPSHOTS) =
+        withContext(Dispatchers.IO) {
+            val body = buildJsonObject { put("p_keep", keep) }.toString()
+            request(
+                url = "${config.supabaseUrl}/rest/v1/rpc/prune_ledger_snapshots",
+                method = "POST",
+                body = body,
+                accessToken = session.accessToken
+            )
+            Unit
+        }
+
+    companion object {
+        const val RETAINED_SNAPSHOTS = 30
+    }
+
     private fun request(
         url: String,
         method: String,
