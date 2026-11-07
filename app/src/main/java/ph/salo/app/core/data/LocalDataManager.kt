@@ -1,5 +1,7 @@
 package ph.salo.app.core.data
 
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import ph.salo.app.core.database.AdultProfileDao
 import ph.salo.app.core.database.AdultProfileEntity
 import ph.salo.app.core.database.BackupStateDao
@@ -15,11 +17,14 @@ class LocalDataManager @Inject constructor(
     private val backupStateDao: BackupStateDao,
     private val profilePreferences: ProfilePreferences
 ) {
-    suspend fun clearAndReseed() {
+    suspend fun clearAndReseed() = withContext(Dispatchers.IO) {
+        // Room's clearAllTables() is a blocking call and throws when invoked from the
+        // main thread, so it must run on an IO dispatcher.
         database.clearAllTables()
-        adultDao.upsertAll(defaultAdults())
+        val adults = defaultAdults()
+        adultDao.upsertAll(adults)
         backupStateDao.upsert(BackupStateEntity())
-        profilePreferences.setSelectedAdultId(defaultAdults().first().id)
+        profilePreferences.setSelectedAdultId(adults.first().id)
     }
 
     private fun defaultAdults(): List<AdultProfileEntity> {

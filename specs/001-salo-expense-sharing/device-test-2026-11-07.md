@@ -28,12 +28,23 @@ arm64-v8a, serial `R5GL24MBAQW`. Debug APK installed with `adb install -r`.
 | Backup | Snapshot row in `ledger_snapshots`, payload place "Test Meal", total 82500 |
 | Restore | Clear local data → restore → outing, shares, students, and voided payment return |
 
-## Bug found and fixed
+## Bugs found and fixed
+
+### 1. Launch crash (`892697d`)
 
 `SaloApp.kt` — `SaloDestination.main` was a `companion object` initializer inside the sealed class,
 so the `data object` destinations were observed as `null` during class initialization and the app
 crashed with `NullPointerException ... getRoute() on a null object reference` on every launch.
-Moved the list to a file-level `val` (commit `892697d`).
+Moved the list to a file-level `val`.
+
+### 2. "Clear local data" silently did nothing
+
+`LocalDataManager.clearAndReseed()` called Room's blocking `database.clearAllTables()` from
+`viewModelScope` (Main dispatcher). Room throws `IllegalStateException: Cannot access database on
+the main thread`; `runCatching` turned it into a snackbar that scrolls past unnoticed, so the ledger
+stayed intact. Wrapped the body in `withContext(Dispatchers.IO)` and now reseeds from a single adult
+list. Retested: clearing removes outings, students, shares, settlements, and resets backup status to
+"Local only".
 
 ## Not yet covered on device
 
