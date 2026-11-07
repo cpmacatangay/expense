@@ -38,6 +38,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -66,9 +67,13 @@ private val steps = listOf("Details", "Receipt & items", "Students", "Review")
 fun NewOutingScreen(
     onFinalized: (String) -> Unit,
     onBack: () -> Unit,
+    outingId: String? = null,
     viewModel: NewOutingViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    LaunchedEffect(outingId) {
+        if (outingId != null) viewModel.loadDraft(outingId)
+    }
     var captureUri by remember { mutableStateOf<Uri?>(null) }
     var itemDialogOpen by remember { mutableStateOf(false) }
     var editingItem by remember { mutableStateOf<ItemDraft?>(null) }
@@ -96,7 +101,7 @@ fun NewOutingScreen(
             }
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = "New outing",
+                    text = if (state.isEditing) "Edit outing" else "New outing",
                     style = MaterialTheme.typography.headlineSmall,
                     fontWeight = FontWeight.SemiBold
                 )

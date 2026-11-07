@@ -64,8 +64,10 @@ and settlements. The feature screens and persistence layer are next.
 - Adaptive launcher icon and Android 13+ monochrome themed icon.
 - JUnit tests for the money engine and receipt parser, including randomized exact-total invariants.
 
-Pending: physical-device/emulator UI validation, reopen/audit UI, release signing, and instrumented
-tests. The app has been compiled, unit-tested, and linted, but not run on the S26 Ultra yet.
+Pending: physical-device/emulator validation and instrumented tests. Reopen/audit and release
+signing are implemented; the release APK uses debug signing until a `keystore.properties` file is
+added. The app has been compiled, unit-tested, linted, and release-built, but not run on the S26
+Ultra yet.
 
 ## Planned architecture
 
@@ -169,6 +171,22 @@ android.newDsl=false
 
 These options are required until the KSP/Hilt toolchain supports built-in Kotlin.
 The app builds and produces `app/build/outputs/apk/debug/app-debug.apk`.
+
+### Release signing
+
+Generate a keystore in Android Studio or with `keytool`, then copy
+`keystore.properties.example` to `keystore.properties` (ignored by Git) and fill in the paths and
+passwords. The release build uses that keystore when present; without it, the release APK falls back
+to debug signing for local sideloading only.
+
+```powershell
+.\gradlew.bat assembleRelease
+```
+
+Output: `app/build/outputs/apk/release/app-release.apk`.
+
+The release build enables R8 and resource shrinking. Debug and release APKs are both installable on
+the S26 Ultra.
 
 ## Specification
 

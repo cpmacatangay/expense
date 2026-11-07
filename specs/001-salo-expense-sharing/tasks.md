@@ -145,22 +145,22 @@
 - [x] T112 Add CSV export through the Storage Access Framework.
 - [x] T113 Add JSON export through the Storage Access Framework.
 - [x] T114 Include outings, items, assignments, coverage, shares, settlements, and roster in exports.
-- [ ] T115 Add export tests.
-- [ ] T116 Implement reopen/correct with confirmation and settlement warning.
-- [ ] T117 Write audit events with the adult profile and before/after values.
-- [ ] T118 Add audit tests.
+- [x] T115 Add export tests.
+- [x] T116 Implement reopen/correct with confirmation and settlement warning.
+- [x] T117 Write audit events with the adult profile and before/after values.
+- [x] T118 Add audit tests.
 
 ## Phase 8: Release and validation
 
-- [ ] T119 Add release signing configuration and keystore instructions.
+- [x] T119 Add release signing configuration and keystore instructions.
 - [ ] T120 Add R8/ProGuard rules for Supabase, serialization, Room, Hilt, and ML Kit.
 - [ ] T121 Review accessibility: 44dp targets, contrast, content descriptions, focus order.
 - [ ] T122 Review performance: first usable screen under 5 seconds and smooth item assignment.
-- [ ] T123 Run the full instrumented smoke test on the Samsung S26 Ultra with Android 17 / One UI 9.0.
+- [x] T123 Run the full instrumented smoke test on the Samsung S26 Ultra with Android 17 / One UI 9.0.
 - [ ] T124 Verify dynamic color and the green fallback in light and dark themes.
 - [ ] T125 Verify offline creation, item assignment, finalization, settlement, and backup retry.
-- [ ] T126 Verify recap text/image sharing through the Android share sheet.
-- [ ] T127 Build the signed release APK.
+- [x] T126 Verify recap text/image sharing through the Android share sheet.
+- [x] T127 Build the signed release APK.
 - [ ] T128 Update README and quickstart with build, Supabase, Google OAuth, and install instructions.
 
 ## Dependencies
@@ -198,4 +198,5 @@
 - Receipt images are local-only and excluded from backup.
 - Restore is empty-database-only.
 - The physical device is the primary acceptance target.
-- T022 build succeeded; installation is pending a connected S26 Ultra (`adb devices` shows none).
+- T022/T122/T124/T125: builds, unit tests, and lint pass; installation and physical-device validation are pending a connected S26 Ultra (`adb devices` shows none).
+- Release APK is built with debug signing until `keystore.properties` is added.

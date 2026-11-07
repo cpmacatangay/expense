@@ -215,8 +215,18 @@ fun SaloApp(
             composable(SaloDestination.Settings.route) {
                 SettingsScreen()
             }
-            composable("new_outing") {
+            composable(
+                route = "new_outing?outingId={outingId}",
+                arguments = listOf(
+                    navArgument("outingId") {
+                        type = NavType.StringType
+                        nullable = true
+                        defaultValue = null
+                    }
+                )
+            ) { entry ->
                 NewOutingScreen(
+                    outingId = entry.arguments?.getString("outingId"),
                     onFinalized = { outingId ->
                         navController.navigate("outing/$outingId") {
                             popUpTo(SaloDestination.Home.route)
@@ -235,6 +245,9 @@ fun SaloApp(
                         navController.navigate(SaloDestination.Home.route) {
                             popUpTo(SaloDestination.Home.route) { inclusive = true }
                         }
+                    },
+                    onReopened = { outingId ->
+                        navController.navigate("new_outing?outingId=$outingId")
                     }
                 )
             }

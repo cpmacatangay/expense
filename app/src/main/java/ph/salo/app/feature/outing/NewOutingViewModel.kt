@@ -49,6 +49,8 @@ data class ItemDraft(
 
 data class NewOutingUiState(
     val step: Int = 0,
+    val outingId: String? = null,
+    val receiptId: String? = null,
     val date: String = LocalDate.now().toString(),
     val place: String = "",
     val notes: String = "",
@@ -77,6 +79,7 @@ data class NewOutingUiState(
     val discountCentavos: Long get() = parsePesoToCentavos(discountInput) ?: 0L
     val presentStudents: List<StudentEntity>
         get() = students.filter { it.id in presentStudentIds }
+    val isEditing: Boolean get() = outingId != null
 }
 
 @HiltViewModel
@@ -112,6 +115,63 @@ class NewOutingViewModel @Inject constructor(
                         )
                     }
                 }
+        }
+    }
+
+    fun loadDraft(outingId: String) {
+        if (_state.value.outingId == outingId && _state.value.receiptId != null) return
+        viewModelScope.launch {
+            val details = outingRepository.getDetails(outingId) ?: return@launch
+            val receipt = details.receipt
+            _state.update { current ->
+                current.copy(
+                    step = 0,
+                    outingId = outingId,
+                    receiptId = receipt?.id,
+                    date = details.outing.date,
+                    place = details.outing.place.orEmpty(),
+                    notes = details.outing.notes.orEmpty(),
+                    merchant = receipt?.merchant.orEmpty(),
+                    totalInput = receipt?.totalCentavos
+                        ?.takeIf { it > 0 }
+                        ?.let { ph.salo.app.core.money.formatCentavosPlain(it) }
+                        .orEmpty(),
+                    taxInput = receipt?.taxCentavos
+                        ?.takeIf { it > 0 }
+                        ?.let { ph.salo.app.core.money.formatCentavosPlain(it) }
+                        .orEmpty(),
+                    serviceInput = receipt?.serviceChargeCentavos
+                        ?.takeIf { it > 0 }
+                        ?.let { ph.salo.app.core.money.formatCentavosPlain(it) }
+                        .orEmpty(),
+                    discountInput = receipt?.discountCentavos
+                        ?.takeIf { it > 0 }
+                        ?.let { ph.salo.app.core.money.formatCentavosPlain(it) }
+                        .orEmpty(),
+                    imagePath = receipt?.imagePath,
+                    items = details.items.map { item ->
+                        ItemDraft(
+                            id = item.id,
+                            name = item.name,
+                            quantity = item.quantity,
+                            unitAmountCentavos = item.unitAmountCentavos,
+                            assignmentType = runCatching {
+                                ItemAssignmentType.valueOf(item.assignmentType)
+                            }.getOrDefault(ItemAssignmentType.UNASSIGNED),
+                            assignedAdultId = item.assignedAdultId,
+                            assignedStudentId = item.assignedStudentId
+                        )
+                    },
+                    presentStudentIds = details.coverage.keys,
+                    coverage = details.coverage,
+                    payerId = details.outing.payerAdultId,
+                    createdByAdultId = details.outing.createdByAdultId,
+                    split = null,
+                    splitError = null,
+                    error = null
+                )
+            }
+            refreshSplit()
         }
     }
 
@@ -515,13 +575,21 @@ class NewOutingViewModel @Inject constructor(
             }
             _state.update { it.copy(saving = true, error = null) }
             try {
-                val (outingId, receiptId) = outingRepository.createDraft(
-                    date = current.date,
-                    place = current.place,
-                    notes = current.notes,
-                    createdByAdultId = createdBy,
-                    payerAdultId = payerId
-                )
+                val existingOutingId = current.outingId
+                val existingReceiptId = current.receiptId
+                val (outingId, receiptId) = if (
+                    existingOutingId != null && existingReceiptId != null
+                ) {
+                    existingOutingId to existingReceiptId
+                } else {
+                    outingRepository.createDraft(
+                        date = current.date,
+                        place = current.place,
+                        notes = current.notes,
+                        createdByAdultId = createdBy,
+                        payerAdultId = payerId
+                    )
+                }
                 val input = DraftInput(
                     outingId = outingId,
                     receiptId = receiptId,

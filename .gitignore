@@ -16,6 +16,7 @@ captures/
 *.class
 *.jks
 *.keystore
+keystore.properties
 app/release/
 
 # Kotlin

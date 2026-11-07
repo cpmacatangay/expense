@@ -48,6 +48,7 @@ import ph.salo.app.ui.components.SectionCard
 fun OutingDetailScreen(
     onBack: () -> Unit,
     onDeleted: () -> Unit,
+    onReopened: (String) -> Unit,
     viewModel: OutingDetailViewModel = hiltViewModel()
 ) {
     val details by viewModel.details.collectAsStateWithLifecycle()
@@ -58,6 +59,7 @@ fun OutingDetailScreen(
     val context = LocalContext.current
     val clipboard = LocalClipboardManager.current
     var confirmDelete by remember { mutableStateOf(false) }
+    var confirmReopen by remember { mutableStateOf(false) }
 
     val current = details
     if (current == null) {
@@ -107,6 +109,15 @@ fun OutingDetailScreen(
                 color = MaterialTheme.colorScheme.primary,
                 style = MaterialTheme.typography.bodySmall
             )
+        }
+
+        if (current.outing.status == "FINAL") {
+            OutlinedButton(
+                onClick = { confirmReopen = true },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Reopen and edit")
+            }
         }
 
         SectionCard {
@@ -270,6 +281,19 @@ fun OutingDetailScreen(
                 viewModel.delete(onDeleted)
             },
             onDismiss = { confirmDelete = false }
+        )
+    }
+
+    if (confirmReopen) {
+        ConfirmDialog(
+            title = "Reopen this outing?",
+            message = "The finalized split will be unlocked. Existing settlements remain in the ledger, and an audit event will be recorded.",
+            confirmLabel = "Reopen",
+            onConfirm = {
+                confirmReopen = false
+                viewModel.reopen { onReopened(current.outing.id) }
+            },
+            onDismiss = { confirmReopen = false }
         )
     }
 }
