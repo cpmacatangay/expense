@@ -28,14 +28,15 @@ data class ReceiptItemInput(
 )
 
 data class AllocationInput(
-    val receiptTotalCentavos: Centavos,
+    val receiptTotalCentavos: Centavos, // item sum, or the owner's explicit manual total
     val adults: List<AdultRef>,
     val presentStudents: List<StudentRef>,
     val coverageByStudent: Map<String, String>, // studentId -> adultId
     val items: List<ReceiptItemInput>,
-    val taxCentavos: Centavos,
-    val serviceChargeCentavos: Centavos,
-    val discountCentavos: Centavos
+    // Legacy outings only; new outings pass zero.
+    val taxCentavos: Centavos = 0,
+    val serviceChargeCentavos: Centavos = 0,
+    val discountCentavos: Centavos = 0
 )
 
 data class ShareAllocation(
@@ -77,7 +78,8 @@ sealed interface AllocationIssue {
 
 Returns an empty list when the input can be allocated. Checks:
 
-- `receiptTotalCentavos > 0`.
+- `receiptTotalCentavos > 0`. For new outings this is the item sum or the owner's explicit manual
+  total; for legacy outings it is the stored total.
 - Exactly four adult refs; at least one adult.
 - Item amounts are non-negative integers.
 - Every item is `ADULT`, `STUDENT`, or `SHARED`; `UNASSIGNED` is an issue.
@@ -88,6 +90,7 @@ Returns an empty list when the input can be allocated. Checks:
 - Every coverage adult is a known adult.
 - Coverage does not reference a non-present student.
 - Payer is validated by the caller; the engine only allocates.
+- Legacy outings may carry non-negative tax/service/discount values. New outings pass zero.
 
 ### `allocate(input: AllocationInput, payerId: String): AllocationResult`
 
@@ -108,31 +111,30 @@ Steps:
      `coveredStudentSharedCentavos`.
    - Use largest-remainder rounding so shared allocations sum exactly to `sharedItemTotal`.
 
-4. **Pre-adjustment subtotal**
+4. **Base subtotal**
    - `base = ownItems + studentItems + sharedHead + coveredStudentShared`.
 
-5. **Adjustments**
-   - `adjustment = tax + serviceCharge - discount`.
-   - If `sum(base) > 0`, allocate `adjustment` proportionally to `base` using largest-remainder
-     rounding.
-   - If `sum(base) == 0`, allocate `adjustment` per head across adults.
-   - Negative adjustments use the absolute value for ranking and apply the sign.
+5. **Legacy adjustments**
+   - New outings pass `tax = serviceCharge = discount = 0`.
+   - If a legacy outing has `adjustment = tax + serviceCharge - discount`, allocate it
+     proportionally to `base` using largest-remainder rounding. If `sum(base) == 0`, allocate it per
+     head across adults. Negative adjustments use the absolute value for ranking and apply the sign.
 
-6. **Total gap**
+6. **Total difference**
    - `preTotal = sum(base) + adjustment`.
-   - `gap = receiptTotal - preTotal`.
-   - If `gap != 0`, distribute it proportionally to `base + adjustment` using largest-remainder
-     rounding.
+   - `difference = receiptTotalCentavos - preTotal`.
+   - If `difference != 0`, distribute it proportionally to `base + adjustment` using
+     largest-remainder rounding. This is how a manual total override is honored.
    - If all weights are zero, distribute per head across adults.
 
 7. **Final shares**
-   - `total = base + adjustment + gap`.
-   - Assert `sum(total) == receiptTotal`.
+   - `total = base + adjustment + difference`.
+   - Assert `sum(total) == receiptTotalCentavos`.
    - Assert each `total` is an integer centavo.
 
 8. **No-items fallback**
-   - If `items.isEmpty()`, skip item allocation and split `receiptTotal` per head across adults,
-     adding each student's head to the covering adult.
+   - If `items.isEmpty()`, skip item allocation and split `receiptTotalCentavos` per head across
+     adults, adding each student's head to the covering adult.
    - This is equivalent to treating the whole total as a shared item.
 
 9. **Ordering**
@@ -177,15 +179,16 @@ fun allocateProportionally(amount: Centavos, weights: List<Centavos>): List<Cent
 1. `sum(result.shares.totalCentavos) == input.receiptTotalCentavos`.
 2. Every share is an integer centavo.
 3. `sum(ownItems + studentItems + sharedHead + coveredStudentShared) == sum(item.amountCentavos)`.
-4. `sum(adjustment) == tax + serviceCharge - discount`.
-5. `sum(gap) == receiptTotal - (itemSubtotal + adjustment)`.
-6. No item is assigned to more than one person.
-7. Every present student has exactly one covering adult.
-8. A student-assigned item is charged to the covering adult.
-9. Shared items are split per head across all present people.
-10. The no-items fallback produces a per-head split.
-11. Negative discounts and negative gaps are handled without losing a centavo.
-12. The function does not mutate its input.
+4. For new outings, `sum(adjustment) == 0`.
+5. For legacy outings, `sum(adjustment) == tax + serviceCharge - discount`.
+6. `sum(gap) == receiptTotalCentavos - (itemSubtotal + adjustment)`.
+7. No item is assigned to more than one person.
+8. Every present student has exactly one covering adult.
+9. A student-assigned item is charged to the covering adult.
+10. Shared items are split per head across all present people.
+11. The no-items fallback produces a per-head split.
+12. A manual total override and legacy negative adjustments are handled without losing a centavo.
+13. The function does not mutate its input.
 
 ## Worked Example
 
@@ -204,6 +207,4 @@ Four adults, two present students: Ana covered by CP, Ben covered by Mai.
 - Mai base = ₱100 + ₱120 + ₱30 + ₱30 = ₱280.
 - Kent base = ₱30.
 - Llanmer base = ₱30.
-- Food subtotal = ₱750. Tax ₱75 is allocated proportionally:
-  - CP ₱41, Mai ₱28, Kent ₱3, Llanmer ₱3.
-- Final shares sum to ₱825.
+- Item sum = ₱750. There are no adjustments, so the final shares sum to ₱750.

@@ -12,14 +12,15 @@ Plain text, ready for a group chat:
 ```text
 Salo — <place or "Meal"> — <date>
 
-Total: ₱<receipt total>
+Total: ₱<outing total>
 Items: <item count> · Shared: <shared count>
 
 <Adult 1> — ₱<final share>
   Own: ₱<own items>
   Students: <student names + amounts>
   Shared: ₱<shared head + covered student shared>
-  Adjustments: ₱<tax + service − discount and gap>
+  Legacy adjustments: ₱<stored tax + service − discount>   (only when non-zero)
+  Total difference: ₱<manual override or legacy difference> (only when non-zero)
 
 <Adult 2> — ₱<final share>
 ...
@@ -36,7 +37,6 @@ Rules:
 - Use Philippine peso formatting with two decimal places.
 - Do not include student contact details or notes.
 - Do not include receipt image paths.
-
 ## Image Card
 
 - Size: 1080 × 1350 px (4:5), safe margin 72 px.
@@ -49,7 +49,7 @@ Rules:
   4. Four adult rows: name, covered students, final share.
   5. Payer line.
   6. Settlement lines or "All settled."
-  7. Small footer: "On-device receipt scan · Private ledger."
+  7. Small footer: "Manual item ledger · Private ledger."
 - Use the same fonts as the app or system-safe fonts; no network font dependency.
 - Render with Android Canvas or Compose to a bitmap; no web/DOM capture.
 - The image must be readable at 360 px wide in a chat preview.
@@ -57,7 +57,7 @@ Rules:
 ## Share Behavior
 
 - Offer **Share text**, **Share image**, and **Copy text**.
-- Use `Intent.ACTION_SEND` with a FileProvider URI for the image.
+- Use `Intent.ACTION_SEND` for text; write the image to `Pictures/Salo` through MediaStore.
 - Use `text/plain` for text and `image/png` for the image.
 - Respect the Android share sheet; no external service.
 - If image rendering fails, the text recap MUST still be shareable.

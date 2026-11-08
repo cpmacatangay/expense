@@ -53,19 +53,21 @@ proportionally.
 - Multiple assignees per item: more UI complexity; split the line instead.
 - Item-specific discounts: global proportional allocation is simpler and sufficient.
 
-## 4. Total reconciliation
+## 4. Total rule
 
-**Decision**: The confirmed receipt total is authoritative. Item amounts determine allocation; any
-gap is spread proportionally by largest-remainder rounding.
+**Decision**: For new outings, the item sum is the authoritative bill. The total auto-fills from the
+items; typing a total is an explicit manual override. There is no printed-receipt reconciliation.
 
 **Rationale**:
-- OCR and hand-entered items are imperfect.
-- The receipt total is what was actually paid.
-- Proportional gap distribution preserves fairness and exact totals.
+- Entry is manual and deterministic; there is no OCR error to absorb.
+- The item sum is the number the owner can see and explain at the table.
+- A manual override covers per-head outings and deliberate corrections.
 
 **Alternatives rejected**:
-- Blocking on exact item/total equality: too brittle with OCR and rounding.
-- Item sum as the final total: conflicts with the receipt.
+- Receipt total authoritative with a proportional gap: depends on an OCR/printed number the app no
+  longer reads and hides the rule.
+- Blocking on exact item/total equality: too brittle for discounts and per-head outings.
+- Read-only derived total: cannot handle an outing with no items.
 
 ## 5. Fairness removal
 
@@ -121,26 +123,25 @@ local database.
 - Anonymous key: weaker account recovery.
 - Multi-user group auth: explicitly removed.
 
-## 9. OCR: ML Kit Text Recognition v2
+## 9. Item entry: manual only
 
-**Decision**: System camera capture + ML Kit Text Recognition v2, on-device only. Parse items, quantities,
-tax, service, discount, and total. Full item editing.
+**Decision**: The owner lists each item manually. There is no camera, OCR, receipt image, or LLM
+path.
 
 **Rationale**:
-- On-device privacy.
-- Good printed-text accuracy.
-- No recurring cost.
-- Existing parser logic can be ported.
+- The OCR gate never proved accurate on real receipts, and manual entry is deterministic.
+- Removes ML Kit, camera, FileProvider, parser tests, and receipt-image storage.
+- Keeps the privacy surface and APK small.
 
 **Alternatives rejected**:
-- Tesseract.js: web-only.
+- ML Kit OCR: accuracy was not proven and the maintenance cost was high.
 - Cloud OCR: violates privacy and cost constraints.
-- Manual-only: too slow at the table.
+- Gemini Nano assist: unnecessary once item entry is manual.
 
 ## 10. Sharing and export
 
-**Decision**: Recap text/image through the Android share sheet with FileProvider. CSV/JSON export
-through the Storage Access Framework.
+**Decision**: Recap text through the Android share sheet; recap image saved to `Pictures/Salo` via
+MediaStore. CSV/JSON export through the Storage Access Framework.
 
 **Rationale**:
 - Native Android patterns; no storage permissions.
@@ -162,10 +163,10 @@ build reproducible.
 ## 12. Testing
 
 **Decision**: Kotlin/JVM unit tests, Kotest property tests for money, Room DAO tests, Turbine
-ViewModel tests, Compose UI tests, OCR parser fixtures, and an instrumented smoke test on the S26
+ViewModel tests, Compose UI tests, total-state tests, and an instrumented smoke test on the S26
 Ultra.
 
 **Rationale**:
 - The money engine is the highest-risk area.
 - The item assignment flow is the core UX.
-- Physical-device validation covers One UI 9.0 and ML Kit.
+- Physical-device validation covers One UI 9.0 and manual entry.

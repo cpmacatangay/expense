@@ -60,7 +60,7 @@ create policy "owner can delete own snapshots"
 ```
 
 Excluded:
-- receipt image paths and local file URIs;
+- legacy receipt image paths and local file URIs;
 - Supabase session tokens;
 - Google credentials;
 - device-local preferences.
@@ -92,7 +92,7 @@ Triggers:
 5. Import in a single Room transaction.
 6. Recompute derived values and verify the exact-total invariant.
 7. Set `BackupState` to `BACKED_UP` with the restored snapshot id.
-8. Never restore receipt images; show a notice that photos are local-only.
+8. Do not restore receipt images; the app does not capture them.
 
 ## Auth
 

@@ -188,7 +188,7 @@ platform rather than a brand exercise; the hierarchy does the work, not the lett
 
 ### Hierarchy
 - **Display** (400, 36 sp / 44 sp): the single number that answers "how much" — the home balance and
-  the receipt total.
+  the outing total.
 - **Headline** (400, 28 sp / 36 sp): screen titles (`Ledger`, `History`, `Hi, CP`) and the top of the
   split review.
 - **Title** (500, 16 sp / 24 sp, +0.15 sp): section headings, adult names, item names, amounts in
@@ -200,7 +200,7 @@ platform rather than a brand exercise; the hierarchy does the work, not the lett
 ### Named Rules
 
 **The One Big Number Rule.** A screen may promote exactly one figure to display or headline
-treatment — usually the balance or the receipt total. Item rows and secondary amounts stay at title
+treatment — usually the balance or the outing total. Item rows and secondary amounts stay at title
 or body size so the eye has one destination.
 
 ## Layout
@@ -284,6 +284,10 @@ bubble; the form language is a folded receipt, not a chat app.
   internal padding. Amount fields carry a `₱` prefix; quantity uses a numeric keyboard.
 - **Focus:** the outline thickens and takes `primary`; the floating label activates.
 - **Error / Disabled:** supporting text in `error`; disabled controls reduce to 38% opacity.
+- **Total:** stays 16 sp and one line. Auto mode follows the items and the supporting text says
+  “Following N items.” Typing switches to Manual and shows “Items total ₱X” plus a **Use items total**
+  text action. A reopened outing is Fixed and says the saved total will not update. No type
+  step-down; long names and amounts get width, not smaller text.
 - **Date:** the value reads as `Nov 8, 2026` and opens a compact calendar built on M3 tokens (48 dp
   day targets, primary circle for the selection, 1 dp outline for today). It lays out only the weeks
   the month needs; the stock `DatePickerDialog` reserves a blank sixth row on five-week months, which

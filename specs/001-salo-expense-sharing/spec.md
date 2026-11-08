@@ -6,7 +6,7 @@
 
 **Status**: Draft
 
-**Input**: User description: "An Android-only Kotlin app for one owner on a Samsung S26 Ultra running Android 17. The app maintains a private meal ledger for four local adult profiles — CP, Mai, Kent, and Llanmer — and a student roster. The owner scans or manually enters receipt items, assigns each item to an adult, a student, or shared, splits the bill, tracks who paid, settles balances, shares a recap with the other adults, and backs up ledger data to a private Supabase account."
+**Input**: User description: "An Android-only Kotlin app for one owner on a Samsung S26 Ultra running Android 17. The app maintains a private meal ledger for four local adult profiles - CP, Mai, Kent, and Llanmer - and a student roster. The owner manually enters receipt items, assigns each item to an adult, a student, or shared, splits the bill, tracks who paid, settles balances, shares a recap with the other adults, and backs up ledger data to a private Supabase account."
 
 ## Clarifications
 
@@ -19,13 +19,23 @@
 - Q: Can one item be assigned to multiple people? → No. One item has one assignee: one adult, one student, or shared. Use the item split tool for shared portions.
 - Q: Who pays for an item assigned to a student? → The adult covering that student for the outing.
 - Q: How are shared items split? → Per head across the four adults and all present students; student portions are borne by their covering adult.
-- Q: How are tax, service charge, and discounts allocated? → Proportionally to each adult's pre-adjustment subtotal.
-- Q: What if item amounts do not equal the receipt total? → The receipt total is authoritative; the gap is distributed proportionally and the split still sums exactly.
+- Q: How are tax, service charge, and discounts allocated? → They are not used in new outings. The item sum is the bill. Legacy outings keep their stored adjustments.
+- Q: What if item amounts do not equal the printed receipt total? → The printed total is ignored. The item sum is authoritative. The owner may type a different total as an explicit override.
 - Q: Must every item be assigned? → Yes, every item must be assigned to an adult, a student, or explicitly marked shared before finalization.
 - Q: How much item editing is allowed? → Add, edit, delete, split, merge, and change quantity.
 - Q: Are fairness scores and auto-balance kept? → No. Fairness scoring and coverage auto-suggestions are removed.
 - Q: What if no items are entered? → Fall back to a per-head split across the four adults and present students.
-- Q: When does item assignment ship? → Manual item entry and assignment ship in milestone 1; ML Kit OCR ships in milestone 2.
+- Q: Is receipt scanning kept? → No. Manual entry is the only item-entry path. OCR, camera capture, and receipt images are removed.
+- Q: Does the total follow the items? → Yes. The total is auto-filled from the item sum. Typing a total turns auto-follow off; the owner can restore it with “Use items total.” Reopened outings keep their saved total.
+- Q: What happens to tax, service, and discount on existing outings? → They remain stored and continue to apply when the outing is reopened. New outings write zero. No migration rewrites history.
+
+### Session 2026-11-09
+
+- Q: Should manual item entry populate the total? → Yes. The item sum fills the total while the total is in Auto mode.
+- Q: Which wins when the item sum and the printed receipt total differ? → The item sum. There is no receipt-total reconciliation.
+- Q: Can the owner still type a total? → Yes. Typing switches the total to Manual; item changes then leave it alone. “Use items total” restores Auto.
+- Q: What happens when an existing outing is reopened? → Its saved total is fixed; item changes do not auto-update it.
+- Q: Is the scan receipt path kept? → No. Remove the camera, OCR, parser, image storage, and scan UI. Manual listing is the only path.
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -39,14 +49,13 @@ cannot accurately reflect who ordered or covered what.
 
 **Independent Test**: Create an outing with adult items, student items, and a shared item; assign
 all of them; assign each present student to one adult; finalize; verify every share sums exactly to
-the receipt total.
+the item total.
 
 **Acceptance Scenarios**:
 
 1. **Given** a receipt with items assigned to adults, students, and shared, **When** the owner
    reviews the split, **Then** each adult's share includes their own items, their covered students'
-   items, their share of shared items, and their proportional adjustments, and the shares sum
-   exactly to the receipt total.
+   items, and their share of shared items, and the shares sum exactly to the item total.
 2. **Given** a shared rice item, **When** the outing is finalized, **Then** the item is split per
    head across the four adults and present students, and each student's portion is charged to the
    adult covering that student.
@@ -55,39 +64,39 @@ the receipt total.
 4. **Given** an item with no assignment or a present student with no covering adult, **When** the
    owner tries to finalize, **Then** the app blocks finalization and identifies the exact item or
    student that needs attention.
-5. **Given** a receipt total that differs from the assigned item sum, **When** the outing is
-   finalized, **Then** the gap is distributed proportionally and the shares still sum exactly to
-   the receipt total.
+5. **Given** the owner types a total that differs from the item sum, **When** the outing is
+   finalized, **Then** the typed total is used as an explicit override and the shares still sum
+   exactly to it.
 6. **Given** no receipt items, **When** the outing is finalized, **Then** the total is split per
    head across the four adults and present students.
 7. **Given** an item is split into two portions, **When** the owner assigns the portions to
    different people, **Then** each portion is charged independently and the split remains exact.
-8. **Given** a discount or service charge, **When** the split is calculated, **Then** the
-   adjustment is allocated proportionally and no centavo is lost.
+8. **Given** items are added, edited, deleted, split, or merged, **When** the total is in Auto mode,
+   **Then** the total is replaced with the new item sum.
 
 ---
 
-### User Story 2 - Scan a receipt on-device (Priority: P1)
+### User Story 2 - Enter the bill items manually (Priority: P1)
 
-As the owner at the table, I want to photograph the receipt and have the app read the merchant,
-date, items, tax, service charge, discount, and total, so I do not have to type the whole bill.
+As the owner at the table, I want to list each item, its quantity, and its amount myself, so I can
+record the bill without relying on an automated reader.
 
-**Why this priority**: Item-level assignment depends on accurate line items. OCR removes the most
-tedious part of the flow.
+**Why this priority**: Item-level assignment depends on accurate line items. Manual entry is the
+only item-entry path and must be fast and forgiving.
 
-**Independent Test**: Scan a clear printed receipt, confirm that the items and total are extracted,
-correct one item, assign the items, and finalize.
+**Independent Test**: Create an outing, add several items with quantities, edit one, delete one,
+split and merge two, assign the items, and finalize.
 
 **Acceptance Scenarios**:
 
-1. **Given** a clear printed receipt, **When** the owner captures it, **Then** the app extracts a
-   candidate merchant, date, items, quantities, tax, service charge, discount, and total for review.
-2. **Given** an OCR result with a wrong or missing item, **When** the owner edits, adds, deletes,
-   splits, or merges items, **Then** the corrected items become authoritative for the split.
-3. **Given** a receipt that cannot be read, **When** the owner chooses manual entry, **Then** the
-   owner can enter the total and items and complete the outing without leaving the flow.
-4. **Given** a receipt image, **When** text recognition runs, **Then** the image is processed only
-   on the device and is never uploaded or sent to an external recognition service.
+1. **Given** an empty outing, **When** the owner adds an item with a name, quantity, and unit
+   amount, **Then** the item appears in the list and its amount is quantity × unit amount.
+2. **Given** an item in the list, **When** the owner edits, deletes, splits, or merges it, **Then**
+   the item list and the Auto total update to match.
+3. **Given** the owner types a total, **When** an item changes afterward, **Then** the typed total
+   stays unchanged until the owner chooses “Use items total.”
+4. **Given** a reopened outing, **When** the owner changes an item, **Then** the saved total stays
+   unchanged.
 
 ---
 
@@ -151,7 +160,7 @@ items, who was covered, each adult's total, and who pays whom.
 the ledger result.
 
 **Independent Test**: Generate a recap for a finalized itemized outing and verify that the text and
-image contain the date, place, receipt total, item assignment summary, each adult's share, covered
+image contain the date, place, outing total, item assignment summary, each adult's share, covered
 students, payer, and settlement suggestions.
 
 **Acceptance Scenarios**:
@@ -209,8 +218,12 @@ flow.
 
 ### Edge Cases
 
-- OCR misses, merges, or misreads an item; the owner can add, edit, delete, split, merge, or change
-  the quantity before assignment.
+- An item is added, edited, deleted, split, or merged; the Auto total follows the item sum.
+- The owner types a total; the total becomes Manual and later item changes do not overwrite it.
+- The owner chooses “Use items total”; the total returns to Auto and follows later item changes.
+- No items are entered; the total is manual and the outing falls back to per-head.
+- The last item is deleted while the total is Auto; the total clears.
+- A reopened outing keeps its saved total even when items change.
 - An item is split into portions assigned to different people; each portion is charged
   independently.
 - A line has quantity greater than one; assigning it charges all units to one person unless the
@@ -221,22 +234,20 @@ flow.
   is set.
 - A shared item exists with no person-assigned items; the shared cost is split per head.
 - Every item is shared and no item is assigned to a person; the outing still splits correctly.
-- Tax, service charge, or discount produces a negative adjustment; proportional allocation and
-  largest-remainder rounding still preserve the exact total.
-- The itemized total is higher or lower than the receipt total; the receipt total wins and the gap
-  is distributed proportionally.
 - No items are entered; the outing falls back to per-head.
-- The receipt total is zero, negative, or lower than the discount; finalization is rejected.
+- The total is zero or negative; finalization is rejected.
+- A legacy outing has stored tax/service/discount values; those values continue to apply without
+  rewriting the split.
+- A legacy outing is reopened; its saved total and adjustments remain fixed.
 - A receipt item is assigned to an adult; all four adults are always present, so no attendance
   check is required.
-- The payer is not the currently selected adult profile; the payer can still be selected and the
-  settlement suggestions remain correct.
+- The payer is not the owner; the payer can still be selected and the settlement suggestions remain
+  correct.
 - The same outing is submitted twice; the app must avoid creating duplicate outings.
 - A student is archived after being covered; historical item assignments and shares remain intact.
 - A backup is interrupted; the local ledger remains usable and the backup retries.
 - A restore is attempted on a non-empty database; it is blocked.
-- Receipt photos are unavailable after a restore because images are local-only; extracted item data
-  is restored, and the UI explains the missing photo.
+- Receipt images are not captured, so restore only needs the ledger data.
 - The authorized Google account is unavailable; local use continues and backup remains queued.
 - A different Google account attempts to access the backup; access is denied.
 
@@ -256,10 +267,10 @@ flow.
   and reactivate.
 - **FR-006**: An adult MUST be able to create an outing with a date, optional place, optional notes,
   one receipt, and one payer.
-- **FR-007**: The system MUST capture or select a receipt image and extract merchant, date, items,
-  quantities, tax, service charge, discount, and total on the device.
-- **FR-008**: The system MUST allow the owner to correct every extracted field and to enter the
-  total and items manually.
+- **FR-007**: The system MUST let the owner manually add each receipt item with a name, quantity,
+  unit amount, and assignment. It MUST NOT capture receipt images or run OCR.
+- **FR-008**: The system MUST allow the owner to edit, delete, split, merge, and change the quantity
+  of any item before finalization.
 - **FR-009**: Each receipt item MUST have a name, quantity, unit amount, total amount, and
   assignment.
 - **FR-010**: Each item MUST be assignable to exactly one adult, one student, or explicitly marked
@@ -277,14 +288,16 @@ flow.
   the outing.
 - **FR-018**: Shared items MUST be split per head across the four adults and all present students,
   with each student's portion charged to the covering adult.
-- **FR-019**: Tax, service charge, and discount MUST be allocated proportionally to each adult's
-  pre-adjustment subtotal.
-- **FR-020**: The confirmed receipt total MUST be authoritative. Any gap between the itemized total
-  and the receipt total MUST be distributed proportionally.
+- **FR-019**: The system MUST auto-fill the total from the sum of the items while the total is in
+  Auto mode, and MUST update it after every item add, edit, delete, split, or merge.
+- **FR-020**: For new outings the item sum MUST be authoritative. Tax, service charge, discount, and
+  the printed receipt total MUST NOT be used in new calculations. Typing a total MUST switch it to
+  Manual; “Use items total” MUST restore Auto. A reopened outing MUST keep its saved total and MUST
+  NOT auto-update.
 - **FR-021**: The system MUST store and compute money in integer centavos and MUST guarantee that
-  finalized shares sum exactly to the receipt total.
+  finalized shares sum exactly to the outing total.
 - **FR-022**: The system MUST display each adult's share breakdown before finalization: own items,
-  covered-student items, shared head share, proportional adjustments, total gap, and final share.
+  covered-student items, shared head share, total difference, and final share.
 - **FR-023**: The system MUST allow exactly one payer per outing and record that payer.
 - **FR-024**: Finalizing an outing MUST lock an immutable share snapshot including item
   assignments.
@@ -303,25 +316,24 @@ flow.
   empty, and MUST require explicit confirmation.
 - **FR-033**: The system MUST enforce row-level security so only the authorized owner account can
   read or write backup snapshots.
-- **FR-034**: Text recognition MUST run on-device and MUST NOT send receipt images to an external
-  OCR service.
-- **FR-035**: Receipt images MUST remain in app-private local storage and MUST NOT be uploaded to
-  Supabase.
+- **FR-034**: The system MUST NOT capture receipt images, run OCR, or send receipt data to an
+  external service.
+- **FR-035**: The system MUST NOT store or restore receipt images.
 - **FR-036**: The system MUST be installable on Android 17 via a sideloaded debug or signed release
   APK without a store listing.
 - **FR-037**: The system MUST export outings, items, assignments, coverage, shares, settlements, and
   the roster as CSV and JSON.
 - **FR-038**: The system MUST use Philippine pesos and English.
-- **FR-039**: The system MUST warn when recognized item amounts do not reconcile with the receipt
-  total, but MUST allow the owner to trust the confirmed total and proceed.
+- **FR-039**: The system MUST NOT show a printed-receipt-total reconciliation warning; the item sum
+  and the owner's explicit override are the only total inputs.
 - **FR-040**: The system MUST record an audit event when a finalized outing is reopened or
   corrected, including the adult profile and before/after values.
 - **FR-041**: The system MUST allow an adults-only outing with zero present students, splitting the
   total among the four adults.
 - **FR-042**: The system MUST preserve finalized history when a student is archived.
-- **FR-043**: The system MUST provide an adult profile switcher and attribute each outing, item
-  assignment, and settlement to the selected profile.
-- **FR-044**: The recap MUST include the date, place, receipt total, item assignment summary, each
+- **FR-043**: The system MUST attribute each outing, item assignment, and settlement to the owner's
+  local adult profile. There is no profile switcher.
+- **FR-044**: The recap MUST include the date, place, outing total, item assignment summary, each
   adult's final share, covered students, payer, and settlement suggestions.
 - **FR-045**: The recap MUST be available as text and as an image and MUST be shareable through the
   Android share sheet.
@@ -333,8 +345,8 @@ flow.
   or accounts for the other adults.
 - **FR-049**: All four adults are assumed present at every outing; no adult attendance tracking is
   required.
-- **FR-050**: Tax, service charge, and discount are separate adjustment fields and MUST NOT also be
-  counted as assignable food items.
+- **FR-050**: New outings MUST NOT expose tax, service charge, or discount fields. Legacy outings
+  MAY retain stored adjustments so their historical split does not change.
 
 ### Key Entities
 
@@ -345,14 +357,15 @@ flow.
 - **Student**: A person covered by an adult, identified by display name and optional notes.
 - **Outing**: One meal event with a date, optional place and notes, one receipt, one payer, present
   students, coverage assignments, item assignments, shares, status, and a finalized snapshot.
-- **Receipt**: One receipt image plus merchant, date, tax, service charge, discount, and confirmed
-  total. The confirmed total is authoritative.
+- **Receipt**: One bill with merchant, date, and confirmed total. The item sum is the confirmed
+  total for new outings; the owner may type an explicit override. Receipt images are not captured.
+  Legacy rows may retain image and adjustment columns.
 - **Receipt item**: A line on the receipt with name, quantity, unit amount, total amount, and an
   assignment to one adult, one student, or shared.
 - **Coverage assignment**: The relationship that assigns one present student to exactly one adult
   for an outing.
 - **Share**: The amount one adult owes for an outing, with a breakdown of own items,
-  covered-student items, shared head share, adjustments, gap, and final total.
+  covered-student items, shared head share, total difference, and final total.
 - **Settlement**: A payment from one adult to another, with amount, date, optional note, and status.
 - **Audit event**: A record of a correction to a finalized outing, including the adult profile,
   before/after values, and timestamp.
@@ -364,21 +377,20 @@ flow.
 ### Measurable Outcomes
 
 - **SC-001**: An itemized outing with up to 10 items and three students can be created, assigned,
-  and finalized in under 3 minutes, excluding OCR time.
+  and finalized in under 3 minutes.
 - **SC-002**: A per-head outing with no items can be created and finalized in under 90 seconds.
-- **SC-003**: 100% of finalized splits sum exactly to the confirmed receipt total across randomized
-  tests covering adult items, student items, shared items, adjustments, discounts, and total gaps.
-- **SC-004**: For clear printed receipts, the owner can scan and confirm items and the total in
-  under 30 seconds in at least 90% of attempts.
-- **SC-005**: When recognition fails, the owner can complete the same outing manually without
-  leaving the flow.
+- **SC-003**: 100% of finalized splits sum exactly to the outing total across randomized tests
+  covering adult items, student items, shared items, manual overrides, and legacy adjustments.
+- **SC-004**: Adding, editing, deleting, splitting, or merging an item updates the Auto total to the
+  exact item sum in 100% of cases.
+- **SC-005**: Typing a total switches it to Manual; later item changes leave it unchanged; “Use
+  items total” restores Auto. A reopened outing keeps its saved total.
 - **SC-006**: Offline creation, item assignment, finalization, and settlement succeed with no
   network, and the backup succeeds within 10 seconds of reconnection for a typical ledger.
 - **SC-007**: A restore on a fresh install completes in under 5 minutes and reproduces every
   outing, item assignment, share, and settlement.
 - **SC-008**: A full or partial settlement can be recorded in under 30 seconds.
-- **SC-009**: 100% of receipt images used for text recognition stay on the device; no external
-  recognition request and no image upload occurs.
+- **SC-009**: The shipped app contains no camera, OCR, receipt-image, or ML Kit path.
 - **SC-010**: The app installs and launches on the owner's Android 17 device without a paid store
   listing; the first usable screen appears within 5 seconds.
 - **SC-011**: Export produces valid CSV and JSON files containing all outings, items, assignments,
@@ -398,11 +410,12 @@ flow.
 - Only the owner uses the app. The other adults receive shared text/image recaps and do not install
   or sign in.
 - The owner has one authorized Google account for private Supabase backup and restore.
-- The receipt total is authoritative; item amounts are the basis for allocation before adjustments.
-- Tax, service charge, and discount are global receipt adjustments, not assignable food items.
+- The item sum is authoritative for new outings; the owner may type an explicit total override.
+- Tax, service charge, and discount are not used in new outings. Legacy outings may retain stored
+  adjustments.
 - One person per item; portions of a shared item are created with the split tool.
 - Fairness scoring and automatic coverage suggestions are out of scope.
-- Receipt photos are local-only and are not restored from backup.
+- Receipt images are not captured, stored, or restored.
 - The group starts fresh; there is no import from the previous web demo.
 - The app uses Philippine pesos and English.
 - Network connectivity is unreliable at restaurants, so the core flow must be offline-first.
@@ -417,7 +430,7 @@ flow.
 - Real-time collaboration and conflict resolution across devices.
 - Item-specific custom shares beyond the one-person-per-item rule; use the split tool.
 - Unit-level assignment for quantity lines; split the line instead.
-- Item-specific discounts; tax, service charge, and discount are global proportional adjustments.
+- Receipt OCR, camera capture, receipt images, and any LLM or Gemini Nano assist.
 - Fairness scores, fairness tallies, and automatic coverage suggestions.
 - Multiple receipts or multiple payers per outing.
 - Excel/CSV import of historical spreadsheets.

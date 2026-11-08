@@ -66,17 +66,16 @@ Local ledger use works without sign-in. Sign-in is required only for backup and 
 ### S1 — Adult and student items
 
 1. Create an outing for today.
-2. Enter a receipt total of ₱825.
-3. Add items: CP ₱200, Mai ₱100, Ana ₱150, Ben ₱120, shared rice ₱180.
-4. Assign Ana to CP and Ben to Mai.
-5. Mark Ana and Ben present (or let item assignment mark them).
-6. Add tax of ₱75.
-7. Review the split.
-8. Select CP as payer and finalize.
-9. Tap **Share recap** and send the text or image.
+2. Add items: CP ₱200, Mai ₱100, Ana ₱150, Ben ₱120, shared rice ₱180.
+3. Assign Ana to CP and Ben to Mai.
+4. Mark Ana and Ben present (or let item assignment mark them).
+5. Verify the total auto-fills to ₱750.
+6. Review the split.
+7. Select CP as payer and finalize.
+8. Tap **Share recap** and send the text or image.
 
-**Expected**: each item is charged correctly; shared rice is split across 6 heads; tax is
-proportional; the four shares sum exactly to ₱825; the recap matches the finalized split.
+**Expected**: each item is charged correctly; shared rice is split across 6 heads; the four shares
+sum exactly to ₱750; the recap matches the finalized split.
 
 ### S2 — Shared-only items
 
@@ -89,25 +88,27 @@ their covering adult; the shares sum exactly to ₱1,000.
 
 ### S3 — No items
 
-1. Create an outing with a total and no items.
+1. Create an outing with a typed total and no items.
 2. Mark students present and assign coverage.
 3. Finalize.
 
 **Expected**: the per-head fallback runs and the shares sum exactly.
 
-### S4 — Total mismatch
+### S4 — Manual total override
 
-1. Enter items that sum to ₱700 but a receipt total of ₱750.
-2. Finalize.
+1. Enter items that sum to ₱700.
+2. Type a total of ₱750.
+3. Finalize.
 
-**Expected**: the ₱50 gap is distributed proportionally; the shares sum exactly to ₱750.
+**Expected**: the ₱50 difference is distributed proportionally; the shares sum exactly to ₱750.
 
-### S5 — Discount
+### S5 — Reopened outing
 
-1. Enter items, tax, service charge, and a discount.
-2. Finalize.
+1. Finalize an outing.
+2. Reopen it and change an item.
+3. Finalize again.
 
-**Expected**: the discount is allocated proportionally; the exact total is preserved.
+**Expected**: the saved total stays fixed; the shares still sum exactly to it.
 
 ### S6 — Unassigned item
 
@@ -157,14 +158,16 @@ not restored and the UI explains why.
 
 **Expected**: access is denied and no snapshot is returned.
 
-### S12 — OCR
+### S12 — Manual entry and total modes
 
-1. Scan a clear printed receipt.
-2. Review the extracted items.
-3. Correct one item.
-4. Assign items and finalize.
+1. Create an outing and add three items with quantities.
+2. Verify the total follows the item sum.
+3. Type a different total, then add another item.
+4. Verify the typed total stayed put, then tap **Use items total**.
+5. Reopen a finalized outing and change an item.
+6. Verify the saved total did not change.
 
-**Expected**: OCR stays on-device; items are editable; manual fallback works.
+**Expected**: Auto, Manual, and Fixed behave as described; no camera or scan button appears.
 
 ## 5. Quality gates
 
@@ -175,5 +178,5 @@ not restored and the UI explains why.
 .\gradlew.bat assembleDebug
 ```
 
-Before release, run the instrumented smoke test on the S26 Ultra and verify dynamic color, dark
+Before release, run the instrumented smoke test on the S26 Ultra and verify the fixed palette, dark
 theme, offline behavior, backup/restore, and recap sharing.

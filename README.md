@@ -11,8 +11,8 @@ React/Capacitor/PWA implementation has been removed and preserved in Git history
 
 The Kotlin project is scaffolded with Jetpack Compose, Material 3, Room, Hilt, WorkManager, and
 the navigation shell. The pure Kotlin money engine is implemented and tested, including item
-assignment, shared per-head costs, proportional adjustments, total-gap reconciliation, balances,
-and settlements. The feature screens and persistence layer are next.
+assignment, shared per-head costs, item-sum totals, manual overrides, balances, and settlements.
+The feature screens and persistence layer are next.
 
 ## Product decisions
 
@@ -25,21 +25,22 @@ and settlements. The feature screens and persistence layer are next.
   - Each item is assigned to one adult, one student, or shared.
   - Student items are charged to the adult covering that student.
   - Shared items split per head across four adults and present students.
-  - Tax, service, and discount are allocated proportionally.
-  - The receipt total is authoritative; the gap is distributed proportionally.
+  - The item sum is the bill. A typed total is an explicit manual override.
+  - Legacy tax/service/discount values remain supported for old outings.
   - Every finalized split sums exactly in integer centavos.
+- **Manual item entry**: the only item-entry path; no camera or OCR.
+- **Item-sum total**: Auto by default, Manual when typed, Fixed on reopen.
 - **No items**: fall back to a per-head split.
 - **Fairness**: fairness scores and auto-balance are removed.
 - **Backup**: private Supabase JSON snapshots for the owner's Google account.
 - **Restore**: only when the local database is empty.
-- **Receipt photos**: local-only; never uploaded.
-- **OCR**: ML Kit Text Recognition v2, on-device.
+- **Receipt images**: none captured or uploaded.
 - **Distribution**: sideloaded APK, application id `ph.salo.app`.
 
 ## Current implementation
 
 - Native Android Gradle project at the repository root, openable in Android Studio.
-- Single-activity Compose app with Material 3 theme, dynamic color, and a green fallback.
+- Single-activity Compose app with Material 3 theme and the fixed Ledger Green palette.
 - Full navigation: Home, Students, New Outing, Outing Detail, Ledger, History, and Settings.
 - Room database, DAOs, and repositories for adults, students, outings, receipts, items,
   coverage, shares, settlements, audit events, and backup state.
@@ -48,26 +49,27 @@ and settlements. The feature screens and persistence layer are next.
   - item assignment to adult, student, or shared;
   - student items charged to the covering adult;
   - shared items split per head;
-  - proportional tax/service/discount allocation;
-  - total-gap reconciliation;
+  - the item sum is the bill; a typed total is an explicit manual override;
+  - legacy tax/service/discount values remain supported for old outings;
   - exact-centavo largest-remainder rounding;
   - per-head fallback when there are no items;
   - balances and simplified settlements.
-- New Outing wizard: details, receipt, manual/OCR items, item editing/splitting/merging,
+- New Outing wizard: details, receipt, manual items, item editing/splitting/merging,
   assignment, coverage, review, payer, and finalize.
-- On-device OCR using the system camera and ML Kit Text Recognition.
+- Manual-only item entry; no camera, OCR, or receipt images.
 - Text and 1080×1350 image recaps through the Android share sheet.
 - Ledger with balances, suggested transfers, partial payments, and void.
 - History with date filters, per-student summaries, and CSV/JSON export.
 - Private Supabase snapshot backup and restore, Google Credential Manager sign-in, retry worker,
   and owner-only RLS. Backup is disabled until the config keys are added.
 - Adaptive launcher icon and Android 13+ monochrome themed icon.
-- JUnit tests for the money engine and receipt parser, including randomized exact-total invariants.
+- JUnit tests for the money engine and total-state rules, including randomized exact-total
+  invariants.
 
-Pending: physical-device/emulator validation and instrumented tests. Reopen/audit and release
-signing are implemented; the release APK uses debug signing until a `keystore.properties` file is
-added. The app has been compiled, unit-tested, linted, and release-built, but not run on the S26
-Ultra yet.
+Pending: R8 rule review under a real release build, the TalkBack/accessibility pass, a light-theme
+check, and offline + backup retry verification. Reopen/audit and release signing are implemented;
+the release APK uses debug signing until a `keystore.properties` file is added. The app has been
+compiled, unit-tested, linted, release-built, and run on the S26 Ultra.
 
 ## Planned architecture
 
@@ -77,7 +79,7 @@ Ultra yet.
 - Hilt for dependency injection.
 - WorkManager for retryable backup.
 - Google Credential Manager + Supabase Auth.
-- System camera capture + ML Kit for OCR.
+- Manual item entry; no camera or OCR.
 - Android share sheet for recaps; Storage Access Framework for CSV/JSON export.
 
 ## Repository layout
@@ -95,7 +97,7 @@ specs/
     tasks.md             Implementation tasks
     data-model.md        Room entities and snapshot shape
     quickstart.md        Build, Supabase, and validation scenarios
-    contracts/           Money, backup, OCR, recap, and platform contracts
+    contracts/           Money, backup, recap, and platform contracts
 .specify/                Spec Kit scaffolding and constitution
 ```
 
@@ -118,7 +120,7 @@ specs/
 5. Never commit the service-role key or these values.
 
 The schema stores versioned JSON snapshots in `public.ledger_snapshots` with owner-only row-level
-security. Receipt images and credentials are never included.
+security. Receipt images are never captured, and credentials are never included.
 
 ## Brand
 
@@ -201,8 +203,8 @@ The authoritative documents are:
 
 ## Privacy and cost
 
-- On-device OCR only; no external OCR service.
-- Receipt images stay on the phone.
+- No camera, OCR, or external recognition service.
+- No receipt images are captured or uploaded.
 - Ledger data is backed up privately to the owner's Supabase account.
 - Student records are display name and optional notes only.
 - No analytics, ad SDKs, or tracking.

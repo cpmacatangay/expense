@@ -27,12 +27,14 @@
 - [x] User scenarios cover primary flows
 - [x] Feature meets measurable outcomes defined in Success Criteria
 - [x] The item-assignment and shared-cost rules are fully specified
+- [x] The item-sum, Auto/Manual/Fixed total, and manual override rules are fully specified
+- [x] Manual entry is the only item-entry path; OCR and receipt images are explicitly excluded
 - [x] The private backup/restore scope is explicit
 - [x] Removed features are listed as out of scope
 
 ## Notes
 
-- All items pass after the Android-only and item-assignment revision.
+- All items pass after the Android-only, manual-entry, and item-sum revision.
 - The platform, single-device, and Material Design 3 requirements are intentional product
   constraints, not incidental implementation details.
 - Ready for `plan` and `tasks`.

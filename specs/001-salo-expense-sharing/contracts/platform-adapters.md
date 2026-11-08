@@ -1,31 +1,9 @@
 # Contract: Android Platform Adapters
 
-**Consumers**: camera, sharing, export, auth, and backup features
+**Consumers**: sharing, export, auth, and backup features
 
 Platform capabilities are isolated behind small interfaces so the domain and UI layers stay
-testable. All implementations are Android-native.
-
-## Camera
-
-```kotlin
-interface CameraAdapter {
-    suspend fun captureReceipt(): CapturedImage?
-}
-
-data class CapturedImage(
-    val uri: Uri,
-    val path: String,
-    val mimeType: String,
-    val width: Int,
-    val height: Int
-)
-```
-
-- Uses System camera capture through ActivityResultContracts.TakePicture and a FileProvider URI.
-- Writes to app-private storage.
-- Requests camera permission.
-- Returns `null` when the owner cancels.
-- Falls back to the photo picker if permission is denied.
+testable. All implementations are Android-native. There is no camera or receipt-image adapter.
 
 ## Sharing
 
@@ -37,8 +15,8 @@ interface ShareAdapter {
 }
 ```
 
-- Uses `Intent.ACTION_SEND` and the Android share sheet.
-- Images use a FileProvider URI.
+- Uses `Intent.ACTION_SEND` and the Android share sheet for text.
+- The recap image is written to `Pictures/Salo` through MediaStore.
 - No network service.
 
 ## Export
@@ -99,14 +77,13 @@ sealed interface BackupResult {
 
 ## Local storage
 
-- Receipt images live in `filesDir/receipts/` or `cacheDir` as appropriate.
+- No receipt images are captured. Legacy image paths may remain in old rows and are not restored.
 - Room owns ledger data.
 - DataStore owns the selected adult profile and simple preferences.
 - No receipt image path is written to the backup payload.
 
 ## Error handling
 
-- Camera denied: offer gallery/manual entry.
 - Share unavailable: copy text and show a message.
 - Export canceled: no error toast; leave data unchanged.
 - Auth canceled: return to local mode; backup remains queued as local-only.

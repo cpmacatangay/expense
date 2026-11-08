@@ -1,15 +1,15 @@
 <!--
 Sync Impact Report
-- Version change: 1.0.1 → 2.0.0
+- Version change: 2.0.0 → 3.0.0
 - Modified principles:
-  - II. Privacy by Default (receipt images are local-only; only ledger data is backed up)
-  - III. Offline-First (backup/restore replaces multi-device synchronization)
-  - IV. One Codebase, Two Targets → IV. Android-Native, Single Owner
-  - V. Explicit and Simple Money Rules (hybrid item assignment + shared per-head allocation)
-  - VII. Low-Friction at the Table (item assignment flow and fallback timing)
+  - I. Money Correctness Is Non-Negotiable (outing total; legacy adjustments)
+  - II. Privacy by Default (no receipt images are captured)
+  - V. Explicit and Simple Money Rules (item sum authoritative; manual override)
+  - VII. Low-Friction at the Table (manual entry only)
+  - VIII. Zero Recurring Cost (no OCR path)
 - Added sections: none
-- Removed sections: none
-- Follow-up TODOs: scaffold the native Android Kotlin project and implement the revised tasks
+- Removed sections: receipt OCR path
+- Follow-up TODOs: implement the manual-only flow and item-sum total
 -->
 
 # Salo Constitution
@@ -19,29 +19,29 @@ Sync Impact Report
 ### I. Money Correctness Is Non-Negotiable
 
 All monetary values MUST be stored and computed as integer centavos. Every finalized split MUST sum
-exactly to the receipt total. Rounding MUST be deterministic and documented. Floating-point
+exactly to the outing total. Rounding MUST be deterministic and documented. Floating-point
 arithmetic MUST NOT be used for money. The money engine MUST be a pure, independently testable
 Kotlin module with automated tests covering item assignment, student coverage, shared per-head
-costs, tax/service/discount allocation, total-gap distribution, settlement netting, and rounding
-remainders. A change that can alter any peso amount MUST include a test that proves the ledger still
-balances.
+costs, total-gap distribution, settlement netting, and rounding remainders. Legacy outings that
+carry stored tax/service/discount adjustments MUST remain covered. A change that can alter any peso
+amount MUST include a test that proves the ledger still balances.
 
 **Rationale**: This app exists to replace a spreadsheet ledger. A single lost or invented centavo
 destroys trust faster than any missing feature.
 
 ### II. Privacy by Default
 
-Receipt OCR MUST run on-device. Receipt images MUST NOT be sent to a third-party OCR or AI service
-and MUST NOT be uploaded to Supabase. Student records MUST contain only the minimum needed to
-operate the ledger: a display name and optional notes. The app MUST NOT collect student contact
-details, photos, or other personal data. Third-party analytics and advertising SDKs MUST NOT be
-included. Only ledger data — outings, items, assignments, shares, settlements, and the roster — MAY
-be backed up to the owner's private Supabase account, and access MUST be enforced by row-level
-security.
+The app MUST NOT capture or store receipt images. Receipt text and images MUST NOT be sent to a
+third-party OCR or AI service and MUST NOT be uploaded to Supabase. Student records MUST contain
+only the minimum needed to operate the ledger: a display name and optional notes. The app MUST NOT
+collect student contact details, photos, or other personal data. Third-party analytics and
+advertising SDKs MUST NOT be included. Only ledger data — outings, items, assignments, shares,
+settlements, and the roster — MAY be backed up to the owner's private Supabase account, and access
+MUST be enforced by row-level security.
 
 **Rationale**: The ledger involves students, potentially minors, and private financial records.
-On-device processing and local-only receipt images are both a privacy guarantee and a cost
-constraint.
+Not collecting receipt images keeps the privacy surface small and avoids an unnecessary storage
+and OCR cost.
 
 ### III. Offline-First
 
@@ -81,10 +81,14 @@ The split is a hybrid of item assignment and shared per-head costs:
 - An item assigned to a student is the cost of the adult covering that student for the outing.
 - Shared items are split per head across the four adults and all present students; a student's
   share is borne by the covering adult.
-- Tax, service charge, and discount MUST be allocated proportionally to each adult's
-  pre-adjustment subtotal.
-- The confirmed receipt total is authoritative. Any gap between the itemized total and the receipt
-  total MUST be distributed proportionally, and the finalized shares MUST still sum exactly.
+- For new outings, the sum of the item amounts is the authoritative bill. Tax, service charge, and
+  discount are not used in new outings.
+- The total MUST follow the item sum by default. Typing a total is an explicit manual override; it
+  disables auto-follow until the owner chooses to use the item total again.
+- A reopened outing keeps its saved total. Item changes in a reopened outing MUST NOT update the
+  total automatically.
+- Legacy outings MAY retain stored tax/service/discount values; those values continue to apply when
+  the outing is reopened so its historical split does not change without an explicit edit.
 - If no receipt items are entered, the outing falls back to a per-head split across the four adults
   and present students.
 
@@ -93,8 +97,9 @@ multiple payers, fairness scores, or automatic coverage suggestions. Assigning a
 MUST mark that student present.
 
 **Rationale**: Item assignment matches how a table actually orders food, while shared per-head
-costs handle rice, appetizers, tax, and other table-wide amounts. Clear rules are easier to explain
-at the table and easier to test.
+costs handle rice, appetizers, and other table-wide amounts. A single authoritative item sum keeps
+the rule simple to explain and test, and the manual override handles per-head outings and
+corrections without silently rewriting history.
 
 ### VI. Auditable and Reversible
 
@@ -109,13 +114,12 @@ for mistakes.
 
 ### VII. Low-Friction at the Table
 
-The primary flow — create outing, scan or enter the receipt, assign items, assign present students
+The primary flow — create outing, enter items manually, assign items, assign present students
 to adults, review the split, and finalize — SHOULD be completable in under 3 minutes for a typical
 receipt with up to 10 items. A per-head outing without items SHOULD be completable in under 90
-seconds. OCR is assistive: manual total and item entry MUST always be available, and every scanned
-field MUST be correctable. Item assignment MUST be fast: one tap per item plus a shared option.
-Tap targets MUST be at least 44 logical pixels. The flow MUST be usable one-handed. Steps that do
-not affect the split MUST NOT block finalization.
+seconds. Manual entry MUST always be available. Item assignment MUST be fast: one tap per item plus
+a shared option. Tap targets MUST be at least 44 logical pixels. The flow MUST be usable
+one-handed. Steps that do not affect the split MUST NOT block finalization.
 
 **Rationale**: The app competes with a group chat and a paper receipt. Item assignment is valuable
 only if it remains faster than rebuilding the spreadsheet.
@@ -124,10 +128,10 @@ only if it remains faster than rebuilding the spreadsheet.
 
 The project MUST run on free service tiers and on-device processing. It MUST NOT require a paid
 subscription, paid OCR API, paid sync service, or Apple Developer Program membership. Any new
-recurring cost MUST be explicitly approved before adoption. Receipt photos MUST remain on the
-device and MUST NOT consume cloud storage. The Android app MUST be distributable as a sideloaded
-debug or signed release APK without a store listing. Supabase free-tier usage MUST remain within
-the included database and bandwidth limits.
+recurring cost MUST be explicitly approved before adoption. The app MUST NOT upload receipt images
+or consume cloud storage for them. The Android app MUST be distributable as a sideloaded debug or
+signed release APK without a store listing. Supabase free-tier usage MUST remain within the
+included database and bandwidth limits.
 
 **Rationale**: The group explicitly rejected recurring fees. Cost discipline is a product
 constraint, not an optimization.
@@ -138,8 +142,7 @@ constraint, not an optimization.
 - The owner MUST authenticate with one authorized Google account for backup and restore.
 - No other adult account, invite, group membership, or shared backend access is supported.
 - All Supabase access MUST be scoped to the authenticated owner via row-level security.
-- Receipt photos MUST remain in app-private local storage and MUST NOT be uploaded.
-- On-device OCR MUST be the only OCR path; no receipt image may be sent to an external OCR API.
+- The app MUST NOT capture or upload receipt images.
 - Student records MUST be limited to display name and optional notes; no contact details.
 - The app MUST NOT include third-party analytics, ad SDKs, or tracking pixels.
 - All data export MUST be initiated by the owner and MUST include outings, items, assignments,
@@ -154,14 +157,14 @@ constraint, not an optimization.
   converge.
 - No implementation work may start before the feature spec and plan are approved.
 - The Kotlin money engine MUST have unit tests and property-based invariant tests proving that
-  every finalized split sums to the receipt total, including item assignment, shared costs,
-  proportional adjustments, negative discounts, and total gaps.
+  every finalized split sums to the outing total, including item assignment, shared costs, legacy
+  adjustments, negative discounts, and total differences.
 - Room DAO tests MUST cover item assignment, coverage, settlement, and backup snapshot persistence.
 - Compose UI tests MUST cover the item assignment flow, shared items, student auto-presence, and
   the final review.
 - Offline and backup behavior MUST be tested on the owner's Samsung S26 Ultra running Android 17.
-- Receipt parser fixtures MUST cover Philippine receipt formats, including VAT, service charge,
-  discounts, comma separators, quantities, and malformed OCR.
+- Manual entry and total-state tests MUST cover auto-follow, manual override, fixed reopened
+  outings, and exact item sums.
 - Accessibility MUST be reviewed for tap target size, contrast, labels, and focus order.
 - The definition of done for any money-related change includes: tests pass, the ledger balances,
   and the change is documented in the plan or tasks.
@@ -178,4 +181,4 @@ MUST update the version, ratification date, and last-amended date. Compliance is
 Spec Kit stage and before every release. When a principle conflicts with a feature request, the
 constitution wins until it is formally amended.
 
-**Version**: 2.0.0 | **Ratified**: 2026-11-07 | **Last Amended**: 2026-11-07
+**Version**: 3.0.0 | **Ratified**: 2026-11-07 | **Last Amended**: 2026-11-09

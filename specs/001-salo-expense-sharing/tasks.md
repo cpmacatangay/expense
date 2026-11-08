@@ -4,7 +4,7 @@
 
 **Prerequisites**: Constitution 2.0.0, revised spec, revised plan
 
-**Tests**: Required for money allocation, Room, ViewModels, Compose UI, OCR parsing, backup/restore, and the physical-device smoke test.
+**Tests**: Required for money allocation, Room, ViewModels, Compose UI, manual entry and total state, backup/restore, and the physical-device smoke test.
 
 **Organization**: Tasks are grouped by milestone and dependency order. `[P]` means the task can run in parallel with other `[P]` tasks in the same phase.
 
@@ -25,7 +25,7 @@
 - [x] T010 Create the root Gradle Android project (`settings.gradle.kts`, `build.gradle.kts`, `gradle.properties`, Gradle wrapper).
 - [x] T011 Add the `app` module with `applicationId = "ph.salo.app"`.
 - [x] T012 Configure `compileSdk 37`, `targetSdk 37`, `minSdk 37`, JDK 21, and Kotlin/Compose compiler versions.
-- [x] T013 Add a Gradle version catalog for Compose, Room, Hilt, WorkManager, Navigation, Kotlinx Serialization, ML Kit, Credential Manager, Supabase, and test libraries.
+- [x] T013 Add a Gradle version catalog for Compose, Room, Hilt, WorkManager, Navigation, Kotlinx Serialization, Credential Manager, Supabase, and test libraries.
 - [x] T014 Create `SaloApplication` and register it in `AndroidManifest.xml`.
 - [x] T015 Configure Hilt application and modules.
 - [x] T016 Create the single `MainActivity` with edge-to-edge Compose content.
@@ -134,14 +134,14 @@
 - [x] T104 Add tests for snapshot serialization, backup retry, restore validation, empty-only restore, and unauthorized access.
 - [x] T105 Verify local use without sign-in and backup queuing while signed out.
 
-## Phase 7: OCR, history, export, and audit
+## Phase 7: History, export, and audit (manual entry only)
 
-- [x] T106 Add System camera capture via ActivityResultContracts.TakePicture and FileProvider.
-- [x] T107 Add ML Kit Text Recognition v2 on-device processing.
-- [x] T108 Port the Philippine receipt parser to Kotlin.
-- [x] T109 Add parser fixtures for VAT, service charge, discounts, quantities, comma separators, and malformed OCR.
-- [x] T110 Feed OCR results into the item review screen.
-- [x] T111 Keep manual item and total entry as the fallback.
+- [~] T106 (Withdrawn) System camera capture via ActivityResultContracts.TakePicture and FileProvider.
+- [~] T107 (Withdrawn) ML Kit Text Recognition v2 on-device processing.
+- [~] T108 (Withdrawn) Port the Philippine receipt parser to Kotlin.
+- [~] T109 (Withdrawn) Parser fixtures for VAT, service charge, discounts, quantities, comma separators, and malformed OCR.
+- [~] T110 (Withdrawn) Feed OCR results into the item review screen.
+- [x] T111 Keep manual item and total entry as the only item-entry path.
 - [x] T112 Add CSV export through the Storage Access Framework.
 - [x] T113 Add JSON export through the Storage Access Framework.
 - [x] T114 Include outings, items, assignments, coverage, shares, settlements, and roster in exports.
@@ -153,30 +153,44 @@
 ## Phase 8: Release and validation
 
 - [x] T119 Add release signing configuration and keystore instructions.
-- [ ] T120 Add R8/ProGuard rules for Supabase, serialization, Room, Hilt, and ML Kit.
+- [ ] T120 Add R8/ProGuard rules for Supabase, serialization, Room, and Hilt.
 - [ ] T121 Review accessibility: 44dp targets, contrast, content descriptions, focus order.
 - [x] T122 Review performance: first usable screen under 5 seconds and smooth item assignment. Measured cold start 416 ms on the S26 Ultra.
 - [x] T123 Run the full instrumented smoke test on the Samsung S26 Ultra with Android 17 / One UI 9.0.
-- [ ] T124 Verify dynamic color and the green fallback in light and dark themes.
+- [ ] T124 Verify the fixed Ledger Green palette in light and dark themes.
 - [ ] T125 Verify offline creation, item assignment, finalization, settlement, and backup retry.
 - [x] T126 Verify recap text/image sharing through the Android share sheet.
 - [x] T127 Build the signed release APK.
 - [x] T128 Update README and quickstart with build, Supabase, Google OAuth, and install instructions.
 
-## Phase 9: OCR hardening before any LLM
+## Phase 9: Removed OCR hardening
 
-- [x] T129 Return ML Kit `Text.Line` text plus bounding boxes as `OcrLine` and sort by top, then left.
-- [x] T130 Parse `List<OcrLine>`; add multi-line item names and extended quantity patterns.
-- [x] T131 Prioritise total labels and exclude subtotal/total VAT/total items/total qty; exclude VATable, VAT-exempt, VAT reg, and TIN from tax.
-- [x] T132 Add item subtotal, difference, and reconciliation warnings to `ParsedReceipt`.
-- [x] T133 Replace scanned items on rescan after a confirmation dialog; never append duplicates.
-- [x] T134 Show a scan summary and reconciliation warning in the receipt step.
-- [x] T135 Add fixture tests for VAT, service charge, discounts, multi-line names, two-column layout, missing total, and total mismatch.
-- [ ] T136 Add a debug-only raw OCR text export for collecting anonymised fixtures; never log receipt text in release.
-- [ ] T137 Run the baseline on 5–10 real receipts and record total/items/names/duplicates/time.
-- [ ] T138 Gate review: if total 8/8 and items ≥ 90%, stop here; otherwise create a separate Gemini Nano assist plan.
-- [ ] T139 (Conditional after T138) Add ML Kit GenAI direct model access with typed structured output, OCR-amount validation, arithmetic reconciliation, and deterministic fallback.
-- [ ] T140 (Conditional after T139) Test model unavailable, busy/quota, invalid JSON, and validation-failure fallbacks.
+- [~] T129 (Withdrawn) Return ML Kit `Text.Line` text plus bounding boxes as `OcrLine` and sort by top, then left.
+- [~] T130 (Withdrawn) Parse `List<OcrLine>`; add multi-line item names and extended quantity patterns.
+- [~] T131 (Withdrawn) Prioritise total labels and exclude subtotal/total VAT/total items/total qty; exclude VATable, VAT-exempt, VAT reg, and TIN from tax.
+- [~] T132 (Withdrawn) Add item subtotal, difference, and reconciliation warnings to `ParsedReceipt`.
+- [~] T133 (Withdrawn) Replace scanned items on rescan after a confirmation dialog; never append duplicates.
+- [~] T134 (Withdrawn) Show a scan summary and reconciliation warning in the receipt step.
+- [~] T135 (Withdrawn) Add fixture tests for VAT, service charge, discounts, multi-line names, two-column layout, missing total, and total mismatch.
+- [~] T136 (Withdrawn) Debug-only raw OCR text export.
+- [~] T137 (Withdrawn) Real-receipt OCR baseline.
+- [~] T138 (Withdrawn) OCR gate review and Gemini Nano decision.
+- [~] T139 (Withdrawn) ML Kit GenAI direct model access.
+- [~] T140 (Withdrawn) Gemini Nano fallback tests.
+
+## Phase 10: Manual-only ledger and item-sum total
+
+- [~] T141 Amend the constitution, spec, plan, tasks, contracts, and docs for manual-only entry and the item-sum rule. (In progress)
+- [x] T142 Remove the scan button, camera launcher, scan state, scan summary, replace dialog, and scan strings.
+- [x] T143 Delete the OCR code and parser tests; remove ML Kit and coroutines-play-services; remove the FileProvider and `file_paths.xml`.
+- [x] T144 Preserve legacy receipt rows/images; new writes null/zero/`MANUAL`; no migration.
+- [x] T145 Add `TotalMode` and `syncTotalToItems`; call on amount-changing item mutations.
+- [x] T146 Remove tax/service/discount fields; stop OCR filling them.
+- [x] T147 Wire split/finalize for zero new adjustments and stored legacy adjustments.
+- [x] T148 Update review/recap labels and hide zero adjustments.
+- [x] T149 Fix merge centavo preservation.
+- [x] T150 Add tests for total state, item-sum rule, legacy, and merge.
+- [ ] T151 Build, lint, test, install, and verify on the S26.
 
 ## Dependencies
 
@@ -194,7 +208,7 @@
 - T023–T038 (money engine) can run alongside T039–T056 (Room) once domain models are defined.
 - T057–T078 UI screens can be split across feature packages after navigation and theme are stable.
 - T080–T084 recap work can run alongside T086–T105 backup work.
-- T106–T118 OCR/export/audit can be split after the core ledger is stable.
+- T112–T118 history/export/audit can be split after the core ledger is stable.
 
 ## Implementation Strategy
 
@@ -203,14 +217,14 @@
 3. Add Room and repositories, then the Compose core ledger.
 4. Add recap sharing.
 5. Add Google auth and Supabase snapshot backup/restore.
-6. Add OCR, history/export, and audit.
+6. Add manual entry, history/export, and audit.
 7. Release and validate on the physical device.
 
 ## Notes
 
 - No web, PWA, iPhone, Capacitor, or React work remains.
 - No fairness score or auto-balance tasks exist by design.
-- Receipt images are local-only and excluded from backup.
+- Receipt images are not captured or backed up.
 - Restore is empty-database-only.
 - The physical device is the primary acceptance target.
 - T022/T122/T123/T126/T127: verified on a connected SM-S948B (Android 17 / API 37 / One UI 9.0) on 2026-11-07 - install, four profiles, student roster, the itemized PHP 825 case (CP 451 / Mai 308 / Kent 33 / Llanmer 33), ledger payment + void, recap text/image, CSV export, Google sign-in, Supabase backup, and clear-then-restore round trip. Cold start 416 ms.

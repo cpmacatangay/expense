@@ -55,12 +55,12 @@ One of the four local profiles on the owner's phone.
 | `outingId` | String | One receipt per outing |
 | `merchant` | String? | Optional |
 | `receiptDate` | String? | Optional |
-| `imagePath` | String? | App-private local path; excluded from backup |
-| `totalCentavos` | Long | Authoritative; > 0 |
-| `taxCentavos` | Long | Default 0; non-negative |
-| `serviceChargeCentavos` | Long | Default 0; non-negative |
-| `discountCentavos` | Long | Default 0; non-negative |
-| `ocrEngine` | String? | `ML_KIT` or null |
+| `imagePath` | String? | Legacy only; no new images; excluded from backup |
+| `totalCentavos` | Long | Item sum or explicit manual total; > 0 |
+| `taxCentavos` | Long | Legacy only; new outings write 0 |
+| `serviceChargeCentavos` | Long | Legacy only; new outings write 0 |
+| `discountCentavos` | Long | Legacy only; new outings write 0 |
+| `ocrEngine` | String? | `MANUAL` for new outings; legacy rows may say `ML_KIT` |
 | `createdAt` | Long | Creation time |
 
 ### ReceiptItem
@@ -114,9 +114,9 @@ Persisted at finalization and immutable afterwards.
 | `studentItemsCentavos` | Long | Items assigned to covered students |
 | `sharedHeadCentavos` | Long | Adult's own head share of shared items |
 | `coveredStudentSharedCentavos` | Long | Shared head shares of covered students |
-| `adjustmentCentavos` | Long | Proportional tax + service − discount |
-| `gapCentavos` | Long | Proportional receipt-total reconciliation |
-| `totalCentavos` | Long | Final share; sums exactly to receipt total |
+| `adjustmentCentavos` | Long | Legacy tax + service − discount; 0 for new outings |
+| `gapCentavos` | Long | Difference from a manual override or legacy total |
+| `totalCentavos` | Long | Final share; sums exactly to the outing total |
 | `isPayer` | Boolean | One payer per outing |
 | `createdAt` | Long | Finalization time |
 
@@ -199,7 +199,7 @@ The Supabase payload is a versioned JSON object containing:
 }
 ```
 
-Excluded: receipt image paths, local file URIs, Supabase session tokens, and Google credentials.
+Excluded: legacy receipt image paths, local file URIs, Supabase session tokens, and Google credentials.
 
 ## Invariants
 
@@ -209,9 +209,10 @@ Excluded: receipt image paths, local file URIs, Supabase session tokens, and Goo
 4. Every present student has exactly one covering adult.
 5. Student-assigned items charge the covering adult.
 6. Shared items split per head across four adults plus present students.
-7. Adjustments and total gaps use proportional largest-remainder allocation.
+7. New outings use the item sum; a manual override and legacy adjustments use proportional
+   largest-remainder allocation.
 8. One payer per outing.
 9. Finalized shares and item assignments are immutable snapshots.
 10. Deleting/archiving a student does not change finalized history.
 11. Restore only occurs into an empty local database.
-12. Receipt images are local-only and never appear in the backup payload.
+12. Receipt images are never captured and never appear in the backup payload.
