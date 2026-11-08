@@ -9,6 +9,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -253,6 +254,16 @@ fun HomeScreen(
 
                 // Clears the FAB and bottom navigation insets on the last scroll position.
                 Spacer(Modifier.height(96.dp))
+            }
+            if (fabExpanded) {
+                Box(
+                    modifier = Modifier
+                        .matchParentSize()
+                        .clickable(
+                            interactionSource = remember { MutableInteractionSource() },
+                            indication = null
+                        ) { fabExpanded = false }
+                )
             }
             HomeFabMenu(
                 expanded = fabExpanded,
