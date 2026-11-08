@@ -33,12 +33,12 @@ class BackupManager @Inject constructor(
         val idToken = googleAuth.signIn(activity)
         val session = supabase.signInWithGoogleIdToken(idToken)
         sessionStore.save(session)
-        stateRepository.markLocalOnly("Signed in. Run a backup to sync this ledger.")
+        stateRepository.markLocalOnly()
     }
 
     suspend fun signOut() {
         sessionStore.clear()
-        stateRepository.markLocalOnly("Signed out. The ledger is local only.")
+        stateRepository.markLocalOnly()
     }
 
     suspend fun backupNow(): BackupOutcome {

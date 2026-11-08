@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -23,6 +24,7 @@ import androidx.compose.material.icons.filled.Login
 import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material.icons.filled.Restore
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -61,6 +63,7 @@ fun SettingsScreen(
     val selectedAdult by viewModel.selectedAdult.collectAsStateWithLifecycle()
     val backupState by viewModel.backupState.collectAsStateWithLifecycle()
     val session by viewModel.session.collectAsStateWithLifecycle()
+    val signingIn by viewModel.signingIn.collectAsStateWithLifecycle()
     val backingUp = backupState?.status == "BACKING_UP"
     var exportError by remember { mutableStateOf<String?>(null) }
     var exporting by remember { mutableStateOf(false) }
@@ -197,12 +200,14 @@ fun SettingsScreen(
                     else -> stringResource(R.string.settings_backup_local)
                 }
             )
-            backupState?.lastError?.let {
-                Text(
-                    text = it,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.error
-                )
+            if (backupState?.status == "ERROR") {
+                backupState?.lastError?.let { message ->
+                    Text(
+                        text = message,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.error
+                    )
+                }
             }
             if (session is SessionState.SignedIn) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -257,8 +262,23 @@ fun SettingsScreen(
                         enabled = viewModel.backupConfigured,
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        Icon(Icons.Filled.Login, contentDescription = null)
-                        Text(stringResource(R.string.settings_sign_in), modifier = Modifier.padding(start = SaloSpacing.xs))
+                        if (signingIn) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(18.dp),
+                                strokeWidth = 2.dp,
+                                color = MaterialTheme.colorScheme.onPrimary
+                            )
+                            Text(
+                                text = stringResource(R.string.settings_signing_in),
+                                modifier = Modifier.padding(start = SaloSpacing.xs)
+                            )
+                        } else {
+                            Icon(Icons.Filled.Login, contentDescription = null)
+                            Text(
+                                text = stringResource(R.string.settings_sign_in),
+                                modifier = Modifier.padding(start = SaloSpacing.xs)
+                            )
+                        }
                     }
                 }
             }

@@ -4,6 +4,8 @@ import android.app.Activity
 import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.credentials.exceptions.GetCredentialCancellationException
+import androidx.credentials.exceptions.NoCredentialException
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -63,11 +65,31 @@ class AppViewModel @Inject constructor(
     private val _message = MutableStateFlow<String?>(null)
     val message: StateFlow<String?> = _message
 
+    private val _signingIn = MutableStateFlow(false)
+    val signingIn: StateFlow<Boolean> = _signingIn
+
     fun signIn(activity: Activity) {
+        if (_signingIn.value) return
+        _signingIn.value = true
         viewModelScope.launch {
-            backupManager.signIn(activity)
-                .onSuccess { _message.value = context.getString(R.string.msg_signed_in) }
-                .onFailure { _message.value = it.message ?: context.getString(R.string.msg_sign_in_failed) }
+            try {
+                backupManager.signIn(activity)
+                    .onSuccess { _message.value = context.getString(R.string.msg_signed_in) }
+                    .onFailure { error ->
+                        _message.value = when (error) {
+                            is GetCredentialCancellationException ->
+                                context.getString(R.string.msg_sign_in_cancelled)
+
+                            is NoCredentialException ->
+                                context.getString(R.string.msg_no_google_account)
+
+                            else -> error.message
+                                ?: context.getString(R.string.msg_sign_in_failed)
+                        }
+                    }
+            } finally {
+                _signingIn.value = false
+            }
         }
     }
 

@@ -245,6 +245,7 @@
     <string name="settings_back_up">Back up</string>
     <string name="settings_restore">Restore</string>
     <string name="settings_sign_in">Sign in with Google</string>
+    <string name="settings_signing_in">Signing in…</string>
     <string name="settings_privacy_note">Receipt photos stay on this phone. Only ledger data is backed up. Restore is allowed only when local data is empty.</string>
     <string name="settings_export">Export</string>
     <string name="settings_export_helper">CSV and JSON include outings, items, assignments, coverage, shares, settlements, and the roster.</string>
@@ -267,6 +268,8 @@
     <!-- Messages raised from view models -->
     <string name="msg_signed_in">Signed in. Run a backup to sync this ledger.</string>
     <string name="msg_sign_in_failed">Sign-in failed.</string>
+    <string name="msg_sign_in_cancelled">Sign-in canceled.</string>
+    <string name="msg_no_google_account">No Google account found on this phone.</string>
     <string name="msg_signed_out">Signed out. Data stays on this phone.</string>
     <string name="msg_backup_complete">Backup complete.</string>
     <string name="msg_restored">Restored %1$d outings, %2$d students, %3$d adults.</string>
