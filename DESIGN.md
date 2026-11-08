@@ -321,10 +321,11 @@ bubble; the form language is a folded receipt, not a chat app.
   monochrome themed icon uses the same scale.
 
 ### Statement Card (signature)
-The home balance block: a `primaryContainer` card, 20 dp padding, an uppercase label
-(`ALL SETTLED` / `YOU ARE OWED` / `YOU OWE`), the balance in display size, a one-line summary
-(`1 recent outing · 4 adults`), and one full-width filled action (`New outing`). It is the only
-place the app raises its voice, and it carries the primary action so nothing floats over content.
+The home balance block: `errorContainer` when you owe, `primaryContainer` when you are owed, and
+`surfaceContainer` when settled; 20 dp padding, an uppercase label (`ALL SETTLED` / `YOU ARE OWED` /
+`YOU OWE`), and the balance in display size. It carries no action and no summary line; the number is
+the whole statement. The `New outing` and `Students` actions live in a speed-dial FAB at the
+bottom-right of Home.
 
 ### Recap Image (signature)
 A 1080×1350 PNG rendered on-device for sharing: `Cool Paper` ground, `Ledger Green` wordmark, the

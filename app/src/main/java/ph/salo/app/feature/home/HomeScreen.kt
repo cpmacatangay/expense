@@ -1,7 +1,16 @@
 package ph.salo.app.feature.home
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -16,20 +25,25 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material.icons.filled.Group
-import androidx.compose.material3.Button
-import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material.icons.filled.ReceiptLong
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExtendedFloatingActionButton
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.Text
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
@@ -54,12 +68,14 @@ fun HomeScreen(
     selectedAdult: AdultProfileEntity?,
     onOutingClick: (String) -> Unit,
     onNewOuting: () -> Unit,
+    onStudents: () -> Unit,
     onLedger: () -> Unit,
     onHistory: () -> Unit,
     viewModel: HomeViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val refreshing by viewModel.refreshing.collectAsStateWithLifecycle()
+    var fabExpanded by remember { mutableStateOf(false) }
     val myBalance = state.balances.firstOrNull { it.adultId == selectedAdult?.id }
     val net = myBalance?.netCentavos ?: 0L
     val headline = when {
@@ -67,10 +83,22 @@ fun HomeScreen(
         net < 0 -> stringResource(R.string.home_owe)
         else -> stringResource(R.string.home_settled)
     }
+    val owes = net < 0
+    val isOwed = net > 0
+    val containerColor = when {
+        owes -> MaterialTheme.colorScheme.errorContainer
+        isOwed -> MaterialTheme.colorScheme.primaryContainer
+        else -> MaterialTheme.colorScheme.surfaceContainer
+    }
+    val contentColor = when {
+        owes -> MaterialTheme.colorScheme.onErrorContainer
+        isOwed -> MaterialTheme.colorScheme.onPrimaryContainer
+        else -> MaterialTheme.colorScheme.onSurface
+    }
     val amountColor = when {
-        net > 0 -> MaterialTheme.colorScheme.primary
-        net < 0 -> MaterialTheme.colorScheme.error
-        else -> MaterialTheme.colorScheme.onPrimaryContainer
+        owes -> MaterialTheme.colorScheme.error
+        isOwed -> MaterialTheme.colorScheme.primary
+        else -> MaterialTheme.colorScheme.onSurface
     }
     val todayLabel = LocalDate.now()
         .format(DateTimeFormatter.ofPattern("EEEE, MMMM d", Locale.US))
@@ -81,7 +109,8 @@ fun HomeScreen(
         onRefresh = viewModel::refresh,
         modifier = Modifier.fillMaxSize()
     ) {
-    Column(
+        Box(Modifier.fillMaxSize()) {
+            Column(
         modifier = Modifier
             .fillMaxWidth()
             .verticalScroll(rememberScrollState())
@@ -102,9 +131,10 @@ fun HomeScreen(
         }
 
         Card(
+            modifier = Modifier.fillMaxWidth(),
             colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.primaryContainer,
-                contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                containerColor = containerColor,
+                contentColor = contentColor
             )
         ) {
             Column(
@@ -115,32 +145,18 @@ fun HomeScreen(
                     modifier = Modifier.semantics(mergeDescendants = true) {},
                     verticalArrangement = Arrangement.spacedBy(SaloSpacing.xs)
                 ) {
-                    Text(text = headline, style = MaterialTheme.typography.labelMedium)
+                    Text(
+                        text = headline,
+                        style = MaterialTheme.typography.labelLarge,
+                        fontWeight = FontWeight.Medium
+                    )
                     Text(
                         text = formatPeso(if (net < 0) -net else net),
-                        style = MaterialTheme.typography.displaySmall,
+                        style = MaterialTheme.typography.displayLarge,
                         fontWeight = FontWeight.SemiBold,
-                        color = amountColor
+                        color = amountColor,
+                        maxLines = 1
                     )
-                    Text(
-                        text = pluralStringResource(
-                            R.plurals.recent_outings,
-                            state.recentOutings.size,
-                            state.recentOutings.size
-                        ) + " · " + pluralStringResource(
-                            R.plurals.adults,
-                            state.adultNames.size,
-                            state.adultNames.size
-                        ),
-                        style = MaterialTheme.typography.bodyMedium
-                    )
-                }
-                Button(
-                    onClick = onNewOuting,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Icon(Icons.Filled.Add, contentDescription = null, modifier = Modifier.size(18.dp))
-                    Text(stringResource(R.string.home_new_outing), modifier = Modifier.padding(start = SaloSpacing.xs))
                 }
             }
         }
@@ -235,8 +251,90 @@ fun HomeScreen(
             }
         }
 
-        // Clears the bottom navigation inset on the last scroll position.
-        Spacer(Modifier.height(SaloSpacing.xl))
+                // Clears the FAB and bottom navigation insets on the last scroll position.
+                Spacer(Modifier.height(96.dp))
+            }
+            HomeFabMenu(
+                expanded = fabExpanded,
+                onExpandedChange = { fabExpanded = it },
+                onNewOuting = {
+                    fabExpanded = false
+                    onNewOuting()
+                },
+                onStudents = {
+                    fabExpanded = false
+                    onStudents()
+                },
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(SaloSpacing.md)
+            )
+        }
     }
+}
+@Composable
+private fun HomeFabMenu(
+    expanded: Boolean,
+    onExpandedChange: (Boolean) -> Unit,
+    onNewOuting: () -> Unit,
+    onStudents: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val rotation by animateFloatAsState(
+        targetValue = if (expanded) 45f else 0f,
+        animationSpec = tween(160, easing = FastOutSlowInEasing),
+        label = "fabIconRotation"
+    )
+    Column(
+        modifier = modifier,
+        horizontalAlignment = Alignment.End,
+        verticalArrangement = Arrangement.spacedBy(SaloSpacing.sm)
+    ) {
+        AnimatedVisibility(
+            visible = expanded,
+            enter = fadeIn(tween(120)) +
+                scaleIn(
+                    initialScale = 0.92f,
+                    animationSpec = tween(160, easing = FastOutSlowInEasing)
+                ),
+            exit = fadeOut(tween(90)) +
+                scaleOut(
+                    targetScale = 0.95f,
+                    animationSpec = tween(90, easing = FastOutSlowInEasing)
+                )
+        ) {
+            Column(
+                horizontalAlignment = Alignment.End,
+                verticalArrangement = Arrangement.spacedBy(SaloSpacing.sm)
+            ) {
+                ExtendedFloatingActionButton(
+                    onClick = onNewOuting,
+                    icon = { Icon(Icons.Filled.ReceiptLong, contentDescription = null) },
+                    text = { Text(stringResource(R.string.home_new_outing)) },
+                    containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                    contentColor = MaterialTheme.colorScheme.onSurface
+                )
+                ExtendedFloatingActionButton(
+                    onClick = onStudents,
+                    icon = { Icon(Icons.Filled.Group, contentDescription = null) },
+                    text = { Text(stringResource(R.string.nav_students)) },
+                    containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                    contentColor = MaterialTheme.colorScheme.onSurface
+                )
+            }
+        }
+        FloatingActionButton(
+            onClick = { onExpandedChange(!expanded) },
+            containerColor = MaterialTheme.colorScheme.primary,
+            contentColor = MaterialTheme.colorScheme.onPrimary
+        ) {
+            Icon(
+                Icons.Filled.Add,
+                contentDescription = stringResource(
+                    if (expanded) R.string.action_cancel else R.string.action_add
+                ),
+                modifier = Modifier.rotate(rotation)
+            )
+        }
     }
 }

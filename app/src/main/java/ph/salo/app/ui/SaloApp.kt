@@ -157,6 +157,9 @@ fun SaloApp(
                                 selectedAdult = selectedAdult,
                                 onOutingClick = { navController.navigate("outing/$it") },
                                 onNewOuting = { navController.navigate("new_outing") },
+                                onStudents = {
+                                    navController.navigate(SaloDestination.Students.route)
+                                },
                                 onLedger = { navController.navigate(SaloDestination.Ledger.route) },
                                 onHistory = { navController.navigate(SaloDestination.History.route) }
                             )
