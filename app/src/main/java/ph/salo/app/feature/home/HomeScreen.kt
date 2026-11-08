@@ -101,6 +101,15 @@ fun HomeScreen(
         isOwed -> MaterialTheme.colorScheme.primary
         else -> MaterialTheme.colorScheme.onSurface
     }
+    val amountText = formatPeso(if (net < 0) -net else net)
+    // The statement is display-sized for normal shares and steps down one M3 size at a time so
+    // longer amounts never clip or push the card out of shape.
+    val amountStyle = when {
+        amountText.length <= 8 -> MaterialTheme.typography.displayLarge
+        amountText.length <= 10 -> MaterialTheme.typography.displayMedium
+        amountText.length <= 12 -> MaterialTheme.typography.displaySmall
+        else -> MaterialTheme.typography.headlineMedium
+    }
     val todayLabel = LocalDate.now()
         .format(DateTimeFormatter.ofPattern("EEEE, MMMM d", Locale.US))
         .uppercase(Locale.US)
@@ -152,8 +161,8 @@ fun HomeScreen(
                         fontWeight = FontWeight.Medium
                     )
                     Text(
-                        text = formatPeso(if (net < 0) -net else net),
-                        style = MaterialTheme.typography.displayLarge,
+                        text = amountText,
+                        style = amountStyle,
                         fontWeight = FontWeight.SemiBold,
                         color = amountColor,
                         maxLines = 1
