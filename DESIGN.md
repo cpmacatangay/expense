@@ -297,6 +297,16 @@ bubble; the form language is a folded receipt, not a chat app.
   Material icons and label-size captions; selected state fills an indicator pill. Hidden on the
   wizard, detail, and auth routes.
 
+### Launch and App Icon
+- **Splash:** the system splash uses the app's adaptive-icon foreground on the app ground (paper in
+  light, charcoal in dark). It is held until the four adults are seeded and for a minimum of 800 ms,
+  so it reads rather than blinks, then fades out over 220 ms while the mark eases up 4%. The exit is
+  skipped when system animations are disabled.
+- **App icon:** 108 dp adaptive canvas, with the S mark at 45 × 57 dp (`scale 0.62` around the
+  256-unit viewport). That keeps roughly 31 dp clear on each side and 24–28 dp above and below, so
+  the S sits inside the launcher's squircle or circle mask instead of touching its edge. The
+  monochrome themed icon uses the same scale.
+
 ### Statement Card (signature)
 The home balance block: a `primaryContainer` card, 20 dp padding, an uppercase label
 (`ALL SETTLED` / `YOU ARE OWED` / `YOU OWE`), the balance in display size, a one-line summary

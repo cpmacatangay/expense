@@ -37,6 +37,14 @@ class AppViewModel @Inject constructor(
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
     /**
+     * True once the four seeded adults exist. The launch splash holds on this so the first screen
+     * never appears before the ledger's people do.
+     */
+    val ready: StateFlow<Boolean> = adults
+        .map { it.isNotEmpty() }
+        .stateIn(viewModelScope, SharingStarted.Eagerly, false)
+
+    /**
      * The owner is the person who operates this ledger (CP). The other adults are participants
      * whose share of each bill is tracked, not accounts, so there is nothing to switch between.
      */
