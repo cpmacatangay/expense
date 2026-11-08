@@ -298,6 +298,18 @@ bubble; the form language is a folded receipt, not a chat app.
   Google Sans Text (the UI cut of Google Sans); the rest of the app stays on Roboto. Hidden on the
   wizard, detail, and auth routes.
 
+### Motion
+- **Push / pop:** a destination slides across the full width in 280 ms with `FastOutSlowInEasing`.
+  The outgoing screen does not fade, so two destinations never ghost through each other.
+- **Tabs:** switching tabs is a snap. A system back from a tab fades that tab out in 160 ms while
+  Home stays put.
+- **Wizard:** steps slide 240 ms; the review/back guard is a dialog, not motion.
+- **Predictive back:** explicitly off. On target SDK 37 the platform scales the whole activity over
+  the previous frame while the NavHost also animates, which reads as a double transition. The app
+  owns the back motion instead.
+- **Bars:** the top app bar and bottom navigation live inside each main destination, so they travel
+  with the screen and do not pop in above a pop animation.
+
 ### Launch and App Icon
 - **Splash:** the system splash uses the app's adaptive-icon foreground on the app ground (paper in
   light, charcoal in dark). It is held until the four adults are seeded and for a minimum of 800 ms,

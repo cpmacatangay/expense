@@ -5,14 +5,16 @@ import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountBalanceWallet
@@ -30,6 +32,7 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -47,6 +50,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavDestination.Companion.hierarchy
+import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -88,7 +92,6 @@ private val mainDestinations: List<SaloDestination> = listOf(
     SaloDestination.Settings
 )
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SaloApp(
     viewModel: AppViewModel = hiltViewModel()
@@ -98,8 +101,8 @@ fun SaloApp(
     val selectedAdult by viewModel.selectedAdult.collectAsStateWithLifecycle()
     val message by viewModel.message.collectAsStateWithLifecycle()
     val backStackEntry by navController.currentBackStackEntryAsState()
-    val currentDestination = backStackEntry?.destination
-    val currentRoute = currentDestination?.route ?: SaloDestination.Home.route
+    val currentRoute = backStackEntry?.destination?.route ?: SaloDestination.Home.route
+    val isMainDestination = mainDestinations.any { it.route == currentRoute }
 
     LaunchedEffect(message) {
         val text = message ?: return@LaunchedEffect
@@ -108,67 +111,17 @@ fun SaloApp(
     }
 
     Scaffold(
-        topBar = {
-            if (mainDestinations.any { it.route == currentRoute }) {
-                TopAppBar(
-                    title = {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(
-                                painter = painterResource(R.drawable.ic_launcher_monochrome),
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier
-                                    .size(30.dp)
-                                    .padding(end = SaloSpacing.xs)
-                            )
-                            Text(
-                                text = stringResource(R.string.app_name),
-                                style = MaterialTheme.typography.titleLarge,
-                                fontWeight = FontWeight.SemiBold
-                            )
-                        }
-                    },
-                    colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = MaterialTheme.colorScheme.surface
-                    )
+        snackbarHost = {
+            SnackbarHost(
+                hostState = snackbarHostState,
+                modifier = Modifier.padding(
+                    bottom = if (isMainDestination) 80.dp else 0.dp
                 )
-            }
+            )
         },
-        bottomBar = {
-            if (mainDestinations.any { it.route == currentRoute }) {
-                NavigationBar {
-                    mainDestinations.forEach { destination ->
-                        NavigationBarItem(
-                            selected = currentDestination?.hierarchy?.any {
-                                it.route == destination.route
-                            } == true,
-                            onClick = {
-                                // Do not save/restore the stack here: in-app links to Ledger or
-                                // History push those onto the Home stack, and restoring it later
-                                // reopened the wrong tab. Pop back to the start destination and
-                                // push the tapped tab, which always lands where the user asked.
-                                navController.navigate(destination.route) {
-                                    popUpTo(navController.graph.startDestinationId)
-                                    launchSingleTop = true
-                                }
-                            },
-                            icon = {
-                                Icon(destination.icon, contentDescription = stringResource(destination.labelRes))
-                            },
-                            label = {
-                                Text(
-                                    text = stringResource(destination.labelRes),
-                                    fontFamily = SaloNavFontFamily
-                                )
-                            }
-                        )
-                    }
-                }
-            }
-        },
-        snackbarHost = { SnackbarHost(snackbarHostState) },
-        // safeDrawing covers the status bar, navigation bar, cutout and the keyboard, so screens
-        // whose bars are hidden still lay out inside the safe area.
+        // safeDrawing covers the status bar, navigation bar, cutout and the keyboard. The main
+        // destinations draw their own app bars inside this safe area so those bars move with the
+        // screen during a push/pop instead of appearing instantly above the transition.
         contentWindowInsets = WindowInsets.safeDrawing
     ) { innerPadding ->
         NavHost(
@@ -177,17 +130,17 @@ fun SaloApp(
             modifier = Modifier.padding(innerPadding),
             enterTransition = {
                 slideInHorizontally(
-                    animationSpec = tween(300, easing = FastOutSlowInEasing),
-                    initialOffsetX = { fullWidth -> fullWidth / 4 }
-                ) + fadeIn(tween(200))
+                    animationSpec = tween(280, easing = FastOutSlowInEasing),
+                    initialOffsetX = { fullWidth -> fullWidth }
+                )
             },
-            exitTransition = { fadeOut(tween(150)) },
-            popEnterTransition = { fadeIn(tween(200)) },
+            exitTransition = { ExitTransition.None },
+            popEnterTransition = { EnterTransition.None },
             popExitTransition = {
                 slideOutHorizontally(
-                    animationSpec = tween(300, easing = FastOutSlowInEasing),
-                    targetOffsetX = { fullWidth -> fullWidth / 4 }
-                ) + fadeOut(tween(150))
+                    animationSpec = tween(280, easing = FastOutSlowInEasing),
+                    targetOffsetX = { fullWidth -> fullWidth }
+                )
             }
         ) {
             composable(
@@ -195,51 +148,77 @@ fun SaloApp(
                 enterTransition = { EnterTransition.None },
                 exitTransition = { ExitTransition.None },
                 popEnterTransition = { EnterTransition.None },
-                popExitTransition = { ExitTransition.None }
+                popExitTransition = { fadeOut(tween(160)) }
             ) {
-                HomeScreen(
-                    selectedAdult = selectedAdult,
-                    onOutingClick = { navController.navigate("outing/$it") },
-                    onNewOuting = { navController.navigate("new_outing") },
-                    onLedger = { navController.navigate(SaloDestination.Ledger.route) },
-                    onHistory = { navController.navigate(SaloDestination.History.route) }
-                )
+                ScreenSurface {
+                    MainScreenScaffold(navController) { padding ->
+                        Box(Modifier.padding(padding)) {
+                            HomeScreen(
+                                selectedAdult = selectedAdult,
+                                onOutingClick = { navController.navigate("outing/$it") },
+                                onNewOuting = { navController.navigate("new_outing") },
+                                onLedger = { navController.navigate(SaloDestination.Ledger.route) },
+                                onHistory = { navController.navigate(SaloDestination.History.route) }
+                            )
+                        }
+                    }
+                }
             }
             composable(
                 route = SaloDestination.Students.route,
                 enterTransition = { EnterTransition.None },
                 exitTransition = { ExitTransition.None },
                 popEnterTransition = { EnterTransition.None },
-                popExitTransition = { ExitTransition.None }
+                popExitTransition = { fadeOut(tween(160)) }
             ) {
-                StudentsScreen()
+                ScreenSurface {
+                    MainScreenScaffold(navController) { padding ->
+                        Box(Modifier.padding(padding)) { StudentsScreen() }
+                    }
+                }
             }
             composable(
                 route = SaloDestination.Ledger.route,
                 enterTransition = { EnterTransition.None },
                 exitTransition = { ExitTransition.None },
                 popEnterTransition = { EnterTransition.None },
-                popExitTransition = { ExitTransition.None }
+                popExitTransition = { fadeOut(tween(160)) }
             ) {
-                LedgerScreen(selectedAdult = selectedAdult)
+                ScreenSurface {
+                    MainScreenScaffold(navController) { padding ->
+                        Box(Modifier.padding(padding)) {
+                            LedgerScreen(selectedAdult = selectedAdult)
+                        }
+                    }
+                }
             }
             composable(
                 route = SaloDestination.History.route,
                 enterTransition = { EnterTransition.None },
                 exitTransition = { ExitTransition.None },
                 popEnterTransition = { EnterTransition.None },
-                popExitTransition = { ExitTransition.None }
+                popExitTransition = { fadeOut(tween(160)) }
             ) {
-                HistoryScreen(onOutingClick = { navController.navigate("outing/$it") })
+                ScreenSurface {
+                    MainScreenScaffold(navController) { padding ->
+                        Box(Modifier.padding(padding)) {
+                            HistoryScreen(onOutingClick = { navController.navigate("outing/$it") })
+                        }
+                    }
+                }
             }
             composable(
                 route = SaloDestination.Settings.route,
                 enterTransition = { EnterTransition.None },
                 exitTransition = { ExitTransition.None },
                 popEnterTransition = { EnterTransition.None },
-                popExitTransition = { ExitTransition.None }
+                popExitTransition = { fadeOut(tween(160)) }
             ) {
-                SettingsScreen()
+                ScreenSurface {
+                    MainScreenScaffold(navController) { padding ->
+                        Box(Modifier.padding(padding)) { SettingsScreen() }
+                    }
+                }
             }
             composable(
                 route = "new_outing?outingId={outingId}",
@@ -251,32 +230,118 @@ fun SaloApp(
                     }
                 )
             ) { entry ->
-                NewOutingScreen(
-                    outingId = entry.arguments?.getString("outingId"),
-                    onFinalized = { outingId ->
-                        navController.navigate("outing/$outingId") {
-                            popUpTo(SaloDestination.Home.route)
-                        }
-                    },
-                    onBack = { navController.popBackStack() }
-                )
+                ScreenSurface {
+                    NewOutingScreen(
+                        outingId = entry.arguments?.getString("outingId"),
+                        onFinalized = { outingId ->
+                            navController.navigate("outing/$outingId") {
+                                popUpTo(SaloDestination.Home.route)
+                            }
+                        },
+                        onBack = { navController.popBackStack() }
+                    )
+                }
             }
             composable(
                 route = "outing/{outingId}",
                 arguments = listOf(navArgument("outingId") { type = NavType.StringType })
             ) {
-                OutingDetailScreen(
-                    onBack = { navController.popBackStack() },
-                    onDeleted = {
-                        navController.navigate(SaloDestination.Home.route) {
-                            popUpTo(SaloDestination.Home.route) { inclusive = true }
+                ScreenSurface {
+                    OutingDetailScreen(
+                        onBack = { navController.popBackStack() },
+                        onDeleted = {
+                            navController.navigate(SaloDestination.Home.route) {
+                                popUpTo(SaloDestination.Home.route) { inclusive = true }
+                            }
+                        },
+                        onReopened = { outingId ->
+                            navController.navigate("new_outing?outingId=$outingId")
                         }
-                    },
-                    onReopened = { outingId ->
-                        navController.navigate("new_outing?outingId=$outingId")
-                    }
-                )
+                    )
+                }
             }
         }
     }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun MainScreenScaffold(
+    navController: NavHostController,
+    content: @Composable (PaddingValues) -> Unit
+) {
+    val backStackEntry by navController.currentBackStackEntryAsState()
+    val currentDestination = backStackEntry?.destination
+
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            painter = painterResource(R.drawable.ic_launcher_monochrome),
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier
+                                .size(30.dp)
+                                .padding(end = SaloSpacing.xs)
+                        )
+                        Text(
+                            text = stringResource(R.string.app_name),
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    }
+                },
+                windowInsets = WindowInsets(0, 0, 0, 0),
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.surface
+                )
+            )
+        },
+        bottomBar = {
+            NavigationBar(windowInsets = WindowInsets(0, 0, 0, 0)) {
+                mainDestinations.forEach { destination ->
+                    NavigationBarItem(
+                        selected = currentDestination?.hierarchy?.any {
+                            it.route == destination.route
+                        } == true,
+                        onClick = {
+                            // Do not save/restore the stack here: in-app links to Ledger or History
+                            // push those onto the Home stack, and restoring it later reopened the
+                            // wrong tab. Pop to the start destination and push the tapped tab.
+                            navController.navigate(destination.route) {
+                                popUpTo(navController.graph.startDestinationId)
+                                launchSingleTop = true
+                            }
+                        },
+                        icon = {
+                            Icon(
+                                destination.icon,
+                                contentDescription = stringResource(destination.labelRes)
+                            )
+                        },
+                        label = {
+                            Text(
+                                text = stringResource(destination.labelRes),
+                                fontFamily = SaloNavFontFamily
+                            )
+                        }
+                    )
+                }
+            }
+        },
+        contentWindowInsets = WindowInsets(0, 0, 0, 0)
+    ) { padding ->
+        content(padding)
+    }
+}
+
+@Composable
+private fun ScreenSurface(content: @Composable () -> Unit) {
+    Surface(
+        modifier = Modifier.fillMaxSize(),
+        color = MaterialTheme.colorScheme.surface,
+        content = content
+    )
 }
