@@ -180,7 +180,7 @@
 
 ## Phase 10: Manual-only ledger and item-sum total
 
-- [~] T141 Amend the constitution, spec, plan, tasks, contracts, and docs for manual-only entry and the item-sum rule. (In progress)
+- [x] T141 Amend the constitution, spec, plan, tasks, contracts, and docs for manual-only entry and the item-sum rule.
 - [x] T142 Remove the scan button, camera launcher, scan state, scan summary, replace dialog, and scan strings.
 - [x] T143 Delete the OCR code and parser tests; remove ML Kit and coroutines-play-services; remove the FileProvider and `file_paths.xml`.
 - [x] T144 Preserve legacy receipt rows/images; new writes null/zero/`MANUAL`; no migration.
@@ -190,7 +190,7 @@
 - [x] T148 Update review/recap labels and hide zero adjustments.
 - [x] T149 Fix merge centavo preservation.
 - [x] T150 Add tests for total state, item-sum rule, legacy, and merge.
-- [ ] T151 Build, lint, test, install, and verify on the S26.
+- [x] T151 Build, lint, test, install, and verify on the S26.
 
 ## Dependencies
 
@@ -230,3 +230,4 @@
 - T022/T122/T123/T126/T127: verified on a connected SM-S948B (Android 17 / API 37 / One UI 9.0) on 2026-11-07 - install, four profiles, student roster, the itemized PHP 825 case (CP 451 / Mai 308 / Kent 33 / Llanmer 33), ledger payment + void, recap text/image, CSV export, Google sign-in, Supabase backup, and clear-then-restore round trip. Cold start 416 ms.
 - Still open: T120 (R8 rules review under a real release build on device), T121 accessibility pass, T124 light theme check, T125 offline + backup retry.
 - Release APK is built with debug signing until `keystore.properties` is added.
+
