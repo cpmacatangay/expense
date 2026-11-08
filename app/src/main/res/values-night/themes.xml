@@ -10,7 +10,7 @@
     </style>
 
     <style name="Theme.Salo.Starting" parent="Theme.SplashScreen.IconBackground">
-        <item name="windowSplashScreenBackground">@color/salo_surface_dark</item>
+        <item name="windowSplashScreenBackground">@color/salo_primary</item>
         <item name="windowSplashScreenAnimatedIcon">@drawable/ic_launcher_foreground</item>
         <item name="windowSplashScreenIconBackgroundColor">@color/salo_primary</item>
         <item name="postSplashScreenTheme">@style/Theme.Salo</item>

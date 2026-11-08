@@ -10,17 +10,17 @@
     </style>
 
     <!--
-        The system splash: cool paper ground, the Salo mark in a green disc. MainActivity holds this
-        window until the ledger is ready and a short minimum has elapsed, then fades it out.
+        The system splash: the brand green ground with the white Salo S, no tile. MainActivity
+        holds this window until the ledger is ready and a short minimum has elapsed, then fades it.
     -->
     <style name="Theme.Salo.Starting" parent="Theme.SplashScreen.IconBackground">
-        <item name="windowSplashScreenBackground">@color/salo_surface</item>
+        <item name="windowSplashScreenBackground">@color/salo_primary</item>
         <item name="windowSplashScreenAnimatedIcon">@drawable/ic_launcher_foreground</item>
         <item name="windowSplashScreenIconBackgroundColor">@color/salo_primary</item>
         <item name="postSplashScreenTheme">@style/Theme.Salo</item>
         <item name="android:statusBarColor">@android:color/transparent</item>
         <item name="android:navigationBarColor">@android:color/transparent</item>
-        <item name="android:windowLightStatusBar">true</item>
-        <item name="android:windowLightNavigationBar">true</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowLightNavigationBar">false</item>
     </style>
 </resources>

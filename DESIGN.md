@@ -311,10 +311,10 @@ bubble; the form language is a folded receipt, not a chat app.
   with the screen and do not pop in above a pop animation.
 
 ### Launch and App Icon
-- **Splash:** the system splash uses the app's adaptive-icon foreground on the app ground (paper in
-  light, charcoal in dark). It is held until the four adults are seeded and for a minimum of 800 ms,
-  so it reads rather than blinks, then fades out over 220 ms while the mark eases up 4%. The exit is
-  skipped when system animations are disabled.
+- **Splash:** the system splash uses the brand ground — Salo Green `#1F5C45` — with the white Salo
+  S centred and no tile behind it. It is held until the four adults are seeded and for a minimum of
+  800 ms, so it reads rather than blinks, then fades out over 220 ms while the mark eases up 4%. The
+  exit is skipped when system animations are disabled.
 - **App icon:** 108 dp adaptive canvas, with the S mark at 45 × 57 dp (`scale 0.62` around the
   256-unit viewport). That keeps roughly 31 dp clear on each side and 24–28 dp above and below, so
   the S sits inside the launcher's squircle or circle mask instead of touching its edge. The
