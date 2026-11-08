@@ -15,7 +15,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Payments
-import androidx.compose.material.icons.filled.SwapHoriz
+import androidx.compose.material.icons.filled.SwapVert
 import androidx.compose.material.icons.filled.Undo
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -383,20 +383,32 @@ private fun PaymentDialog(
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    SelectionField(
-                        label = stringResource(R.string.ledger_from),
-                        value = adults.firstOrNull { it.id == from }?.name.orEmpty(),
-                        options = adults.map { it.id to it.name },
+                    Column(
                         modifier = Modifier.weight(1f),
-                        onSelect = {
-                            from = it
-                            if (to == it) {
-                                to = adults.firstOrNull { adult -> adult.id != it }
-                                    ?.id
-                                    .orEmpty()
+                        verticalArrangement = Arrangement.spacedBy(SaloSpacing.xs)
+                    ) {
+                        SelectionField(
+                            label = stringResource(R.string.ledger_from),
+                            value = adults.firstOrNull { it.id == from }?.name.orEmpty(),
+                            options = adults.map { it.id to it.name },
+                            modifier = Modifier.fillMaxWidth(),
+                            onSelect = {
+                                from = it
+                                if (to == it) {
+                                    to = adults.firstOrNull { adult -> adult.id != it }
+                                        ?.id
+                                        .orEmpty()
+                                }
                             }
-                        }
-                    )
+                        )
+                        SelectionField(
+                            label = stringResource(R.string.ledger_to),
+                            value = adults.firstOrNull { it.id == to }?.name.orEmpty(),
+                            options = adults.filter { it.id != from }.map { it.id to it.name },
+                            modifier = Modifier.fillMaxWidth(),
+                            onSelect = { to = it }
+                        )
+                    }
                     IconButton(
                         onClick = {
                             val previousFrom = from
@@ -406,17 +418,10 @@ private fun PaymentDialog(
                         enabled = adults.size >= 2
                     ) {
                         Icon(
-                            Icons.Filled.SwapHoriz,
+                            Icons.Filled.SwapVert,
                             contentDescription = stringResource(R.string.ledger_swap)
                         )
                     }
-                    SelectionField(
-                        label = stringResource(R.string.ledger_to),
-                        value = adults.firstOrNull { it.id == to }?.name.orEmpty(),
-                        options = adults.filter { it.id != from }.map { it.id to it.name },
-                        modifier = Modifier.weight(1f),
-                        onSelect = { to = it }
-                    )
                 }
                 OutlinedTextField(
                     value = amount,

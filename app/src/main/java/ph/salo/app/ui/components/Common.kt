@@ -222,6 +222,7 @@ fun SelectionField(
             readOnly = true,
             enabled = enabled,
             label = { Text(label) },
+            singleLine = true,
             trailingIcon = {
                 ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
             },
