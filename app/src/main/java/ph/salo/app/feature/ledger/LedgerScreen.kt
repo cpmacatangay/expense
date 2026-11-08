@@ -1,6 +1,5 @@
 package ph.salo.app.feature.ledger
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -15,7 +14,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material.icons.filled.Payments
 import androidx.compose.material.icons.filled.SwapHoriz
 import androidx.compose.material.icons.filled.Undo
@@ -38,10 +36,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -60,6 +56,7 @@ import ph.salo.app.ui.components.LoadingState
 import ph.salo.app.ui.components.SectionCard
 import ph.salo.app.ui.components.saloItemMotion
 import ph.salo.app.ui.components.SelectionField
+import ph.salo.app.ui.components.TransferRow
 import java.time.LocalDate
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -285,54 +282,6 @@ fun LedgerScreen(
                 voiding = null
             },
             onDismiss = { voiding = null }
-        )
-    }
-}
-
-@Composable
-private fun TransferRow(
-    fromName: String,
-    toName: String,
-    amountCentavos: Long,
-    onClick: () -> Unit
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(role = Role.Button, onClick = onClick)
-            .padding(vertical = SaloSpacing.xxs),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        SaloAvatar(name = fromName, size = 32.dp)
-        Text(
-            text = fromName,
-            style = MaterialTheme.typography.titleSmall,
-            fontWeight = FontWeight.SemiBold,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-            modifier = Modifier.padding(start = SaloSpacing.xs)
-        )
-        Icon(
-            Icons.Filled.ArrowForward,
-            contentDescription = null,
-            tint = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.padding(horizontal = SaloSpacing.xxs)
-        )
-        SaloAvatar(name = toName, size = 32.dp)
-        Text(
-            text = toName,
-            style = MaterialTheme.typography.titleSmall,
-            fontWeight = FontWeight.SemiBold,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-            modifier = Modifier
-                .weight(1f)
-                .padding(start = SaloSpacing.xs)
-        )
-        Text(
-            text = formatPeso(amountCentavos),
-            style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.SemiBold
         )
     }
 }

@@ -24,7 +24,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material.icons.filled.Group
 import androidx.compose.material.icons.filled.ReceiptLong
 import androidx.compose.material3.Card
@@ -55,6 +54,7 @@ import ph.salo.app.R
 import ph.salo.app.core.database.AdultProfileEntity
 import ph.salo.app.core.money.formatPeso
 import ph.salo.app.ui.components.SaloAvatar
+import ph.salo.app.ui.components.TransferRow
 import ph.salo.app.ui.theme.SaloSpacing
 import ph.salo.app.ui.components.LoadingState
 import ph.salo.app.ui.components.SectionCard
@@ -183,33 +183,15 @@ fun HomeScreen(
                 Text(
                     text = stringResource(R.string.home_all_settled),
                     style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = MaterialTheme.colorScheme.primary
                 )
             } else {
                 state.transfers.take(4).forEach { transfer ->
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = state.adultNames[transfer.fromAdultId] ?: "—",
-                            modifier = Modifier.weight(1f)
-                        )
-                        Icon(
-                            Icons.Filled.ArrowForward,
-                            contentDescription = null,
-                            modifier = Modifier.size(16.dp)
-                        )
-                        Text(
-                            text = state.adultNames[transfer.toAdultId] ?: "—",
-                            modifier = Modifier.weight(1f)
-                        )
-                        Text(
-                            text = formatPeso(transfer.amountCentavos),
-                            style = MaterialTheme.typography.titleSmall,
-                            fontWeight = FontWeight.SemiBold
-                        )
-                    }
+                    TransferRow(
+                        fromName = state.adultNames[transfer.fromAdultId] ?: "—",
+                        toName = state.adultNames[transfer.toAdultId] ?: "—",
+                        amountCentavos = transfer.amountCentavos
+                    )
                 }
             }
         }
