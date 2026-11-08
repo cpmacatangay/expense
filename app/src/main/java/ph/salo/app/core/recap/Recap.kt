@@ -19,6 +19,7 @@ import ph.salo.app.core.money.formatPeso
 import java.io.File
 
 data class RecapAdult(
+    val id: String,
     val name: String,
     val totalCentavos: Long,
     val ownItemsCentavos: Long,
@@ -56,6 +57,7 @@ object RecapBuilder {
         val recapAdults = adults.map { adult ->
             val share = shareByAdult[adult.id]
             RecapAdult(
+                id = adult.id,
                 name = adult.name,
                 totalCentavos = share?.totalCentavos ?: 0,
                 ownItemsCentavos = share?.ownItemsCentavos ?: 0,
@@ -158,7 +160,7 @@ object RecapImageRenderer {
         text("Salo", 72f, 112f, 62f, sansBold, green)
         text("Shared meal ledger", 72f, 152f, 24f, sans, muted)
         text(data.place?.takeIf { it.isNotBlank() } ?: "Meal", 72f, 230f, 40f, sansBold)
-        text(data.date, 72f, 272f, 26f, sans, muted)
+        text("${data.date} · Paid by ${data.payerName}", 72f, 272f, 26f, sans, muted)
         rule(304f)
 
         text("TOTAL", 72f, 366f, 24f, sans, muted)
@@ -166,7 +168,8 @@ object RecapImageRenderer {
         text("${data.itemCount} items · ${data.sharedItemCount} shared", 72f, 492f, 24f, sans, muted)
         rule(526f)
 
-        var y = 588f
+        text("WHO COVERS & OWES", 72f, 570f, 24f, sans, muted)
+        var y = 616f
         data.adults.forEach { adult ->
             text(adult.name, 72f, y, 32f, sansBold)
             paint.color = green
@@ -178,39 +181,29 @@ object RecapImageRenderer {
             val covered = adult.coveredStudents
                 .takeIf { it.isNotEmpty() }
                 ?.joinToString(", ")
+            val owedTo = data.transfers
+                .filter { it.fromAdultId == adult.id }
+                .mapNotNull { data.adultNames[it.toAdultId] }
+                .distinct()
             val detail = buildList {
-                if (covered != null) add("Covers $covered")
+                add(covered?.let { "Covers $it" } ?: "No students")
+                when {
+                    owedTo.isNotEmpty() -> add("Owes ${owedTo.joinToString(", ")}")
+                    adult.name == data.payerName -> add("Paid the bill")
+                }
                 if (adult.adjustmentCentavos != 0L) {
                     add("Adj ${formatPeso(adult.adjustmentCentavos)}")
                 }
                 if (adult.gapCentavos != 0L) {
                     add("Gap ${formatPeso(adult.gapCentavos)}")
                 }
-            }.joinToString(" · ").ifEmpty { "No students" }
-            text(detail, 72f, y + 30f, 22f, sans, muted)
-            y += 82f
+            }.joinToString(" · ")
+            text(detail, 72f, y + 32f, 24f, sans, muted)
+            y += 112f
         }
 
-        rule(y - 18f)
-        y += 48f
-        text("Payer: ${data.payerName}", 72f, y, 28f, sansBold)
-        y += 54f
-        if (data.transfers.isEmpty()) {
-            text("All settled.", 72f, y, 28f, sans, green)
-        } else {
-            data.transfers.take(4).forEach { transfer ->
-                val from = data.adultNames[transfer.fromAdultId] ?: "—"
-                val to = data.adultNames[transfer.toAdultId] ?: "—"
-                text("$from → $to", 72f, y, 26f, sans)
-                paint.color = green
-                paint.typeface = mono
-                paint.textSize = 26f
-                paint.textAlign = Paint.Align.RIGHT
-                canvas.drawText(formatPeso(transfer.amountCentavos), width - 72f, y, paint)
-                paint.textAlign = Paint.Align.LEFT
-                y += 44f
-            }
-        }
+        rule(y - 12f)
+        text("Settle directly with ${data.payerName}.", 72f, y + 40f, 26f, sans, muted)
 
         text("On-device receipt scan · Private ledger", 72f, height - 64f, 22f, sans, muted)
         paint.color = accent
