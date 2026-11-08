@@ -68,6 +68,63 @@ class BalancesTest {
     }
 
     @Test
+    fun `pairwise debts keep the meal payer and net only opposite directions`() {
+        val outings = listOf(
+            FinalizedOutingInput("mai-meal", "mai", 145_400, OutingStatus.FINAL),
+            FinalizedOutingInput("kent-meal", "kent", 193_000, OutingStatus.FINAL)
+        )
+        val shares = listOf(
+            ShareInput("mai-meal", "cp", 41_543),
+            ShareInput("mai-meal", "mai", 41_543),
+            ShareInput("mai-meal", "kent", 20_772),
+            ShareInput("mai-meal", "llanmer", 41_542),
+            ShareInput("kent-meal", "cp", 48_250),
+            ShareInput("kent-meal", "mai", 48_250),
+            ShareInput("kent-meal", "kent", 48_250),
+            ShareInput("kent-meal", "llanmer", 48_250)
+        )
+
+        val debts = BalanceCalculator.computePairwiseDebts(outings, shares, emptyList())
+
+        assertEquals(41_543, debts.first { it.fromAdultId == "cp" && it.toAdultId == "mai" }.amountCentavos)
+        assertEquals(48_250, debts.first { it.fromAdultId == "cp" && it.toAdultId == "kent" }.amountCentavos)
+        assertEquals(27_478, debts.first { it.fromAdultId == "mai" && it.toAdultId == "kent" }.amountCentavos)
+        assertEquals(null, debts.firstOrNull { it.fromAdultId == "kent" && it.toAdultId == "mai" })
+    }
+
+    @Test
+    fun `pairwise debts subtract settlements`() {
+        val outings = listOf(
+            FinalizedOutingInput("o1", "cp", 100_000, OutingStatus.FINAL)
+        )
+        val shares = listOf(
+            ShareInput("o1", "cp", 50_000),
+            ShareInput("o1", "mai", 50_000)
+        )
+        val settlements = listOf(SettlementInput("mai", "cp", 20_000))
+
+        val debts = BalanceCalculator.computePairwiseDebts(outings, shares, settlements)
+
+        assertEquals(30_000, debts.single { it.fromAdultId == "mai" && it.toAdultId == "cp" }.amountCentavos)
+    }
+
+    @Test
+    fun `pairwise debts reverse when a settlement overpays`() {
+        val outings = listOf(
+            FinalizedOutingInput("o1", "cp", 100_000, OutingStatus.FINAL)
+        )
+        val shares = listOf(
+            ShareInput("o1", "cp", 50_000),
+            ShareInput("o1", "mai", 50_000)
+        )
+        val settlements = listOf(SettlementInput("mai", "cp", 70_000))
+
+        val debts = BalanceCalculator.computePairwiseDebts(outings, shares, settlements)
+
+        assertEquals(20_000, debts.single { it.fromAdultId == "cp" && it.toAdultId == "mai" }.amountCentavos)
+    }
+
+    @Test
     fun `settlements simplify to who pays whom`() {
         val balances = listOf(
             Balance("cp", 300_000, 150_000, 0, 20_000, 130_000),

@@ -1,5 +1,6 @@
 package ph.salo.app.core.recap
 
+import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
@@ -8,7 +9,8 @@ import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.Typeface
 import android.net.Uri
-import androidx.core.content.FileProvider
+import android.os.Environment
+import android.provider.MediaStore
 import ph.salo.app.core.data.OutingDetails
 import ph.salo.app.core.database.AdultProfileEntity
 import ph.salo.app.core.database.StudentEntity
@@ -234,18 +236,33 @@ object RecapSharer {
         context.startActivity(Intent.createChooser(intent, "Share recap"))
     }
 
-    fun shareImage(context: Context, file: File, text: String) {
-        val uri: Uri = FileProvider.getUriForFile(
-            context,
-            "${context.packageName}.fileprovider",
-            file
-        )
-        val intent = Intent(Intent.ACTION_SEND).apply {
-            type = "image/png"
-            putExtra(Intent.EXTRA_STREAM, uri)
-            putExtra(Intent.EXTRA_TEXT, text)
-            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+    fun saveImageToGallery(context: Context, file: File): Uri {
+        val resolver = context.contentResolver
+        val values = ContentValues().apply {
+            put(
+                MediaStore.Images.Media.DISPLAY_NAME,
+                "Salo-${System.currentTimeMillis()}.png"
+            )
+            put(MediaStore.Images.Media.MIME_TYPE, "image/png")
+            put(
+                MediaStore.Images.Media.RELATIVE_PATH,
+                "${Environment.DIRECTORY_PICTURES}/Salo"
+            )
+            put(MediaStore.Images.Media.IS_PENDING, 1)
         }
-        context.startActivity(Intent.createChooser(intent, "Share recap image"))
+        val uri = resolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values)
+            ?: error("Could not create the gallery image.")
+        try {
+            resolver.openOutputStream(uri)?.use { output ->
+                file.inputStream().use { input -> input.copyTo(output) }
+            } ?: error("Could not write the gallery image.")
+            values.clear()
+            values.put(MediaStore.Images.Media.IS_PENDING, 0)
+            resolver.update(uri, values, null, null)
+        } catch (caught: Throwable) {
+            resolver.delete(uri, null, null)
+            throw caught
+        }
+        return uri
     }
 }

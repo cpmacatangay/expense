@@ -68,6 +68,9 @@ class AppViewModel @Inject constructor(
     private val _signingIn = MutableStateFlow(false)
     val signingIn: StateFlow<Boolean> = _signingIn
 
+    private val _restoring = MutableStateFlow(false)
+    val restoring: StateFlow<Boolean> = _restoring
+
     fun signIn(activity: Activity) {
         if (_signingIn.value) return
         _signingIn.value = true
@@ -110,15 +113,24 @@ class AppViewModel @Inject constructor(
         }
     }
 
-    fun restoreLatest(onRestored: (RestoreResult) -> Unit = {}) {
+    fun restoreLatest(onResult: (Result<RestoreResult>) -> Unit = {}) {
+        if (_restoring.value) return
+        _restoring.value = true
         viewModelScope.launch {
-            backupManager.restoreLatest()
-                .onSuccess {
-                    _message.value =
-                        context.getString(R.string.msg_restored, it.outings, it.students, it.adults)
-                    onRestored(it)
-                }
-                .onFailure { _message.value = it.message ?: context.getString(R.string.msg_restore_failed) }
+            try {
+                val result = backupManager.restoreLatest()
+                result
+                    .onSuccess {
+                        _message.value =
+                            context.getString(R.string.msg_restored, it.outings, it.students, it.adults)
+                    }
+                    .onFailure {
+                        _message.value = it.message ?: context.getString(R.string.msg_restore_failed)
+                    }
+                onResult(result)
+            } finally {
+                _restoring.value = false
+            }
         }
     }
 

@@ -62,6 +62,7 @@ import ph.salo.app.feature.outing.NewOutingScreen
 import ph.salo.app.feature.outing.OutingDetailScreen
 import ph.salo.app.feature.settings.SettingsScreen
 import ph.salo.app.feature.students.StudentsScreen
+import ph.salo.app.ui.theme.SaloNavFontFamily
 import ph.salo.app.ui.theme.SaloSpacing
 
 private sealed class SaloDestination(
@@ -154,7 +155,12 @@ fun SaloApp(
                             icon = {
                                 Icon(destination.icon, contentDescription = stringResource(destination.labelRes))
                             },
-                            label = { Text(stringResource(destination.labelRes)) }
+                            label = {
+                                Text(
+                                    text = stringResource(destination.labelRes),
+                                    fontFamily = SaloNavFontFamily
+                                )
+                            }
                         )
                     }
                 }

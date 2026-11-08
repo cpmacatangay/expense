@@ -69,13 +69,21 @@ class OutingDetailViewModel @Inject constructor(
         RecapSharer.shareText(context, RecapTextBuilder.build(data))
     }
 
-    fun shareImage(context: Context) {
+    fun saveImage(context: Context) {
         val data = recap.value ?: return
         viewModelScope.launch {
             runCatching {
                 val file = RecapImageRenderer.render(context, data)
-                RecapSharer.shareImage(context, file, RecapTextBuilder.build(data))
-            }.onFailure { _message.value = it.message ?: context.getString(R.string.msg_recap_failed) }
+                try {
+                    RecapSharer.saveImageToGallery(context, file)
+                } finally {
+                    file.delete()
+                }
+            }.onSuccess {
+                _message.value = context.getString(R.string.msg_image_saved)
+            }.onFailure {
+                _message.value = it.message ?: context.getString(R.string.msg_image_save_failed)
+            }
         }
     }
 

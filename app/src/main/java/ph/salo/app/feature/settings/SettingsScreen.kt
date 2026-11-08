@@ -18,14 +18,12 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CloudUpload
 import androidx.compose.material.icons.filled.DataObject
-import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.Login
 import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material.icons.filled.Restore
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -50,27 +48,30 @@ import ph.salo.app.R
 import ph.salo.app.core.backup.SessionState
 import ph.salo.app.feature.app.AppViewModel
 import ph.salo.app.ui.components.ConfirmDialog
-import ph.salo.app.ui.theme.SaloSpacing
 import ph.salo.app.ui.components.LabelValueRow
-import ph.salo.app.ui.components.SaloAvatar
 import ph.salo.app.ui.components.SectionCard
+import ph.salo.app.ui.theme.SaloSpacing
 
 @Composable
 fun SettingsScreen(
     viewModel: AppViewModel = hiltViewModel()
 ) {
-    val adults by viewModel.adults.collectAsStateWithLifecycle()
-    val selectedAdult by viewModel.selectedAdult.collectAsStateWithLifecycle()
     val backupState by viewModel.backupState.collectAsStateWithLifecycle()
     val session by viewModel.session.collectAsStateWithLifecycle()
     val signingIn by viewModel.signingIn.collectAsStateWithLifecycle()
+    val restoring by viewModel.restoring.collectAsStateWithLifecycle()
     val backingUp = backupState?.status == "BACKING_UP"
+    val busy = backingUp || restoring
     var exportError by remember { mutableStateOf<String?>(null) }
     var exporting by remember { mutableStateOf(false) }
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val exportFailedMessage = stringResource(R.string.settings_export_failed)
+    val restoreDoneTemplate = stringResource(R.string.settings_restore_done)
+    val restoreFailedMessage = stringResource(R.string.msg_restore_failed)
     var showClearConfirm by remember { mutableStateOf(false) }
+    var restoreMessage by remember { mutableStateOf<String?>(null) }
+    var restoreFailed by remember { mutableStateOf(false) }
     val csvFileName = stringResource(R.string.history_export_csv_name)
     val jsonFileName = stringResource(R.string.history_export_json_name)
     var pendingCsv by remember { mutableStateOf<String?>(null) }
@@ -112,83 +113,6 @@ fun SettingsScreen(
             fontWeight = FontWeight.SemiBold
         )
 
-        SectionCard {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                SaloAvatar(name = selectedAdult?.name ?: "?", size = 52.dp)
-                Column(
-                    modifier = Modifier
-                        .weight(1f)
-                        .padding(start = SaloSpacing.sm)
-                ) {
-                    Text(
-                        text = selectedAdult?.name ?: "—",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.SemiBold
-                    )
-                    Text(
-                        text = selectedAdult?.email ?: stringResource(R.string.settings_local_profile),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    Text(
-                        text = when {
-                            backupState?.status == "ERROR" -> stringResource(R.string.settings_status_error)
-                            backupState?.status == "BACKED_UP" &&
-                                session is SessionState.SignedIn -> stringResource(R.string.settings_status_backed_up)
-                            session is SessionState.SignedIn -> stringResource(R.string.settings_status_signed_in)
-                            else -> stringResource(R.string.settings_status_local)
-                        },
-                        style = MaterialTheme.typography.labelSmall,
-                        color = if (backupState?.status == "ERROR") {
-                            MaterialTheme.colorScheme.error
-                        } else {
-                            MaterialTheme.colorScheme.primary
-                        }
-                    )
-                }
-            }
-        }
-
-        SectionCard(title = stringResource(R.string.settings_adults)) {
-            adults.forEach { adult ->
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    SaloAvatar(name = adult.name, size = 36.dp)
-                    Column(
-                        modifier = Modifier
-                            .weight(1f)
-                            .padding(start = SaloSpacing.sm)
-                    ) {
-                        Text(
-                            text = adult.name,
-                            style = MaterialTheme.typography.titleSmall,
-                            fontWeight = FontWeight.SemiBold
-                        )
-                        Text(
-                            text = adult.email ?: "No email",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                    if (adult.isOwner) {
-                        Text(
-                            text = stringResource(R.string.settings_owner),
-                            style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                    }
-                }
-                HorizontalDivider()
-            }
-            Text(
-                text = stringResource(R.string.settings_adults_helper),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        }
-
         SectionCard(title = stringResource(R.string.settings_backup)) {
             val status = backupState?.status ?: "LOCAL_ONLY"
             LabelValueRow(
@@ -212,14 +136,20 @@ fun SettingsScreen(
             if (session is SessionState.SignedIn) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
-                        text = stringResource(R.string.settings_signed_in_as, (session as SessionState.SignedIn).session.email),
+                        text = stringResource(
+                            R.string.settings_signed_in_as,
+                            (session as SessionState.SignedIn).session.email
+                        ),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.weight(1f)
                     )
-                    TextButton(onClick = viewModel::signOut, enabled = !backingUp) {
+                    TextButton(onClick = viewModel::signOut, enabled = !busy) {
                         Icon(Icons.Filled.Logout, contentDescription = null)
-                        Text(stringResource(R.string.settings_sign_out), modifier = Modifier.padding(start = SaloSpacing.xxs))
+                        Text(
+                            text = stringResource(R.string.settings_sign_out),
+                            modifier = Modifier.padding(start = SaloSpacing.xxs)
+                        )
                     }
                 }
             }
@@ -234,7 +164,7 @@ fun SettingsScreen(
                 if (session is SessionState.SignedIn) {
                     Button(
                         onClick = viewModel::backupNow,
-                        enabled = !backingUp,
+                        enabled = !busy,
                         modifier = Modifier.weight(1f)
                     ) {
                         Icon(Icons.Filled.CloudUpload, contentDescription = null)
@@ -247,12 +177,45 @@ fun SettingsScreen(
                         )
                     }
                     OutlinedButton(
-                        onClick = { viewModel.restoreLatest() },
-                        enabled = !backingUp,
+                        onClick = {
+                            restoreMessage = null
+                            restoreFailed = false
+                            viewModel.restoreLatest { result ->
+                                result
+                                    .onSuccess {
+                                        restoreMessage = String.format(
+                                            restoreDoneTemplate,
+                                            it.outings,
+                                            it.students
+                                        )
+                                        restoreFailed = false
+                                    }
+                                    .onFailure {
+                                        restoreMessage = it.message
+                                            ?: restoreFailedMessage
+                                        restoreFailed = true
+                                    }
+                            }
+                        },
+                        enabled = !busy,
                         modifier = Modifier.weight(1f)
                     ) {
-                        Icon(Icons.Filled.Restore, contentDescription = null)
-                        Text(stringResource(R.string.settings_restore), modifier = Modifier.padding(start = SaloSpacing.xxs))
+                        if (restoring) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(18.dp),
+                                strokeWidth = 2.dp
+                            )
+                            Text(
+                                text = stringResource(R.string.settings_restoring),
+                                modifier = Modifier.padding(start = SaloSpacing.xxs)
+                            )
+                        } else {
+                            Icon(Icons.Filled.Restore, contentDescription = null)
+                            Text(
+                                text = stringResource(R.string.settings_restore),
+                                modifier = Modifier.padding(start = SaloSpacing.xxs)
+                            )
+                        }
                     }
                 } else {
                     Button(
@@ -282,8 +245,33 @@ fun SettingsScreen(
                     }
                 }
             }
+            restoreMessage?.let {
+                Text(
+                    text = it,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = if (restoreFailed) {
+                        MaterialTheme.colorScheme.error
+                    } else {
+                        MaterialTheme.colorScheme.primary
+                    }
+                )
+            }
             Text(
                 text = stringResource(R.string.settings_privacy_note),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            TextButton(
+                onClick = { showClearConfirm = true },
+                enabled = !busy
+            ) {
+                Text(
+                    text = stringResource(R.string.settings_clear),
+                    color = MaterialTheme.colorScheme.error
+                )
+            }
+            Text(
+                text = stringResource(R.string.settings_clear_helper),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -324,7 +312,10 @@ fun SettingsScreen(
                     modifier = Modifier.weight(1f)
                 ) {
                     Icon(Icons.Filled.Download, contentDescription = null)
-                    Text(stringResource(R.string.history_csv), modifier = Modifier.padding(start = SaloSpacing.xxs))
+                    Text(
+                        text = stringResource(R.string.history_csv),
+                        modifier = Modifier.padding(start = SaloSpacing.xxs)
+                    )
                 }
                 OutlinedButton(
                     onClick = {
@@ -347,46 +338,24 @@ fun SettingsScreen(
                     modifier = Modifier.weight(1f)
                 ) {
                     Icon(Icons.Filled.DataObject, contentDescription = null)
-                    Text(stringResource(R.string.history_json), modifier = Modifier.padding(start = SaloSpacing.xxs))
+                    Text(
+                        text = stringResource(R.string.history_json),
+                        modifier = Modifier.padding(start = SaloSpacing.xxs)
+                    )
                 }
             }
-        }
-
-        SectionCard(title = stringResource(R.string.settings_data)) {
-            OutlinedButton(
-                onClick = { showClearConfirm = true },
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Icon(Icons.Filled.Delete, contentDescription = null)
-                Text(stringResource(R.string.settings_clear), modifier = Modifier.padding(start = SaloSpacing.xs))
-            }
-            Text(
-                text = stringResource(R.string.settings_clear_helper),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        }
-
-        SectionCard(title = stringResource(R.string.settings_about)) {
-            Text(
-                text = stringResource(R.string.settings_about_body),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-            LabelValueRow(label = stringResource(R.string.settings_version), value = "0.1.0")
-            LabelValueRow(label = stringResource(R.string.settings_app_id), value = "ph.salo.app")
         }
     }
 
     if (showClearConfirm) {
         ConfirmDialog(
-
             title = stringResource(R.string.settings_clear_title),
             message = stringResource(R.string.settings_clear_body),
             confirmLabel = stringResource(R.string.settings_clear_confirm),
             destructive = true,
             onConfirm = {
                 showClearConfirm = false
+                restoreMessage = null
                 viewModel.clearLocalData()
             },
             onDismiss = { showClearConfirm = false }

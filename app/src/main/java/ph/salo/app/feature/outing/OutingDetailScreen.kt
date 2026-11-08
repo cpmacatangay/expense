@@ -172,7 +172,7 @@ fun OutingDetailScreen(
                 Text(stringResource(R.string.detail_share_text), modifier = Modifier.padding(start = SaloSpacing.xs))
             }
             OutlinedButton(
-                onClick = { viewModel.shareImage(context) },
+                onClick = { viewModel.saveImage(context) },
                 modifier = Modifier.weight(1f)
             ) {
                 Icon(Icons.Filled.Download, contentDescription = null)

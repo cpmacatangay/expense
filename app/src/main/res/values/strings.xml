@@ -126,7 +126,7 @@
     <string name="ledger_owes">owes</string>
     <string name="ledger_settled">settled</string>
     <string name="ledger_you_suffix">%1$s (you)</string>
-    <string name="ledger_transfers">Suggested transfers</string>
+    <string name="ledger_transfers">Who owes whom</string>
     <string name="ledger_all_settled">All settled.</string>
     <string name="ledger_history">Payment history</string>
     <string name="ledger_history_empty">No payments yet.</string>
@@ -136,9 +136,13 @@
     <string name="ledger_void_body">The balance will be restored as if the payment was never recorded.</string>
     <string name="ledger_void_confirm">Void</string>
     <string name="ledger_record_title">Record a payment</string>
-    <string name="ledger_from">From</string>
-    <string name="ledger_to">To</string>
+    <string name="ledger_from">Payer</string>
+    <string name="ledger_to">Payee</string>
+    <string name="ledger_party_helper">The payer sends money to the payee.</string>
+    <string name="ledger_swap">Swap payer and payee</string>
     <string name="ledger_amount">Amount</string>
+    <string name="ledger_pay_full">Pay full %1$s</string>
+    <string name="ledger_transfer_hint">Tap a row to record the payment.</string>
     <string name="ledger_date">Date</string>
     <string name="ledger_note">Note (optional)</string>
     <string name="ledger_error_two_adults">Choose two different adults.</string>
@@ -244,6 +248,8 @@
     <string name="settings_backup_not_configured">Add SUPABASE_URL, SUPABASE_ANON_KEY, GOOGLE_WEB_CLIENT_ID, and OWNER_EMAIL to local.properties to enable private backup.</string>
     <string name="settings_back_up">Back up</string>
     <string name="settings_restore">Restore</string>
+    <string name="settings_restoring">Restoring…</string>
+    <string name="settings_restore_done">Restore complete: %1$d outings, %2$d students.</string>
     <string name="settings_sign_in">Sign in with Google</string>
     <string name="settings_signing_in">Signing in…</string>
     <string name="settings_privacy_note">Receipt photos stay on this phone. Only ledger data is backed up. Restore is allowed only when local data is empty.</string>
@@ -281,6 +287,8 @@
     <string name="msg_payment_failed">Could not record the payment.</string>
     <string name="msg_void_failed">Could not void the payment.</string>
     <string name="msg_recap_failed">Could not render the recap.</string>
+    <string name="msg_image_saved">Image saved to Gallery.</string>
+    <string name="msg_image_save_failed">Could not save the image.</string>
     <string name="msg_reopened">Outing reopened. Shares were cleared.</string>
     <string name="msg_reopen_failed">Could not reopen the outing.</string>
     <string name="msg_owner_missing">No ledger owner found.</string>

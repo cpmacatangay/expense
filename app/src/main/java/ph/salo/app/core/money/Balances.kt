@@ -120,4 +120,48 @@ object BalanceCalculator {
         }
         return transfers
     }
+
+    /**
+     * Debts as they stand between each pair of adults, after netting opposite directions and
+     * subtracting recorded settlements. This keeps the payer relationship visible instead of
+     * collapsing every meal into one global net plan, so CP sees a debt to Mai for Mai's meal and
+     * a separate debt to Kent for Kent's.
+     */
+    fun computePairwiseDebts(
+        outings: List<FinalizedOutingInput>,
+        shares: List<ShareInput>,
+        settlements: List<SettlementInput>
+    ): List<Transfer> {
+        val finalized = outings.filter { it.status == OutingStatus.FINAL && !it.deleted }
+        val byId = finalized.associateBy { it.id }
+        val direct = mutableMapOf<Pair<String, String>, Long>()
+
+        fun add(fromAdultId: String, toAdultId: String, amountCentavos: Long) {
+            if (fromAdultId == toAdultId || amountCentavos == 0L) return
+            val key = fromAdultId to toAdultId
+            direct[key] = (direct[key] ?: 0L) + amountCentavos
+        }
+
+        shares.forEach { share ->
+            val outing = byId[share.outingId] ?: return@forEach
+            if (share.adultId != outing.payerId) {
+                add(share.adultId, outing.payerId, share.totalCentavos)
+            }
+        }
+        settlements.filter { !it.voided }.forEach { settlement ->
+            add(settlement.fromAdultId, settlement.toAdultId, -settlement.amountCentavos)
+        }
+
+        return direct.keys
+            .map { pair -> if (pair.first < pair.second) pair else pair.second to pair.first }
+            .distinct()
+            .mapNotNull { (first, second) ->
+                val net = (direct[first to second] ?: 0L) - (direct[second to first] ?: 0L)
+                when {
+                    net > 0L -> Transfer(first, second, net)
+                    net < 0L -> Transfer(second, first, -net)
+                    else -> null
+                }
+            }
+    }
 }

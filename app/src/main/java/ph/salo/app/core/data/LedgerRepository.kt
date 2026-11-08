@@ -20,6 +20,13 @@ import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 
+private data class LedgerInputs(
+    val adultIds: List<String>,
+    val outings: List<FinalizedOutingInput>,
+    val shares: List<ShareInput>,
+    val settlements: List<SettlementInput>
+)
+
 @Singleton
 class LedgerRepository @Inject constructor(
     private val adultDao: AdultProfileDao,
@@ -33,11 +40,34 @@ class LedgerRepository @Inject constructor(
         shareDao.observeAll(),
         settlementDao.observeAll()
     ) { adults, outings, shares, settlements ->
-        computeBalances(adults.map { it.id }, outings, shares, settlements)
+        val inputs = inputs(adults, outings, shares, settlements)
+        BalanceCalculator.computeBalances(
+            outings = inputs.outings,
+            shares = inputs.shares,
+            settlements = inputs.settlements,
+            adultIds = inputs.adultIds
+        )
     }
 
-    fun observeTransfers(): Flow<List<Transfer>> =
-        observeBalances().map { BalanceCalculator.suggestSettlements(it) }
+    fun observeTransfers(): Flow<List<Transfer>> = combine(
+        adultDao.observeAll(),
+        outingDao.observeFinalized(),
+        shareDao.observeAll(),
+        settlementDao.observeAll()
+    ) { adults, outings, shares, settlements ->
+        val inputs = inputs(adults, outings, shares, settlements)
+        val order = inputs.adultIds
+        BalanceCalculator.computePairwiseDebts(
+            outings = inputs.outings,
+            shares = inputs.shares,
+            settlements = inputs.settlements
+        ).sortedWith(
+            compareBy(
+                { order.indexOf(it.fromAdultId) },
+                { order.indexOf(it.toAdultId) }
+            )
+        )
+    }
 
     fun observeSettlements(): Flow<List<SettlementEntity>> = settlementDao.observeAll()
 
@@ -46,7 +76,13 @@ class LedgerRepository @Inject constructor(
         val outings = outingDao.getFinalized()
         val shares = shareDao.getAll()
         val settlements = settlementDao.getAll()
-        return computeBalances(adults.map { it.id }, outings, shares, settlements)
+        val inputs = inputs(adults, outings, shares, settlements)
+        return BalanceCalculator.computeBalances(
+            outings = inputs.outings,
+            shares = inputs.shares,
+            settlements = inputs.settlements,
+            adultIds = inputs.adultIds
+        )
     }
 
     suspend fun recordSettlement(
@@ -78,14 +114,15 @@ class LedgerRepository @Inject constructor(
 
     suspend fun getAllSettlements(): List<SettlementEntity> = settlementDao.getAll()
 
-    private fun computeBalances(
-        adultIds: List<String>,
+    private fun inputs(
+        adults: List<ph.salo.app.core.database.AdultProfileEntity>,
         outings: List<ph.salo.app.core.database.OutingEntity>,
         shares: List<ShareEntity>,
         settlements: List<SettlementEntity>
-    ): List<Balance> {
+    ): LedgerInputs {
         val sharesByOuting = shares.groupBy { it.outingId }
         val finalized = outings.filter { it.status == "FINAL" && it.deletedAt == null }
+        val finalizedIds = finalized.map { it.id }.toSet()
         val outingInputs = finalized.map { outing ->
             FinalizedOutingInput(
                 id = outing.id,
@@ -97,7 +134,7 @@ class LedgerRepository @Inject constructor(
             )
         }
         val shareInputs = shares
-            .filter { share -> finalized.any { it.id == share.outingId } }
+            .filter { share -> share.outingId in finalizedIds }
             .map { ShareInput(it.outingId, it.adultId, it.totalCentavos) }
         val settlementInputs = settlements.map {
             SettlementInput(
@@ -107,11 +144,11 @@ class LedgerRepository @Inject constructor(
                 voided = it.voidedAt != null
             )
         }
-        return BalanceCalculator.computeBalances(
+        return LedgerInputs(
+            adultIds = adults.map { it.id },
             outings = outingInputs,
             shares = shareInputs,
-            settlements = settlementInputs,
-            adultIds = adultIds
+            settlements = settlementInputs
         )
     }
 }

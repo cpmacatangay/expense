@@ -294,7 +294,8 @@ bubble; the form language is a folded receipt, not a chat app.
   right: the owner is the only person who operates the ledger, so there is no profile switcher.
   Hidden on the wizard and detail routes so those screens own their own header.
 - **Bottom navigation:** five `NavigationBarItem`s (Home, Students, Ledger, History, Settings) with
-  Material icons and label-size captions; selected state fills an indicator pill. Hidden on the
+  Material icons and label-size captions; selected state fills an indicator pill. Labels are set in
+  Google Sans Text (the UI cut of Google Sans); the rest of the app stays on Roboto. Hidden on the
   wizard, detail, and auth routes.
 
 ### Launch and App Icon
@@ -316,7 +317,8 @@ place the app raises its voice, and it carries the primary action so nothing flo
 ### Recap Image (signature)
 A 1080×1350 PNG rendered on-device for sharing: `Cool Paper` ground, `Ledger Green` wordmark, the
 total in monospace, one row per adult with a right-aligned amount, then payer and settlement lines.
-It follows this document's palette and spacing at print scale rather than screen scale.
+It follows this document's palette and spacing at print scale rather than screen scale. **Save image**
+writes it to `Pictures/Salo` through MediaStore; it no longer opens the share sheet.
 
 ## Do's and Don'ts
 
