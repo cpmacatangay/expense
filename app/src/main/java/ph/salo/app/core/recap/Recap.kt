@@ -103,7 +103,7 @@ object RecapTextBuilder {
                 builder.appendLine("  Adjustments: ${formatPeso(adult.adjustmentCentavos)}")
             }
             if (adult.gapCentavos != 0L) {
-                builder.appendLine("  Total gap: ${formatPeso(adult.gapCentavos)}")
+                builder.appendLine("  Total difference: ${formatPeso(adult.gapCentavos)}")
             }
         }
         builder.appendLine("Payer: ${data.payerName}")
@@ -195,7 +195,7 @@ object RecapImageRenderer {
                     add("Adj ${formatPeso(adult.adjustmentCentavos)}")
                 }
                 if (adult.gapCentavos != 0L) {
-                    add("Gap ${formatPeso(adult.gapCentavos)}")
+                    add("Difference ${formatPeso(adult.gapCentavos)}")
                 }
             }.joinToString(" · ")
             text(detail, 72f, y + 32f, 24f, sans, muted)
@@ -205,7 +205,7 @@ object RecapImageRenderer {
         rule(y - 12f)
         text("Settle directly with ${data.payerName}.", 72f, y + 40f, 26f, sans, muted)
 
-        text("On-device receipt scan · Private ledger", 72f, height - 64f, 22f, sans, muted)
+        text("Manual item ledger · Private ledger", 72f, height - 64f, 22f, sans, muted)
         paint.color = accent
         canvas.drawCircle(width - 96f, height - 76f, 10f, paint)
 

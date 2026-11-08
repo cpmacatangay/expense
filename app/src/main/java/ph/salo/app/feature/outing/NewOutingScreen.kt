@@ -1,9 +1,6 @@
 package ph.salo.app.feature.outing
 
-import android.net.Uri
 import androidx.activity.compose.BackHandler
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.ContentTransform
 import androidx.compose.animation.core.FastOutSlowInEasing
@@ -30,7 +27,6 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material.icons.filled.PhotoCamera
 import androidx.compose.material.icons.filled.ReceiptLong
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -66,7 +62,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import ph.salo.app.core.database.AdultProfileEntity
 import ph.salo.app.core.database.StudentEntity
 import ph.salo.app.core.money.ItemAssignmentType
-import ph.salo.app.core.ocr.ScanWarning
 import ph.salo.app.R
 import ph.salo.app.core.money.formatCentavosPlain
 import ph.salo.app.core.money.formatPeso
@@ -96,7 +91,6 @@ fun NewOutingScreen(
     LaunchedEffect(outingId) {
         if (outingId != null) viewModel.loadDraft(outingId)
     }
-    var captureUri by remember { mutableStateOf<Uri?>(null) }
     var itemDialogOpen by remember { mutableStateOf(false) }
     var editingItem by remember { mutableStateOf<ItemDraft?>(null) }
     var itemToDelete by remember { mutableStateOf<ItemDraft?>(null) }
@@ -118,12 +112,6 @@ fun NewOutingScreen(
             state.step > 0 -> viewModel.back()
             hasDraft -> confirmDiscard = true
             else -> onBack()
-        }
-    }
-
-    val scanner = rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) { success ->
-        if (success) {
-            captureUri?.let(viewModel::scanReceipt)
         }
     }
 
@@ -205,11 +193,6 @@ fun NewOutingScreen(
                     1 -> ReceiptStep(
                         state = state,
                         viewModel = viewModel,
-                        onScan = {
-                            val uri = viewModel.createCaptureUri()
-                            captureUri = uri
-                            scanner.launch(uri)
-                        },
                         onAddItem = {
                             editingItem = null
                             itemDialogOpen = true
@@ -289,20 +272,6 @@ fun NewOutingScreen(
         )
     }
 
-    state.pendingScan?.let { pending ->
-        ConfirmDialog(
-            title = stringResource(R.string.outing_scan_replace_title),
-            message = stringResource(
-                R.string.outing_scan_replace_body,
-                state.items.size,
-                pending.parsed.items.size
-            ),
-            confirmLabel = stringResource(R.string.outing_scan_replace_confirm),
-            onConfirm = viewModel::confirmScanReplace,
-            onDismiss = viewModel::cancelScanReplace
-        )
-    }
-
     if (confirmDiscard) {
         ConfirmDialog(
             title = stringResource(R.string.outing_discard_title),
@@ -373,7 +342,6 @@ private fun DetailsStep(state: NewOutingUiState, viewModel: NewOutingViewModel) 
 private fun ReceiptStep(
     state: NewOutingUiState,
     viewModel: NewOutingViewModel,
-    onScan: () -> Unit,
     onAddItem: () -> Unit,
     onEditItem: (ItemDraft) -> Unit,
     onDeleteItem: (ItemDraft) -> Unit
@@ -399,32 +367,11 @@ private fun ReceiptStep(
             singleLine = true,
             modifier = Modifier.fillMaxWidth()
         )
-        AmountField(stringResource(R.string.outing_total), state.totalInput, viewModel::updateTotal)
-        Row(horizontalArrangement = Arrangement.spacedBy(SaloSpacing.xs)) {
-            Box(modifier = Modifier.weight(1f)) {
-                AmountField(stringResource(R.string.outing_tax), state.taxInput, viewModel::updateTax)
-            }
-            Box(modifier = Modifier.weight(1f)) {
-                AmountField(stringResource(R.string.outing_service), state.serviceInput, viewModel::updateService)
-            }
-        }
-        AmountField(stringResource(R.string.outing_discount), state.discountInput, viewModel::updateDiscount)
-        OutlinedButton(
-            onClick = onScan,
-            enabled = !state.scanning,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Icon(Icons.Filled.PhotoCamera, contentDescription = null)
-            Text(
-                text = stringResource(
-                    if (state.scanning) R.string.outing_scanning else R.string.outing_scan
-                ),
-                modifier = Modifier.padding(start = SaloSpacing.xs)
-            )
-        }
-        state.scanSummary?.let { summary ->
-            ScanResult(summary)
-        }
+        TotalField(
+            state = state,
+            onTotalChange = viewModel::updateTotal,
+            onUseItemsTotal = viewModel::useItemsTotal
+        )
     }
 
     SectionCard(
@@ -459,45 +406,55 @@ private fun ReceiptStep(
 }
 
 @Composable
-private fun ScanResult(summary: ScanSummary) {
-    val items = pluralStringResource(
-        R.plurals.scanned_items,
-        summary.itemCount,
-        summary.itemCount
+private fun TotalField(
+    state: NewOutingUiState,
+    onTotalChange: (String) -> Unit,
+    onUseItemsTotal: () -> Unit
+) {
+    OutlinedTextField(
+        value = state.totalInput,
+        onValueChange = onTotalChange,
+        label = { Text(stringResource(R.string.outing_total)) },
+        prefix = { Text("₱") },
+        singleLine = true,
+        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+        supportingText = { Text(totalHelperText(state)) },
+        modifier = Modifier.fillMaxWidth()
     )
-    val total = summary.totalCentavos
-    Text(
-        text = if (total != null) "$items · ${formatPeso(total)}" else items,
-        style = MaterialTheme.typography.bodySmall,
-        color = if (summary.warning == ScanWarning.ITEM_TOTAL_MISMATCH) {
-            MaterialTheme.colorScheme.error
-        } else {
-            MaterialTheme.colorScheme.onSurfaceVariant
-        }
-    )
-    when (summary.warning) {
-        ScanWarning.MISSING_TOTAL -> Text(
-            text = stringResource(R.string.outing_scan_no_total),
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-
-        ScanWarning.ITEM_TOTAL_MISMATCH -> {
-            if (total != null && summary.expectedCentavos != null) {
-                Text(
-                    text = stringResource(
-                        R.string.outing_scan_mismatch,
-                        formatPeso(summary.expectedCentavos),
-                        formatPeso(total)
-                    ),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.error
-                )
+    if (state.totalMode == TotalMode.MANUAL && state.items.isNotEmpty() && !state.isEditing) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.End
+        ) {
+            TextButton(onClick = onUseItemsTotal) {
+                Text(stringResource(R.string.outing_total_use_items))
             }
         }
-
-        else -> Unit
     }
+}
+
+@Composable
+private fun totalHelperText(state: NewOutingUiState): String = when (state.totalMode) {
+    TotalMode.AUTO -> if (state.items.isEmpty()) {
+        stringResource(R.string.outing_total_no_items)
+    } else {
+        pluralStringResource(
+            R.plurals.outing_total_following,
+            state.items.size,
+            state.items.size
+        )
+    }
+
+    TotalMode.MANUAL -> if (state.items.isEmpty()) {
+        stringResource(R.string.outing_total_manual)
+    } else {
+        stringResource(
+            R.string.outing_total_items_sum,
+            formatPeso(state.itemsTotalCentavos)
+        )
+    }
+
+    TotalMode.FIXED -> stringResource(R.string.outing_total_saved)
 }
 
 @Composable
@@ -658,20 +615,40 @@ private fun ReviewStep(state: NewOutingUiState, viewModel: NewOutingViewModel) {
                             fontWeight = FontWeight.SemiBold
                         )
                     }
-                    Text(
-                        text = stringResource(
-                            R.string.outing_review_breakdown,
-                            formatPeso(share.ownItemsCentavos),
-                            formatPeso(share.studentItemsCentavos),
-                            formatPeso(
-                                share.sharedHeadCentavos + share.coveredStudentSharedCentavos
+                    Column(modifier = Modifier.padding(start = 40.dp)) {
+                        Text(
+                            text = stringResource(
+                                R.string.outing_review_breakdown,
+                                formatPeso(share.ownItemsCentavos),
+                                formatPeso(share.studentItemsCentavos),
+                                formatPeso(
+                                    share.sharedHeadCentavos + share.coveredStudentSharedCentavos
+                                )
                             ),
-                            formatPeso(share.adjustmentCentavos + share.gapCentavos)
-                        ),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.padding(start = 40.dp)
-                    )
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        if (share.adjustmentCentavos != 0L) {
+                            Text(
+                                text = stringResource(
+                                    R.string.outing_review_legacy_adjustment,
+                                    formatPeso(share.adjustmentCentavos)
+                                ),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                        if (share.gapCentavos != 0L) {
+                            Text(
+                                text = stringResource(
+                                    R.string.outing_review_total_difference,
+                                    formatPeso(share.gapCentavos)
+                                ),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
                 }
             }
         }

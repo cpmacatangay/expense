@@ -1,7 +1,6 @@
 package ph.salo.app.feature.outing
 
 import android.content.Context
-import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -30,10 +29,6 @@ import ph.salo.app.core.money.ItemAssignmentType
 import ph.salo.app.core.money.MoneyAllocator
 import ph.salo.app.core.money.formatCentavosPlain
 import ph.salo.app.core.money.parsePesoToCentavos
-import ph.salo.app.core.ocr.ReceiptImageStore
-import ph.salo.app.core.ocr.ParsedReceipt
-import ph.salo.app.core.ocr.ReceiptOcr
-import ph.salo.app.core.ocr.ScanWarning
 import java.time.LocalDate
 import java.util.UUID
 import javax.inject.Inject
@@ -73,31 +68,20 @@ data class NewOutingUiState(
     val split: AllocationResult? = null,
     val splitError: String? = null,
     val saving: Boolean = false,
-    val scanning: Boolean = false,
-    val scanSummary: ScanSummary? = null,
-    val pendingScan: PendingScan? = null,
+    val totalMode: TotalMode = TotalMode.AUTO,
     val error: String? = null
 ) {
     val totalCentavos: Long get() = parsePesoToCentavos(totalInput) ?: 0L
     val taxCentavos: Long get() = parsePesoToCentavos(taxInput) ?: 0L
     val serviceCentavos: Long get() = parsePesoToCentavos(serviceInput) ?: 0L
     val discountCentavos: Long get() = parsePesoToCentavos(discountInput) ?: 0L
+    val itemsTotalCentavos: Long get() = items.sumOf { it.amountCentavos }
     val presentStudents: List<StudentEntity>
         get() = students.filter { it.id in presentStudentIds }
     val isEditing: Boolean get() = outingId != null
 }
 
-data class PendingScan(
-    val parsed: ParsedReceipt,
-    val imagePath: String?
-)
-
-data class ScanSummary(
-    val itemCount: Int,
-    val totalCentavos: Long?,
-    val expectedCentavos: Long?,
-    val warning: ScanWarning?
-)
+enum class TotalMode { AUTO, MANUAL, FIXED }
 
 @HiltViewModel
 class NewOutingViewModel @Inject constructor(
@@ -105,8 +89,6 @@ class NewOutingViewModel @Inject constructor(
     private val outingRepository: OutingRepository,
     private val adultRepository: AdultProfileRepository,
     private val studentRepository: StudentRepository,
-    private val receiptOcr: ReceiptOcr,
-    private val receiptImageStore: ReceiptImageStore,
     private val backupScheduler: BackupScheduler
 ) : ViewModel() {
 
@@ -150,19 +132,19 @@ class NewOutingViewModel @Inject constructor(
                     merchant = receipt?.merchant.orEmpty(),
                     totalInput = receipt?.totalCentavos
                         ?.takeIf { it > 0 }
-                        ?.let { ph.salo.app.core.money.formatCentavosPlain(it) }
+                        ?.let { formatCentavosPlain(it) }
                         .orEmpty(),
                     taxInput = receipt?.taxCentavos
                         ?.takeIf { it > 0 }
-                        ?.let { ph.salo.app.core.money.formatCentavosPlain(it) }
+                        ?.let { formatCentavosPlain(it) }
                         .orEmpty(),
                     serviceInput = receipt?.serviceChargeCentavos
                         ?.takeIf { it > 0 }
-                        ?.let { ph.salo.app.core.money.formatCentavosPlain(it) }
+                        ?.let { formatCentavosPlain(it) }
                         .orEmpty(),
                     discountInput = receipt?.discountCentavos
                         ?.takeIf { it > 0 }
-                        ?.let { ph.salo.app.core.money.formatCentavosPlain(it) }
+                        ?.let { formatCentavosPlain(it) }
                         .orEmpty(),
                     imagePath = receipt?.imagePath,
                     items = details.items.map { item ->
@@ -184,16 +166,13 @@ class NewOutingViewModel @Inject constructor(
                     createdByAdultId = details.outing.createdByAdultId,
                     split = null,
                     splitError = null,
-                    scanSummary = null,
-                    pendingScan = null,
+                    totalMode = TotalMode.FIXED,
                     error = null
                 )
             }
             refreshSplit()
         }
     }
-
-    fun createCaptureUri(): android.net.Uri = receiptImageStore.createCaptureUri(context)
 
     fun updateDate(value: String) = _state.update { it.copy(date = value) }
 
@@ -204,22 +183,25 @@ class NewOutingViewModel @Inject constructor(
     fun updateMerchant(value: String) = _state.update { it.copy(merchant = value) }
 
     fun updateTotal(value: String) {
-        _state.update { it.copy(totalInput = value) }
+        _state.update {
+            it.copy(
+                totalInput = value,
+                totalMode = TotalRules.modeAfterEdit(it.totalMode)
+            )
+        }
         refreshSplit()
     }
 
-    fun updateTax(value: String) {
-        _state.update { it.copy(taxInput = value) }
-        refreshSplit()
-    }
-
-    fun updateService(value: String) {
-        _state.update { it.copy(serviceInput = value) }
-        refreshSplit()
-    }
-
-    fun updateDiscount(value: String) {
-        _state.update { it.copy(discountInput = value) }
+    fun useItemsTotal() {
+        val current = _state.value
+        val result = TotalRules.totalAfterUseItems(
+            mode = current.totalMode,
+            isEditing = current.isEditing,
+            itemsTotalCentavos = current.itemsTotalCentavos
+        ) ?: return
+        _state.update {
+            it.copy(totalInput = result.second, totalMode = result.first)
+        }
         refreshSplit()
     }
 
@@ -290,6 +272,7 @@ class NewOutingViewModel @Inject constructor(
             }
             current.copy(items = current.items + item, presentStudentIds = present, error = null)
         }
+        syncTotalToItems()
         refreshSplit()
     }
 
@@ -327,6 +310,7 @@ class NewOutingViewModel @Inject constructor(
                 error = null
             )
         }
+        syncTotalToItems()
         refreshSplit()
     }
 
@@ -334,6 +318,7 @@ class NewOutingViewModel @Inject constructor(
         _state.update { current ->
             current.copy(items = current.items.filterNot { it.id == id })
         }
+        syncTotalToItems()
         refreshSplit()
     }
 
@@ -361,6 +346,7 @@ class NewOutingViewModel @Inject constructor(
                 }
             )
         }
+        syncTotalToItems()
         refreshSplit()
     }
 
@@ -376,11 +362,16 @@ class NewOutingViewModel @Inject constructor(
             ) {
                 return@update current.copy(error = context.getString(R.string.error_merge_assignment))
             }
+            val (mergedQuantity, mergedUnitAmount) = mergedQuantityAndUnit(
+                firstAmountCentavos = first.amountCentavos,
+                firstQuantity = first.quantity,
+                secondAmountCentavos = second.amountCentavos,
+                secondQuantity = second.quantity
+            )
             val merged = first.copy(
                 name = context.getString(R.string.item_merge_name, first.name, second.name),
-                quantity = first.quantity + second.quantity,
-                unitAmountCentavos = (first.amountCentavos + second.amountCentavos) /
-                    (first.quantity + second.quantity).coerceAtLeast(1)
+                quantity = mergedQuantity,
+                unitAmountCentavos = mergedUnitAmount
             )
             current.copy(
                 items = current.items.filterIndexed { itemIndex, _ ->
@@ -391,6 +382,7 @@ class NewOutingViewModel @Inject constructor(
                 error = null
             )
         }
+        syncTotalToItems()
         refreshSplit()
     }
 
@@ -463,91 +455,15 @@ class NewOutingViewModel @Inject constructor(
         refreshSplit()
     }
 
-    fun scanReceipt(uri: Uri) {
-        viewModelScope.launch {
-            _state.update {
-                it.copy(scanning = true, error = null, pendingScan = null, scanSummary = null)
-            }
-            try {
-                val result = receiptOcr.recognize(context, uri)
-                val parsed = result.parsed
-                val imagePath = receiptImageStore.copyToAppStorage(context, uri)
-                if (parsed.items.isEmpty()) {
-                    _state.update {
-                        it.copy(
-                            scanning = false,
-                            error = context.getString(R.string.error_ocr_empty)
-                        )
-                    }
-                    return@launch
-                }
-                val pending = PendingScan(parsed, imagePath)
-                if (_state.value.items.isEmpty()) {
-                    applyScan(pending)
-                } else {
-                    _state.update { it.copy(scanning = false, pendingScan = pending) }
-                }
-            } catch (caught: Throwable) {
-                _state.update {
-                    it.copy(
-                        scanning = false,
-                        error = caught.message ?: context.getString(R.string.error_ocr_failed)
-                    )
-                }
-            }
-        }
-    }
-
-    fun confirmScanReplace() {
-        _state.value.pendingScan?.let(::applyScan)
-    }
-
-    fun cancelScanReplace() {
-        _state.update { it.copy(pendingScan = null) }
-    }
-
-    private fun applyScan(pending: PendingScan) {
-        val parsed = pending.parsed
-        val expected = parsed.itemSubtotalCentavos +
-            (parsed.taxCentavos ?: 0L) +
-            (parsed.serviceChargeCentavos ?: 0L) -
-            (parsed.discountCentavos ?: 0L)
+    private fun syncTotalToItems() {
         _state.update { current ->
-            current.copy(
-                merchant = parsed.merchant ?: current.merchant,
-                date = parsed.date ?: current.date,
-                totalInput = parsed.totalCentavos
-                    ?.let { formatCentavosPlain(it) }
-                    ?: current.totalInput,
-                taxInput = parsed.taxCentavos
-                    ?.let { formatCentavosPlain(it) }
-                    ?: current.taxInput,
-                serviceInput = parsed.serviceChargeCentavos
-                    ?.let { formatCentavosPlain(it) }
-                    ?: current.serviceInput,
-                discountInput = parsed.discountCentavos
-                    ?.let { formatCentavosPlain(it) }
-                    ?: current.discountInput,
-                imagePath = pending.imagePath ?: current.imagePath,
-                items = parsed.items.map { item ->
-                    ItemDraft(
-                        name = item.name,
-                        quantity = item.quantity,
-                        unitAmountCentavos = item.unitAmountCentavos
-                    )
-                },
-                scanSummary = ScanSummary(
-                    itemCount = parsed.items.size,
-                    totalCentavos = parsed.totalCentavos,
-                    expectedCentavos = expected,
-                    warning = parsed.warnings.lastOrNull()
-                ),
-                pendingScan = null,
-                scanning = false,
-                error = null
+            val next = TotalRules.totalAfterItemsChanged(
+                mode = current.totalMode,
+                itemsTotalCentavos = current.itemsTotalCentavos,
+                hasItems = current.items.isNotEmpty()
             )
+            if (next == null) current else current.copy(totalInput = next)
         }
-        refreshSplit()
     }
 
     fun refreshSplit() {
@@ -656,7 +572,7 @@ class NewOutingViewModel @Inject constructor(
                     taxCentavos = current.taxCentavos,
                     serviceChargeCentavos = current.serviceCentavos,
                     discountCentavos = current.discountCentavos,
-                    ocrEngine = "ML_KIT",
+                    ocrEngine = "MANUAL",
                     items = current.items.map { item ->
                         ReceiptItemEntity(
                             id = item.id,
