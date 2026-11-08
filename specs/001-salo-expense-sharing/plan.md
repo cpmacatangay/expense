@@ -226,6 +226,59 @@ create table public.ledger_snapshots (
 - Manual entry is always available.
 - No image leaves the device.
 
+#### 7a. Pre-LLM OCR hardening (gate for Gemini Nano)
+
+**Goal**: make the ML Kit + deterministic parser path trustworthy on real Philippine receipts, and
+measure it before adding any LLM.
+
+**In scope**
+
+- Preserve ML Kit `Text.Line` text and bounding boxes; parse layout lines instead of flat text.
+- Harden item, quantity, total, VAT, service charge, discount, date, and merchant extraction.
+- Replace-on-rescan with confirmation; a second scan must never append duplicate items.
+- Surface reconciliation warnings; the receipt total remains authoritative.
+- Build a real-receipt fixture set and a device accuracy baseline.
+- Keep manual total/item entry available at every step.
+
+**Out of scope**
+
+- Gemini Nano / ML Kit GenAI, MediaPipe, LiteRT, or any bundled model.
+- Cloud OCR or receipt-text upload.
+- Room schema changes.
+- A new full-screen scan editor; the wizard item list remains the editor.
+
+**Design**
+
+- `ReceiptOcr` returns `OcrLine(text, left, top, right, bottom)` plus the raw text. Lines are sorted
+  by top, then left.
+- `ReceiptParser` accepts `List<OcrLine>`; keep a string overload for fixtures.
+- `ParsedReceipt` adds `itemSubtotalCentavos`, `differenceCentavos`, and `warnings`.
+- Total labels are prioritized (`grand total` → `total due` → `amount due` → `total`) and lines
+  containing `subtotal`, `total vat`, `total items`, `total qty`, `vatable`, or `cash/change` are
+  rejected.
+- VAT extraction excludes `VATable`, `VAT-exempt`, `VAT reg`, and `TIN`; only the actual VAT line is
+  tax.
+- Item names may continue across a line break; merge a name-only line into the next priced line.
+- Scanning into a non-empty item list asks **Replace scanned items?**; confirm replaces, cancel
+  keeps the draft.
+- The receipt step shows a compact result: item count, total, and a warning when the item sum does
+  not reconcile.
+
+**Gate before any LLM**
+
+| Metric | Pass condition |
+|---|---|
+| Receipt total | 8/8 correct on clear printed receipts |
+| Item amounts | ≥ 90% correct |
+| Item names | ≥ 80% usable without editing |
+| Repeated scans | 0 duplicates |
+| Manual fallback | Always available, never a dead end |
+| Scan-to-review time | Under 3 seconds |
+
+If the gate passes, do not add an LLM. If totals are correct but items are still poor, plan Gemini
+Nano as a validated assist: typed structured output, amounts checked against OCR text, arithmetic
+reconciled, and fallback to this parser. If totals are wrong, fix capture/parsing first.
+
 ### 8. Recap
 
 - Text recap built from the finalized snapshot.

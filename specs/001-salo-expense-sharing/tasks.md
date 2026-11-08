@@ -138,7 +138,7 @@
 
 - [x] T106 Add System camera capture via ActivityResultContracts.TakePicture and FileProvider.
 - [x] T107 Add ML Kit Text Recognition v2 on-device processing.
-- [ ] T108 Port the Philippine receipt parser to Kotlin.
+- [x] T108 Port the Philippine receipt parser to Kotlin.
 - [x] T109 Add parser fixtures for VAT, service charge, discounts, quantities, comma separators, and malformed OCR.
 - [x] T110 Feed OCR results into the item review screen.
 - [x] T111 Keep manual item and total entry as the fallback.
@@ -162,6 +162,21 @@
 - [x] T126 Verify recap text/image sharing through the Android share sheet.
 - [x] T127 Build the signed release APK.
 - [x] T128 Update README and quickstart with build, Supabase, Google OAuth, and install instructions.
+
+## Phase 9: OCR hardening before any LLM
+
+- [x] T129 Return ML Kit `Text.Line` text plus bounding boxes as `OcrLine` and sort by top, then left.
+- [x] T130 Parse `List<OcrLine>`; add multi-line item names and extended quantity patterns.
+- [x] T131 Prioritise total labels and exclude subtotal/total VAT/total items/total qty; exclude VATable, VAT-exempt, VAT reg, and TIN from tax.
+- [x] T132 Add item subtotal, difference, and reconciliation warnings to `ParsedReceipt`.
+- [x] T133 Replace scanned items on rescan after a confirmation dialog; never append duplicates.
+- [x] T134 Show a scan summary and reconciliation warning in the receipt step.
+- [x] T135 Add fixture tests for VAT, service charge, discounts, multi-line names, two-column layout, missing total, and total mismatch.
+- [ ] T136 Add a debug-only raw OCR text export for collecting anonymised fixtures; never log receipt text in release.
+- [ ] T137 Run the baseline on 5–10 real receipts and record total/items/names/duplicates/time.
+- [ ] T138 Gate review: if total 8/8 and items ≥ 90%, stop here; otherwise create a separate Gemini Nano assist plan.
+- [ ] T139 (Conditional after T138) Add ML Kit GenAI direct model access with typed structured output, OCR-amount validation, arithmetic reconciliation, and deterministic fallback.
+- [ ] T140 (Conditional after T139) Test model unavailable, busy/quota, invalid JSON, and validation-failure fallbacks.
 
 ## Dependencies
 

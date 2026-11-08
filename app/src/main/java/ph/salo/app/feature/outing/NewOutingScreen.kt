@@ -55,6 +55,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -65,6 +66,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import ph.salo.app.core.database.AdultProfileEntity
 import ph.salo.app.core.database.StudentEntity
 import ph.salo.app.core.money.ItemAssignmentType
+import ph.salo.app.core.ocr.ScanWarning
 import ph.salo.app.R
 import ph.salo.app.core.money.formatCentavosPlain
 import ph.salo.app.core.money.formatPeso
@@ -287,6 +289,20 @@ fun NewOutingScreen(
         )
     }
 
+    state.pendingScan?.let { pending ->
+        ConfirmDialog(
+            title = stringResource(R.string.outing_scan_replace_title),
+            message = stringResource(
+                R.string.outing_scan_replace_body,
+                state.items.size,
+                pending.parsed.items.size
+            ),
+            confirmLabel = stringResource(R.string.outing_scan_replace_confirm),
+            onConfirm = viewModel::confirmScanReplace,
+            onDismiss = viewModel::cancelScanReplace
+        )
+    }
+
     if (confirmDiscard) {
         ConfirmDialog(
             title = stringResource(R.string.outing_discard_title),
@@ -406,6 +422,9 @@ private fun ReceiptStep(
                 modifier = Modifier.padding(start = SaloSpacing.xs)
             )
         }
+        state.scanSummary?.let { summary ->
+            ScanResult(summary)
+        }
     }
 
     SectionCard(
@@ -436,6 +455,48 @@ private fun ReceiptStep(
                 )
             }
         }
+    }
+}
+
+@Composable
+private fun ScanResult(summary: ScanSummary) {
+    val items = pluralStringResource(
+        R.plurals.scanned_items,
+        summary.itemCount,
+        summary.itemCount
+    )
+    val total = summary.totalCentavos
+    Text(
+        text = if (total != null) "$items · ${formatPeso(total)}" else items,
+        style = MaterialTheme.typography.bodySmall,
+        color = if (summary.warning == ScanWarning.ITEM_TOTAL_MISMATCH) {
+            MaterialTheme.colorScheme.error
+        } else {
+            MaterialTheme.colorScheme.onSurfaceVariant
+        }
+    )
+    when (summary.warning) {
+        ScanWarning.MISSING_TOTAL -> Text(
+            text = stringResource(R.string.outing_scan_no_total),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+
+        ScanWarning.ITEM_TOTAL_MISMATCH -> {
+            if (total != null && summary.expectedCentavos != null) {
+                Text(
+                    text = stringResource(
+                        R.string.outing_scan_mismatch,
+                        formatPeso(summary.expectedCentavos),
+                        formatPeso(total)
+                    ),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.error
+                )
+            }
+        }
+
+        else -> Unit
     }
 }
 

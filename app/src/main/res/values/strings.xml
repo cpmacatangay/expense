@@ -171,6 +171,15 @@
     <string name="outing_discount">Discount</string>
     <string name="outing_scan">Scan receipt</string>
     <string name="outing_scanning">Reading on-device…</string>
+    <string name="outing_scan_no_total">No total found — enter it manually.</string>
+    <string name="outing_scan_mismatch">Items plus adjustments add up to %1$s; the receipt says %2$s. The receipt total wins.</string>
+    <string name="outing_scan_replace_title">Replace scanned items?</string>
+    <string name="outing_scan_replace_body">This receipt already has %1$d items. Replace them with the %2$d items from this scan?</string>
+    <string name="outing_scan_replace_confirm">Replace</string>
+    <plurals name="scanned_items">
+        <item quantity="one">Scanned %1$d item</item>
+        <item quantity="other">Scanned %1$d items</item>
+    </plurals>
     <string name="outing_items">Items</string>
     <string name="outing_items_empty">No items. The total will be split per head across the four adults and present students.</string>
     <string name="outing_item_actions">Item actions</string>

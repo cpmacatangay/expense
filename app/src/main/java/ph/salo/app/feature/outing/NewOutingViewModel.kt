@@ -28,9 +28,12 @@ import ph.salo.app.core.money.AllocationResult
 import ph.salo.app.core.money.AllocationValidationException
 import ph.salo.app.core.money.ItemAssignmentType
 import ph.salo.app.core.money.MoneyAllocator
+import ph.salo.app.core.money.formatCentavosPlain
 import ph.salo.app.core.money.parsePesoToCentavos
 import ph.salo.app.core.ocr.ReceiptImageStore
+import ph.salo.app.core.ocr.ParsedReceipt
 import ph.salo.app.core.ocr.ReceiptOcr
+import ph.salo.app.core.ocr.ScanWarning
 import java.time.LocalDate
 import java.util.UUID
 import javax.inject.Inject
@@ -71,6 +74,8 @@ data class NewOutingUiState(
     val splitError: String? = null,
     val saving: Boolean = false,
     val scanning: Boolean = false,
+    val scanSummary: ScanSummary? = null,
+    val pendingScan: PendingScan? = null,
     val error: String? = null
 ) {
     val totalCentavos: Long get() = parsePesoToCentavos(totalInput) ?: 0L
@@ -81,6 +86,18 @@ data class NewOutingUiState(
         get() = students.filter { it.id in presentStudentIds }
     val isEditing: Boolean get() = outingId != null
 }
+
+data class PendingScan(
+    val parsed: ParsedReceipt,
+    val imagePath: String?
+)
+
+data class ScanSummary(
+    val itemCount: Int,
+    val totalCentavos: Long?,
+    val expectedCentavos: Long?,
+    val warning: ScanWarning?
+)
 
 @HiltViewModel
 class NewOutingViewModel @Inject constructor(
@@ -167,6 +184,8 @@ class NewOutingViewModel @Inject constructor(
                     createdByAdultId = details.outing.createdByAdultId,
                     split = null,
                     splitError = null,
+                    scanSummary = null,
+                    pendingScan = null,
                     error = null
                 )
             }
@@ -446,43 +465,28 @@ class NewOutingViewModel @Inject constructor(
 
     fun scanReceipt(uri: Uri) {
         viewModelScope.launch {
-            _state.update { it.copy(scanning = true, error = null) }
+            _state.update {
+                it.copy(scanning = true, error = null, pendingScan = null, scanSummary = null)
+            }
             try {
                 val result = receiptOcr.recognize(context, uri)
                 val parsed = result.parsed
                 val imagePath = receiptImageStore.copyToAppStorage(context, uri)
-                _state.update { current ->
-                    val newItems = parsed.items.map { item ->
-                        ItemDraft(
-                            name = item.name,
-                            quantity = item.quantity,
-                            unitAmountCentavos = item.unitAmountCentavos
+                if (parsed.items.isEmpty()) {
+                    _state.update {
+                        it.copy(
+                            scanning = false,
+                            error = context.getString(R.string.error_ocr_empty)
                         )
                     }
-                    current.copy(
-                        merchant = parsed.merchant ?: current.merchant,
-                        date = parsed.date ?: current.date,
-                        totalInput = parsed.totalCentavos?.let { ph.salo.app.core.money.formatCentavosPlain(it) }
-                            ?: current.totalInput,
-                        taxInput = parsed.taxCentavos?.let { ph.salo.app.core.money.formatCentavosPlain(it) }
-                            ?: current.taxInput,
-                        serviceInput = parsed.serviceChargeCentavos?.let {
-                            ph.salo.app.core.money.formatCentavosPlain(it)
-                        } ?: current.serviceInput,
-                        discountInput = parsed.discountCentavos?.let {
-                            ph.salo.app.core.money.formatCentavosPlain(it)
-                        } ?: current.discountInput,
-                        imagePath = imagePath ?: current.imagePath,
-                        items = current.items + newItems,
-                        scanning = false,
-                        error = if (newItems.isEmpty()) {
-                            context.getString(R.string.error_ocr_empty)
-                        } else {
-                            null
-                        }
-                    )
+                    return@launch
                 }
-                refreshSplit()
+                val pending = PendingScan(parsed, imagePath)
+                if (_state.value.items.isEmpty()) {
+                    applyScan(pending)
+                } else {
+                    _state.update { it.copy(scanning = false, pendingScan = pending) }
+                }
             } catch (caught: Throwable) {
                 _state.update {
                     it.copy(
@@ -492,6 +496,58 @@ class NewOutingViewModel @Inject constructor(
                 }
             }
         }
+    }
+
+    fun confirmScanReplace() {
+        _state.value.pendingScan?.let(::applyScan)
+    }
+
+    fun cancelScanReplace() {
+        _state.update { it.copy(pendingScan = null) }
+    }
+
+    private fun applyScan(pending: PendingScan) {
+        val parsed = pending.parsed
+        val expected = parsed.itemSubtotalCentavos +
+            (parsed.taxCentavos ?: 0L) +
+            (parsed.serviceChargeCentavos ?: 0L) -
+            (parsed.discountCentavos ?: 0L)
+        _state.update { current ->
+            current.copy(
+                merchant = parsed.merchant ?: current.merchant,
+                date = parsed.date ?: current.date,
+                totalInput = parsed.totalCentavos
+                    ?.let { formatCentavosPlain(it) }
+                    ?: current.totalInput,
+                taxInput = parsed.taxCentavos
+                    ?.let { formatCentavosPlain(it) }
+                    ?: current.taxInput,
+                serviceInput = parsed.serviceChargeCentavos
+                    ?.let { formatCentavosPlain(it) }
+                    ?: current.serviceInput,
+                discountInput = parsed.discountCentavos
+                    ?.let { formatCentavosPlain(it) }
+                    ?: current.discountInput,
+                imagePath = pending.imagePath ?: current.imagePath,
+                items = parsed.items.map { item ->
+                    ItemDraft(
+                        name = item.name,
+                        quantity = item.quantity,
+                        unitAmountCentavos = item.unitAmountCentavos
+                    )
+                },
+                scanSummary = ScanSummary(
+                    itemCount = parsed.items.size,
+                    totalCentavos = parsed.totalCentavos,
+                    expectedCentavos = expected,
+                    warning = parsed.warnings.lastOrNull()
+                ),
+                pendingScan = null,
+                scanning = false,
+                error = null
+            )
+        }
+        refreshSplit()
     }
 
     fun refreshSplit() {

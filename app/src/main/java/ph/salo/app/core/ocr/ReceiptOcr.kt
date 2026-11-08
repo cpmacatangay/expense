@@ -14,6 +14,7 @@ import javax.inject.Singleton
 
 data class ReceiptOcrResult(
     val rawText: String,
+    val lines: List<OcrLine>,
     val parsed: ParsedReceipt
 )
 
@@ -25,8 +26,24 @@ class ReceiptOcr @Inject constructor() {
             ?: error("Could not read the receipt image.")
         val recognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
         return try {
-            val text = recognizer.process(InputImage.fromBitmap(bitmap, 0)).await().text
-            ReceiptOcrResult(rawText = text, parsed = ReceiptParser.parse(text))
+            val text = recognizer.process(InputImage.fromBitmap(bitmap, 0)).await()
+            val lines = text.textBlocks
+                .flatMap { block -> block.lines }
+                .mapNotNull { line ->
+                    val box = line.boundingBox ?: return@mapNotNull null
+                    OcrLine(line.text, box.left, box.top, box.right, box.bottom)
+                }
+                .sortedWith(compareBy({ it.top }, { it.left }))
+                .ifEmpty {
+                    text.text.lines().mapIndexed { index, line ->
+                        OcrLine(line, top = index)
+                    }
+                }
+            ReceiptOcrResult(
+                rawText = text.text,
+                lines = lines,
+                parsed = ReceiptParser.parse(lines)
+            )
         } finally {
             recognizer.close()
             bitmap.recycle()
