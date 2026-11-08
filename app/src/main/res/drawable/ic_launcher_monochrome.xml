@@ -3,19 +3,21 @@
     android:height="108dp"
     android:viewportWidth="256"
     android:viewportHeight="256">
-    <group
-        android:pivotX="128"
-        android:pivotY="128"
-        android:scaleX="0.62"
-        android:scaleY="0.62">
+    <group android:translateY="5">
         <group
             android:pivotX="128"
-            android:pivotY="120"
-            android:scaleX="1.55"
-            android:scaleY="1.55">
-            <path
-                android:fillColor="#000000"
-                android:pathData="M184 50 L104 50 A42 42 0 0 0 104 134 L152 134 A14 14 0 0 1 152 162 L72 162 A14 14 0 0 0 72 190 L152 190 A42 42 0 0 0 152 106 L104 106 A14 14 0 0 1 104 78 L184 78 A14 14 0 0 0 184 50 Z" />
+            android:pivotY="128"
+            android:scaleX="0.62"
+            android:scaleY="0.62">
+            <group
+                android:pivotX="128"
+                android:pivotY="120"
+                android:scaleX="1.55"
+                android:scaleY="1.55">
+                <path
+                    android:fillColor="#000000"
+                    android:pathData="M184 50 L104 50 A42 42 0 0 0 104 134 L152 134 A14 14 0 0 1 152 162 L72 162 A14 14 0 0 0 72 190 L152 190 A42 42 0 0 0 152 106 L104 106 A14 14 0 0 1 104 78 L184 78 A14 14 0 0 0 184 50 Z" />
+            </group>
         </group>
     </group>
 </vector>
