@@ -107,7 +107,7 @@ fun HomeScreen(
     val amountStyle = when {
         amountText.length <= 8 -> MaterialTheme.typography.displayLarge
         amountText.length <= 10 -> MaterialTheme.typography.displayMedium
-        amountText.length <= 12 -> MaterialTheme.typography.displaySmall
+        amountText.length <= 14 -> MaterialTheme.typography.displaySmall
         else -> MaterialTheme.typography.headlineMedium
     }
     val todayLabel = LocalDate.now()
