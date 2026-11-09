@@ -5,7 +5,22 @@
 **Product**: Salo — shared group meal ledger PWA
 **Mode**: Operate
 **Platforms**: iPhone-first shell on iOS; Material 3 shell on Android
-**Status**: Committed direction; the iPhone visual world is refined by the app-screen design stage
+**Status**: Committed direction; iPhone prototype built at `design/pwa-prototype/`
+**Direction**: Achromatic ledger, adapted · seed `476852879`
+**Face**: warm sage-stone ground, ink figures, Ledger Green as the one hue, SF Pro system stack
+**Signature**: the shared table — member initials and group presence
+
+### Direction redraws
+
+- **Desktop open-plane sidebar → iPhone bottom tabs.** The product is iPhone-first and the brief
+  chooses four bottom tabs. The sidebar composition is not used.
+- **Wallet action tiles → one balance card plus one primary action.** The brief asks for one balance
+  card, pending actions, recent outings, and a single primary action, not a row of four tiles.
+- **30px title → 28px.** Keeps the iPhone large-title presence while staying inside the app-screen
+  phone guidance.
+- **Ledger Green replaces the style's blue chart hue.** The brand is fixed; the one hue is green, and
+  red is reserved for "you owe" and destructive confirmation.
+
 
 ## 1. Design Intent
 
@@ -44,9 +59,9 @@ Shared roles:
 
 | Role | Light | Dark | Use |
 |---|---|---|---|
-| `ground` | warm off-white `#F7F4EE` | deep green-black `#0C1511` | Page background |
-| `surface` | `#FFFDF8` | `#12201A` | Cards, grouped rows |
-| `surfaceMuted` | `#EFEAE1` | `#1A2A22` | Secondary panels |
+| `ground` | warm sage-stone `#F2F4F0` | deep green-black `#0C1511` | Page background |
+| `surface` | `#FCFDFB` | `#12201A` | Cards, grouped rows |
+| `surfaceMuted` | `#EAEDE7` | `#1A2A22` | Secondary panels |
 | `ink` | `#15221C` | `#EDF5EF` | Primary text |
 | `inkMuted` | `#5D6B63` | `#A9B8AF` | Secondary text |
 | `green` | `#1F5C45` | `#8FE3B6` | Primary action, positive balance |
@@ -54,7 +69,7 @@ Shared roles:
 | `mint` | `#B4F0CE` | `#B4F0CE` | Dark-mode accent |
 | `red` | `#A83232` | `#FF8A80` | "You owe"; destructive confirmation |
 | `amber` | `#8A5A12` | `#F2C36B` | Pending/disputed |
-| `line` | `#DDD6C9` | `#2A3A31` | Hairline separators |
+| `line` | `#D8DDD4` | `#2A3A31` | Hairline separators |
 
 Rules:
 - Green is the action and positive state. Red is "you owe" and destructive confirmation. Amber is

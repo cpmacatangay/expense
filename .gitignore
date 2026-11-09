@@ -34,3 +34,7 @@ Thumbs.db
 
 # Playwright artifacts
 .playwright-mcp/
+
+# Design working artifacts
+.taste-skill/
+
