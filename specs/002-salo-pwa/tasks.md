@@ -13,7 +13,7 @@ Stories are ordered P1 → P2.
 ## Format: `[ID] [P?] [Story] Description`
 
 - **[P]**: Can run in parallel (different files, no dependencies)
-- **[Story]**: `[US1]`–`[US7]` for user-story phases; omitted in setup, foundational, and polish
+- **[Story]**: `[US1]`-`[US8]` for user-story phases; omitted in setup, foundational, and polish
 - Every task names an exact file path
 
 ## Path Conventions
@@ -343,32 +343,72 @@ while preserving history.
 
 ---
 
+## Phase 9b: User Story 8 - Scan the payee's payment QR (Priority: P2)
+
+**Goal**: A private payment QR per group adult, shown on Home debt rows, Ledger, and outing detail
+for scanning with the member's banking app. Display-only; no ledger effect.
+
+**Independent Test**: Upload a QR, open it from a debt row, scan it with a banking app, record and
+confirm the settlement, and verify the image never appears in a recap or export.
+
+### Tests
+
+- [ ] T171 [P] [US8] Add storage and RLS tests for group-only access, signed URLs, and public-URL denial in `tests/integration/payment-qr/`
+- [ ] T172 [P] [US8] Add E2E tests for upload, view, missing QR, removed adult, and recap/export exclusion in `tests/e2e/payment-qr.spec.ts`
+- [ ] T173 [P] [US8] Add the manual bank-app scan check to the device checklist in `tests/e2e/payment-qr.spec.ts`
+
+### Implementation
+
+- [ ] T174 [US8] Create the private `payment-qrs` bucket and storage policies in `supabase/migrations/`
+- [ ] T175 [US8] Add `payment_qr_path`, `payment_qr_label`, and `payment_qr_updated_at` to `group_adults` in `supabase/migrations/`
+- [ ] T176 [US8] Build self-service QR upload, replace, and remove in `src/features/payments/PaymentQrSettings.tsx`
+- [ ] T177 [US8] Build owner-managed QR upload for pending adults in `src/features/payments/PendingAdultQr.tsx`
+- [ ] T178 [US8] Add PNG/JPEG validation, the 2 MB limit, and metadata stripping in `src/features/payments/uploadQr.ts`
+- [ ] T179 [US8] Implement short-lived signed URL fetching in `src/data/paymentQr/fetchQr.ts`
+- [ ] T180 [US8] Build the "Scan to pay" sheet with payee, label, amount, and QR in `src/features/payments/PayQrSheet.tsx`
+- [ ] T181 [US8] Wire the pay sheet into the Home balance card and debt rows in `src/features/home/`
+- [ ] T182 [US8] Wire the pay sheet into Ledger debt and settlement rows in `src/features/ledger/` and `src/features/settlements/`
+- [ ] T183 [US8] Wire the pay sheet into the finalized outing detail in `src/features/outings/OutingDetail.tsx`
+- [ ] T184 [US8] Add missing-QR, replaced-QR, offline, removed-adult, and expired-URL states
+- [ ] T185 [US8] Add iPhone and Material 3 pay-sheet variants in `src/platform/`
+- [ ] T186 [US8] Add accessible names, reading order, and scannable-size/contrast rules
+- [ ] T187 [US8] Add copy for scan, ask-the-payee, privacy, and offline states
+- [ ] T188 [US8] Exclude QR images, paths, and labels from recaps and exports
+- [ ] T189 [US8] Delete the QR object on soft removal and deny all access
+- [ ] T190 [US8] Add no-public-URL and no-activity-image assertions
+- [ ] T191 [US8] Verify the full QR flow on iPhone and Android widths
+- [ ] T192 [US8] Measure the open-QR and record-settlement flows against the 10s/30s targets
+
+**Checkpoint**: The group can pay by scanning the payee's private QR without changing the ledger rules.
+
+---
+
 ## Phase 10: Polish & Cross-Cutting Concerns
 
 **Purpose**: Security, accessibility, performance, docs, archiving, and release.
 
-- [ ] T171 Run a full RLS audit across every table and every role in `supabase/migrations/`
-- [ ] T172 Run the money invariant audit across 2–12 adults and 0–10 students in `tests/unit/money/`
-- [ ] T173 Run the full Playwright suite at iPhone and Android widths
-- [ ] T174 Validate the installed iPhone PWA in Safari and from the home screen
-- [ ] T175 Validate Android Chrome install and the Material 3 shell
-- [ ] T176 Run Lighthouse for installability, performance, and accessibility
-- [ ] T177 Complete the accessibility review for both shells
-- [ ] T178 Complete the performance review for the first screen, item list, and activity feed
-- [ ] T179 Update `README.md`, `PRODUCT.md`, `DESIGN.md`, and `specs/002-salo-pwa/`
-- [ ] T180 Archive the Android code under `archive/android/`; confirm git history and no secrets
-- [ ] T181 Keep the old local database backup; uninstall the Android APK only after PWA parity
-- [ ] T182 Re-run `analyze` for spec/plan/tasks consistency
-- [ ] T183 Verify no service-role key or secret appears in the client bundle
-- [ ] T184 Review Supabase, Vercel, and Resend free-tier limits; document cleanup/export paths
-- [ ] T185 Test account deletion with and without owned groups
-- [ ] T186 Test soft-delete retention and owner restore
-- [ ] T187 Test sign-out and local cache clearing
-- [ ] T188 Test cross-group denial on every route and API call
-- [ ] T189 Build the production bundle and verify the PWA manifest and service worker
-- [ ] T190 Update the release checklist and hand off the signed/hosted release
-- [ ] T191 Add the scheduled 30-day purge for soft-deleted groups in `supabase/functions/` or `supabase/migrations/`
-- [ ] T192 Test the 30-day restore window and purge in `tests/integration/groups-lifecycle/`
+- [ ] T193 Run a full RLS audit across every table and every role in `supabase/migrations/`
+- [ ] T194 Run the money invariant audit across 2–12 adults and 0–10 students in `tests/unit/money/`
+- [ ] T195 Run the full Playwright suite at iPhone and Android widths
+- [ ] T196 Validate the installed iPhone PWA in Safari and from the home screen
+- [ ] T197 Validate Android Chrome install and the Material 3 shell
+- [ ] T198 Run Lighthouse for installability, performance, and accessibility
+- [ ] T199 Complete the accessibility review for both shells
+- [ ] T200 Complete the performance review for the first screen, item list, and activity feed
+- [ ] T201 Update `README.md`, `PRODUCT.md`, `DESIGN.md`, and `specs/002-salo-pwa/`
+- [ ] T202 Archive the Android code under `archive/android/`; confirm git history and no secrets
+- [ ] T203 Keep the old local database backup; uninstall the Android APK only after PWA parity
+- [ ] T204 Re-run `analyze` for spec/plan/tasks consistency
+- [ ] T205 Verify no service-role key or secret appears in the client bundle
+- [ ] T206 Review Supabase, Vercel, and Resend free-tier limits; document cleanup/export paths
+- [ ] T207 Test account deletion with and without owned groups
+- [ ] T208 Test soft-delete retention and owner restore
+- [ ] T209 Test sign-out and local cache clearing
+- [ ] T210 Test cross-group denial on every route and API call
+- [ ] T211 Build the production bundle and verify the PWA manifest and service worker
+- [ ] T212 Update the release checklist and hand off the signed/hosted release
+- [ ] T213 Add the scheduled 30-day purge for soft-deleted groups in `supabase/functions/` or `supabase/migrations/`
+- [ ] T214 Test the 30-day restore window and purge in `tests/integration/groups-lifecycle/`
 
 ---
 
@@ -378,8 +418,8 @@ while preserving history.
 
 - **Setup (Phase 1)**: Starts immediately.
 - **Foundational (Phase 2)**: Depends on Setup and blocks every user story.
-- **US1–US7**: Depend on Foundational. US1 is the MVP; US2 and US3 follow; US4 is parallel with the
-  visual shell work; US5–US7 follow the core flows.
+- **US1-US7**: Depend on Foundational. US1 is the MVP; US2 and US3 follow; US4 is parallel with the
+  visual shell work; US5-US8 follow the core flows.
 - **Polish (Phase 10)**: Depends on the stories being complete.
 
 ### User Story Dependencies
@@ -391,6 +431,7 @@ while preserving history.
 - **US5 (P2)**: Depends on US2 and US3 for activity/history/export.
 - **US6 (P2)**: Depends on US2 for the finalized snapshot.
 - **US7 (P2)**: Depends on US1 for members and groups.
+- **US8 (P2)**: Depends on US3 for settlements and on US1 for adult identities.
 
 ### Within Each Story
 
@@ -406,7 +447,7 @@ while preserving history.
   T040–T043 (money/tests) can run in parallel.
 - US1–US3: test authoring can run in parallel with UI work once the contracts are stable.
 - US4: iOS and Material 3 shell work can run in parallel.
-- US5–US7: independent surfaces can run in parallel after US2/US3.
+- US5-US8: independent surfaces can run in parallel after US2/US3.
 
 ## Implementation Strategy
 
@@ -424,7 +465,7 @@ while preserving history.
 3. US2: the group can record and finalize an outing.
 4. US3: the group can settle.
 5. US4: both shells feel native and installable.
-6. US5–US7: audit, export, recap, and lifecycle.
+6. US5–US8: audit, export, recap, lifecycle, and payment QR.
 7. Polish and archive the Android app.
 
 ## Notes

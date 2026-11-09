@@ -31,6 +31,7 @@
 | Export | Owner exports the full group; a member exports their own data. |
 | Students | Owner manages the roster; members mark present and set coverage. Student records hold a display name and optional notes only. |
 | Recap | Text plus a portrait image. No invite link or QR code on the recap. |
+| Payment QR | One primary uploaded payment QR image per adult identity, with a label. Display-only; members scan it with their own banking app. Private to the group; never in recaps or exports; no in-app scanner. |
 | Currency/time | Philippine pesos, English, Asia/Manila. Fixed for all groups in v1. |
 | Data | Start fresh. The old Android local database is kept as an unlisted backup. No migration into the shared product. |
 | Backend | New isolated shared backend project. The old snapshot project remains as a backup. |
@@ -179,6 +180,26 @@ As the owner, I want to invite and remove members, manage pending adults and the
 
 ---
 
+### User Story 8 - Scan the payee's payment QR (Priority: P2)
+
+As a member who owes money, I want to see the payee's payment QR so I can scan it with my banking app and pay without asking for the details again.
+
+**Why this priority**: It removes the most common back-and-forth at settlement time without changing the ledger rules.
+
+**Independent Test**: Add a payment QR to an adult, open a debt row, view the QR, scan it with a banking app, record the settlement, and verify the recipient still confirms it.
+
+**Acceptance Scenarios**:
+
+1. **Given** an active adult, **When** they upload a payment QR image and label, **Then** the QR is saved privately for that group and shown to group members.
+2. **Given** a member who owes a payee with a QR, **When** they open the Home balance card or a debt row, the Ledger, or the payee's outing, **Then** they can open a "Scan to pay" sheet showing the payee's QR and amount.
+3. **Given** the payee has no QR, **When** the member opens the pay action, **Then** the sheet says to ask the payee and still lets the member record the settlement.
+4. **Given** a pending adult, **When** the owner uploads a QR on their behalf, **Then** members can view it and the adult can manage it after claiming the identity.
+5. **Given** a removed adult, **When** a member opens a new payment action, **Then** that adult's QR is no longer served.
+6. **Given** a recap, **When** it is shared, **Then** it contains no payment QR, image, or payment handle.
+7. **Given** a member scans the QR with their banking app, **When** they return to Salo, **Then** the settlement is still recorded and confirmed manually; scanning does not change the ledger.
+
+---
+
 ### Edge Cases
 
 - The group has only one active adult; finalization is blocked until at least two present adults exist.
@@ -211,6 +232,13 @@ As the owner, I want to invite and remove members, manage pending adults and the
 - A finalized outing has settlements; reopening warns before clearing shares.
 - The owner is offline when the outing is ready; the outing remains a shared draft and members see that finalization is waiting for the owner.
 - A member is soft-removed while a settlement involving them is pending; the record remains, the owner may void it, and history is retained.
+- The payee has no payment QR; the pay action explains how to ask for it and the settlement can still be recorded.
+- A payment QR image is too large or not PNG/JPEG; the upload is rejected with the limit explained.
+- A payment QR is replaced; old signed links stop working and group members see the new image.
+- A member opens the payment QR while offline; the sheet asks them to connect because the image is private.
+- A pending adult has a QR uploaded by the owner; members can view it, and the adult manages it after claiming the identity.
+- An adult is soft-removed; their QR is no longer served for new payments.
+- A recap or export is generated; it contains no payment QR image, path, or handle.
 - The app is opened in a browser that cannot install; it still works, with install guidance.
 - Platform detection is wrong; the manual appearance override corrects it.
 - Dynamic Type is very large; rows must expand without clipping.
@@ -369,11 +397,31 @@ As the owner, I want to invite and remove members, manage pending adults and the
 - **FR-118**: Loading, empty, offline, error, pending, and disputed states MUST be explicit.
 - **FR-119**: Interactive controls MUST have accessible names, visible focus, and a logical reading order.
 
+#### Payment QR
+
+- **FR-120**: An active adult MUST be able to store one primary payment QR image and a short label for their group adult identity.
+- **FR-121**: An adult MUST be able to replace or remove their own payment QR; the owner MUST be able to manage a pending adult's QR.
+- **FR-122**: A payment QR MUST be stored privately and served only to active members of that group through short-lived signed access; public URLs are prohibited.
+- **FR-123**: Payment QR images MUST be PNG or JPEG up to 2 MB; invalid uploads MUST be rejected with the reason.
+- **FR-124**: Uploaded payment QR images MUST have unnecessary metadata stripped before storage.
+- **FR-125**: Salo MUST display the payee's QR for scanning by the member's banking app; Salo MUST NOT open the camera or scan QR codes itself.
+- **FR-126**: The payee's QR MUST be reachable from Home's balance card and debt rows, the Ledger payee sheet, and the finalized outing detail.
+- **FR-127**: The pay sheet MUST show the payee's name, QR label, and the amount owed.
+- **FR-128**: When the payee has no QR, the pay sheet MUST say to ask the payee and MUST still allow the member to record the settlement.
+- **FR-129**: A payment QR MUST NOT appear in any recap, export, invite, or public surface; its storage path and label MUST be excluded from exports.
+- **FR-130**: A soft-removed adult's QR MUST no longer be served for new payments.
+- **FR-131**: A pending adult's QR uploaded by the owner MUST be viewable by members and manageable by the adult after claiming the identity.
+- **FR-132**: Viewing a payment QR MUST require connectivity; an offline member MUST be told to connect.
+- **FR-133**: Scanning a QR with an external banking app MUST NOT change the ledger; the payer still records and the recipient still confirms.
+- **FR-134**: The QR sheet MUST size the code for reliable scanning, use sufficient contrast, and provide an accessible name for the image.
+- **FR-135**: Payment QR changes MUST NOT expose the image or its contents in the activity feed.
+
 ### Key Entities *(include if feature involves data)*
 
 - **Account**: A signed-in person, with a stable identity, email, display name, and session.
 - **Group**: A shared ledger with a name, a color, an owner, a currency, a timezone, and a lifecycle status.
 - **Adult identity**: A group-scoped participant. It may be pending (no account) or active (linked to an account); removed identities remain for history.
+- **Payment QR**: An adult's primary payment QR image and short label, private to the group, display-only, and never part of recaps or exports.
 - **Invitation**: A revocable, expiring link and code bound to one pending adult identity.
 - **Student**: A group-scoped person covered by an adult, with a display name, optional notes, and an active/archived status.
 - **Outing**: A meal event with a date, place, notes, payer, present adults, present students, items, total mode, total, status, version, and author.
@@ -407,6 +455,11 @@ As the owner, I want to invite and remove members, manage pending adults and the
 - **SC-016**: The product contains no receipt-image, OCR, LLM, or analytics path.
 - **SC-017**: The iPhone shell and Android shell share the same data and rules; switching appearance changes only the visual shell.
 - **SC-018**: A private draft created offline publishes exactly once when the connection returns.
+- **SC-019**: A member can open the payee's payment QR from a debt row in under 10 seconds.
+- **SC-020**: 100% of payment-QR access attempts by non-members or through public URLs are denied.
+- **SC-021**: 100% of recaps and exports contain no payment QR image, path, or label.
+- **SC-022**: The displayed QR is scannable by a major Philippine banking or e-wallet app in a manual device check.
+- **SC-023**: A missing QR still allows the member to record the settlement in under 30 seconds.
 
 ## Assumptions
 
@@ -426,6 +479,8 @@ As the owner, I want to invite and remove members, manage pending adults and the
 - The iPhone shell follows Apple-native conventions; the Android shell follows Material 3 conventions.
 - iOS users install through Add to Home Screen; Android users install through the browser.
 - No receipt images, OCR, LLM, push notifications, or store distribution are required.
+- One primary uploaded payment QR per group adult; it is display-only and scanned with the member's own banking app.
+- Payment QR images are private to the group, served through short-lived access, and excluded from recaps and exports.
 
 ## Out of Scope
 
@@ -436,6 +491,8 @@ As the owner, I want to invite and remove members, manage pending adults and the
 - Multiple admins or shared ownership.
 - Multi-currency and per-group timezones.
 - Receipt image capture, OCR, and LLM extraction.
+- In-app QR scanning, payment-processor integration, public payment QR links, multiple payment methods per adult, and account-wide payment QRs.
+- Payment QRs in recaps, exports, invites, or any public surface.
 - Photo avatars and group photos.
 - Public group discovery, group directories, or open joining.
 - Offline shared writes, automatic merging, or CRDT conflict resolution.

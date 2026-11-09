@@ -10,7 +10,8 @@ Salo becomes one installable PWA for shared group meal ledgers. The same applica
 iPhone-first shell on iOS and a Material 3 shell on Android, backed by a new isolated shared backend.
 The product supports accounts, 2–12 adult groups, pending adults, invitations, present adults and
 students per outing, the item-sum money rule, owner-only finalization, confirmed settlements, live
-activity, private offline drafts, export, and a recap card.
+activity, private offline drafts, export, a recap card, and a private payment QR per adult that members
+can scan with their banking app.
 
 The archived Android app is not a maintained client. Its code is moved under `archive/android/` and
 its local database is kept as an unlisted backup. There is no migration into the shared product.
@@ -23,7 +24,7 @@ its local database is kept as an unlisted backup. There is no migration into the
 `vite-plugin-pwa`, Zod, `@supabase/ssr` where applicable
 
 **Storage**: Supabase Postgres as the shared source of truth; IndexedDB (Dexie) for cached reads and
-private drafts; no receipt-image storage
+private drafts; a private Supabase Storage bucket for payment QR images; no receipt-image storage
 
 **Backend**: Supabase Auth, Postgres, Row-Level Security, Realtime, Edge Functions; new isolated
 project
@@ -55,7 +56,7 @@ dozens of outings per group; one owned group per user and any number of joined g
 | Principle | Check |
 |---|---|
 | I. Money Correctness | Integer centavos; largest-remainder rounding; exact-total property tests for present adults, present students, shared items, manual overrides, and per-head fallbacks. |
-| II. Shared by Design, Private by Default | Accounts for every adult; pending adults; accountless students; group-isolated row-level security; minimal student data; no analytics; no receipt images. |
+| II. Shared by Design, Private by Default | Accounts for every adult; pending adults; accountless students; group-isolated row-level security; minimal student data; no analytics; no receipt images; private payment QR storage with no recap/export. |
 | III. Connected Shared Edits | Backend is the source of truth; cached reads; private local drafts; online shared writes; stale writes rejected; explicit sync states. |
 | IV. One PWA, Two Native Shells | One installable PWA; iPhone-first shell on iOS; Material 3 shell on Android; shared information architecture and domain; manual appearance override. |
 | V. Explicit and Simple Money Rules | Present adults and students; one present payer; item sum authoritative; Auto/Manual/Fixed total; no tax/service/discount; no OCR/LLM; recipient-confirmed settlements. |
@@ -78,14 +79,16 @@ specs/002-salo-pwa/
 ├── data-model.md
 ├── quickstart.md
 ├── contracts/
-│   ├── auth-and-groups.md
-│   ├── money-engine.md
+│   ├── recap-and-export.md
 │   ├── settlements.md
 │   ├── realtime-and-sync.md
 │   ├── pwa-platform.md
-│   └── recap-and-export.md
+│   ├── auth-and-groups.md
+│   ├── money-engine.md
+│   └── payment-qr.md
 ├── checklists/
-│   └── requirements.md
+│   ├── requirements.md
+│   └── security.md
 └── tasks.md
 ```
 
@@ -127,6 +130,7 @@ specs/002-salo-pwa/
 │   │   ├── outings/
 │   │   ├── ledger/
 │   │   ├── settlements/
+│   │   ├── payments/
 │   │   ├── activity/
 │   │   ├── recap/
 │   │   └── settings/
@@ -140,6 +144,7 @@ specs/002-salo-pwa/
 │   │   ├── supabase/
 │   │   ├── cache/
 │   │   ├── drafts/
+│   │   ├── paymentQr/
 │   │   └── realtime/
 │   ├── ui/
 │   │   ├── tokens/
@@ -300,6 +305,19 @@ and iOS splash images are build artifacts.
 **Why**: Free, stable, and sufficient for a friends-and-family product. Preview deployments make
 review easy.
 
+### 12. Private payment QR images
+
+Each group adult may store one primary payment QR image and a short label. Images live in a private
+Supabase Storage bucket at `{group_id}/{adult_id}/qr`, are served only through short-lived signed URLs,
+and are never public. Members can display the payee's QR from the Home balance card and debt rows, the
+Ledger pay sheet, and
+the finalized outing detail. Salo does not scan QR codes; the member scans with their banking app.
+Payment QRs are excluded from recaps, exports, and activity payloads. A soft-removed adult's QR is no
+longer served.
+
+**Why**: The QR is the most convenient way to pay in the Philippines, but it is a static payment
+credential. A public URL or a recap image would leak it outside the group.
+
 ## UI/UX Flow
 
 1. **Sign in**: Google or email one-time code.
@@ -312,11 +330,14 @@ review easy.
 5. **Outing detail**: finalized shares, item assignments, settlement suggestions, recap, activity,
    and owner-only reopen.
 6. **Ledger**: group net balances, pairwise who-owes-whom, settlement history, and record/confirm
-   flows.
-7. **Activity**: newest-first feed with actor, action, and before/after for sensitive changes.
-8. **Settings**: group, members and invites, students, appearance override, export, account, sign out.
-9. **States**: loading, empty, offline, connecting, syncing, private draft, pending settlement,
-   declined settlement, stale write, and error.
+   flows. A debt row opens a "Scan to pay" sheet with the payee's QR and amount.
+7. **Payment QR**: an adult uploads one primary QR image and label; the payee's QR is reachable from
+   Home balance card and debt rows, Ledger, and the finalized outing detail. Missing-QR, replaced-QR, offline, and
+   removed-adult states are explicit.
+8. **Activity**: newest-first feed with actor, action, and before/after for sensitive changes.
+9. **Settings**: group, members and invites, students, appearance override, export, account, sign out.
+10. **States**: loading, empty, offline, connecting, syncing, private draft, pending settlement,
+   declined settlement, stale write, no payment QR, and error.
 
 ## Testing Strategy
 
@@ -325,6 +346,8 @@ review easy.
 - **Totals**: auto-follow, manual override, use-items-total, fixed reopen, merge centavo exactness.
 - **Settlements**: pending/confirmed/declined/void transitions, overpayment, duplicate warning,
   recipient-only confirmation, pending-adult confirmation wait.
+- **Payment QR**: upload validation, private bucket policies, signed-URL expiry, group-only access,
+  missing-QR fallback, removed-adult denial, and exclusion from recaps/exports.
 - **Backend**: Supabase local stack for RLS (cross-group denial, owner/member/recipient rules),
   invitation claim, ownership transfer, soft removal, finalize/reopen Edge Functions.
 - **Playwright**: onboarding, create/join group, outing flow, settlement flow, activity, export,
@@ -357,6 +380,7 @@ review easy.
 ### M3 — Ledger, settlements, and activity
 
 - Balances, pairwise debts, settlement record/confirm/decline, pending vs confirmed.
+- Payment QR upload, private storage, and the "Scan to pay" sheet on Home, Ledger, and outing detail.
 - Activity feed and audit events.
 - Export and recap.
 
@@ -385,6 +409,8 @@ review easy.
 | Owner becomes a finalization bottleneck | Owner can finalize remotely; members can prepare shared drafts; product copy sets the expectation. |
 | Free-tier limits | Monitor Supabase rows, realtime connections, and email volume; export and cleanup paths; no paid dependency without approval. |
 | Money errors with present adults | Property tests across 2–12 adults, 0–10 students, shared and per-head cases; server-authoritative finalization. |
+| Payment QR images leak or are scraped | Private bucket; short-lived signed URLs; group-only RLS; no recap/export; delete on soft removal; test public URL denial. |
+| A bank app cannot scan the displayed QR | Show a large, high-contrast code with the payee name and label; keep the "Ask the payee" fallback and manual settlement. |
 | Soft-deleted data is lost | Retention window; owner restore; export before purge; documented policy. |
 
 ## Complexity Tracking

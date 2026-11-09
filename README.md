@@ -32,6 +32,8 @@ there is no migration into the shared product.
   Fixed total; no tax, service charge, discount, or printed-receipt reconciliation.
 - **Settlements**: payer records; recipient confirms or declines with a note; only confirmed amounts
   affect balances.
+- **Payment QR**: one private QR per group adult, shown on Home, Ledger, and finalized outings for
+  scanning with the member's banking app; display-only, never in recaps or exports.
 - **Collaboration**: live updates; shared edits require connectivity; stale writes are rejected.
   Private drafts are local-first and visible only to the author and owner until published.
 - **Activity**: full activity feed with actor and before/after values for sensitive changes.

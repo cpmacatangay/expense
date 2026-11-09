@@ -75,11 +75,15 @@ The owner alone may:
 - create pending adults;
 - soft-remove members;
 - manage students;
+- manage a pending adult's payment QR;
 - publish any private draft;
 - finalize and reopen outings;
 - transfer ownership;
 - export the full group;
 - archive and soft-delete the group.
+
+Members may manage their own payment QR and view any group member's QR for payment. A pending adult
+cannot manage their QR until they claim the identity; the owner may manage it for them.
 
 Transfer rules:
 - The new owner must be an active adult.
@@ -95,6 +99,9 @@ Transfer rules:
 | Update group | Caller is the owner |
 | Create group | Authenticated user; owner_id = caller |
 | Read adults | Caller is an active adult in the group |
+| Read payment QR | Caller is an active adult in the group; signed URL only |
+| Manage own payment QR | Active adult whose profile matches the adult identity |
+| Manage a pending adult's QR | Owner |
 | Create pending adult | Caller is the owner |
 | Claim adult | Invitation function verifies token/code, pending status, capacity, and expiry |
 | Read invitation | Owner, or invitee through the token function |

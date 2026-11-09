@@ -272,3 +272,25 @@ and quiet iOS motion. Android shell uses Material 3 light-first with the same gr
 - One visual system for both: compromises native expectations.
 - A dark-only iPhone shell: the user chose system light-first.
 - A generic card dashboard: conflicts with the design-taste-frontend app-screen rules.
+
+## 17. Payment QR images
+
+**Decision**: Each group adult may store one primary payment QR image and a short label in a private
+Supabase Storage bucket. Members can display the payee's QR from Home debt rows, Ledger, and the
+finalized outing detail. Salo does not scan QR codes; the member scans with their banking app. Payment
+QRs are excluded from recaps, exports, activity payloads, and public surfaces. A soft-removed adult's
+QR is deleted.
+
+**Rationale**:
+- A payment QR is the fastest settlement path in the Philippines.
+- It is a static payment credential; a public URL or a recap image would leak it outside the group.
+- Uploading an image supports GCash, Maya, and bank QRs without a payment-processor integration.
+- Display-only keeps the ledger rules unchanged: the payer records and the recipient confirms.
+
+**Alternatives considered**:
+- Generate a QR from a payment handle/link: safer storage but not every provider supports it.
+- Multiple payment methods per adult: more UI and storage; defer.
+- Account-wide QR: leaks the same credential into every group; group-scoped is safer.
+- In-app scanner: needs camera permission and does not add value; the bank app already scans.
+- App-generated payment links: requires a payment processor and settlement integration.
+

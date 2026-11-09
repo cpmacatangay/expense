@@ -32,7 +32,8 @@ served.
 ## 2. Supabase setup
 
 1. Create the new project.
-2. Apply the migrations in `supabase/migrations/` in order.
+2. Apply the migrations in `supabase/migrations/` in order. This includes the private `payment-qrs`
+   bucket and its storage policies.
 3. Enable Realtime for outings, items, shares, settlements, activity, and group adults.
 4. Deploy the Edge Functions in `supabase/functions/`.
 5. Set the Edge Function secrets (service-role key stays server-side).
@@ -198,14 +199,28 @@ cached reads.
 
 **Expected**: no ownerless group; history retained; access changes correctly.
 
+### S13 — Payment QR
+
+1. As an active adult, upload a PNG payment QR and label.
+2. As another member, open a debt row on Home and the Ledger; verify the payee's QR appears.
+3. Scan it with a banking app; return to Salo.
+4. Record the settlement; as the payee, confirm it.
+5. Verify scanning did not change the ledger by itself.
+6. Remove the QR; verify the "Ask the payee" fallback and that the settlement can still be recorded.
+7. Try to open the QR as a non-member or from a public URL; verify denial.
+8. Generate a recap and export; verify no QR image, path, or label appears.
+
+**Expected**: the QR is private, display-only, scannable, and never part of a recap or export.
+
 ## 8. Release checks
 
 - `npm run test`, `npm run test:e2e`, `npm run build` pass.
 - Lighthouse PWA installability passes.
 - The manifest, icons, and service worker are served over HTTPS.
-- iPhone Safari (installed and browser) and Android Chrome pass S1–S12.
-- RLS tests pass for every table.
+- iPhone Safari (installed and browser) and Android Chrome pass S1–S13.
+- RLS tests pass for every table, including payment QR storage and signed URL denial.
 - The money property tests pass across 2–12 adults and 0–10 students.
+- A payment QR is scannable by at least one major Philippine banking or e-wallet app; no recap or export contains a QR image, path, or label.
 - No service-role key or secret appears in the client bundle.
 - The old Android app remains available until parity; the local database is backed up before
   uninstalling.

@@ -32,6 +32,7 @@
 ## Notes
 
 - The hard product decisions were resolved before drafting: PWA-only, shared groups, accounts for every adult, pending adults, present adults per outing, owner-only admin, confirmed settlements, online shared edits, private drafts, and a new isolated backend.
+- Payment QR is included as User Story 8: one private uploaded QR per group adult, display-only, never in recaps or exports.
 - The old Android app and its local ledger are explicitly archived; there is no migration into the shared product.
 - Apple sign-in, push, native apps, TWA, OCR/LLM, multiple payers, multiple admins, and multi-currency are explicitly out of scope.
 - Ready for `plan`.

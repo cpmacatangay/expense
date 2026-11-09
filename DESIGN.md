@@ -165,6 +165,7 @@ The balance card is the only card with a filled field color. Everything else is 
 ### Settings
 
 - Group card: name, color, members, invites.
+- Payment QR: upload, replace, or remove your private QR and label; the owner can add one for a pending adult.
 - Students: roster and archive.
 - Appearance: Automatic, iPhone, Android.
 - Export: full group for owner, own data for member.
@@ -228,6 +229,20 @@ Material 3 rules:
 - Pending/confirmed/declined states.
 - Confirm and Decline actions for the recipient; Decline requires a note.
 - Payer sees Void/Edit for pending or declined.
+- A "Scan to pay" action opens the payee's payment QR sheet when one exists.
+
+### Payment QR
+
+- One primary QR per group adult, uploaded in Settings → Payment QR. The owner can upload for a pending adult.
+- The pay sheet shows the payee's name, QR label, and amount on a white, high-contrast card at a
+  scannable size. Copy: "Scan with your GCash, Maya, or bank app."
+- Entry points: Home balance card and debt rows, Ledger who-owes-whom and settlement sheets, and finalized outing detail. A single Home creditor opens that QR; several open the Ledger debt list.
+- Missing QR: "Ask <payee> for their payment QR." The record-payment action stays available.
+- Privacy line: "Only members of this group can see this QR."
+- The QR is never in a recap, export, invite, or public surface, and Salo never opens the camera.
+- The QR sheet has a "Record payment" action; scanning does not change the ledger by itself.
+- iPhone: a sheet with a white QR card and a large code. Android: a bottom sheet/dialog with a tonal
+  card. Both use the payee's name and amount above the code.
 
 ### Empty, error, offline, and sync states
 
@@ -239,6 +254,9 @@ Material 3 rules:
 - Stale: "Someone changed this outing" with refresh.
 - Waiting for owner: "Ready — waiting for CP to finalize." The owner is the only finalizer.
 - Removed member: history rows show "Removed"; pending settlements involving them can be voided by the owner.
+- No payment QR: "Ask <payee> for their payment QR." The record-payment action remains.
+- QR offline: "Connect to view this payment QR." The image is not cached.
+- QR replaced: the sheet fetches a fresh signed URL; the old one stops working.
 
 ## 7. Motion
 

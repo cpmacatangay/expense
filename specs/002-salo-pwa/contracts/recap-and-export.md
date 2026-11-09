@@ -36,6 +36,7 @@ Rules:
 - Use Philippine peso formatting with two decimals.
 - Do not include student contact details or notes.
 - Do not include an invite link or QR code.
+- Do not include payment QR images, paths, labels, or payment handles.
 - Do not include receipt image paths.
 
 ### Image
@@ -103,4 +104,5 @@ Rules:
 - File names include the group and date.
 - The app explains that exports may contain student names and must be stored privately.
 - No export may include another group's data.
+- No export may include a payment QR image, path, label, or payment handle.
 - Exports are generated client-side from the authorized snapshot.

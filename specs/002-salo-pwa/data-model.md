@@ -84,6 +84,9 @@ or removed (kept for history).
 | `display_name` | text | 1–50 characters; required |
 | `color` | text | Initials color from the fixed set |
 | `status` | `adult_status` | Default `pending` |
+| `payment_qr_path` | text | Nullable; private storage path for the primary payment QR |
+| `payment_qr_label` | text | Optional; 1–40 characters, e.g. GCash, Maya, BPI |
+| `payment_qr_updated_at` | timestamptz | Set when the QR is added, replaced, or removed |
 | `joined_at` | timestamptz | Set when claimed |
 | `removed_at` | timestamptz | Set on soft removal |
 | `created_at` | timestamptz | Default now |
@@ -94,6 +97,9 @@ Constraints:
 - `profile_id` is not null when `status = active`.
 - A removed adult may keep or clear `profile_id`; history keeps `display_name`.
 - The owner is an active `group_adults` row whose `profile_id = groups.owner_id`.
+- At most one primary payment QR per adult identity.
+- A pending adult's QR is managed by the owner; an active adult manages their own.
+- A soft-removed adult's payment QR path is cleared and the object is deleted; the adult's history remains.
 
 ### `invitations`
 
@@ -293,6 +299,30 @@ Constraints:
 - Written by Edge Functions or database triggers, not directly by clients.
 - Paginated newest first.
 
+## Payment QR Storage
+
+A payment QR is a convenience image, not ledger data. It lives in a private Supabase Storage bucket
+named `payment-qrs`.
+
+| Rule | Requirement |
+|---|---|
+| Path | `{group_id}/{adult_id}/qr` |
+| Formats | PNG or JPEG |
+| Size | Maximum 2 MB |
+| Metadata | Strip EXIF and other unnecessary metadata before upload |
+| Access | Active members of the group only; no public URLs |
+| Serving | Short-lived signed URL, maximum 5 minutes, fetched when the pay sheet opens |
+| Owner | May manage a pending adult's QR |
+| Adult | May manage their own QR while active |
+| Removed | QR path cleared and object deleted; no new payment action |
+| Recaps | Never included |
+| Exports | Path, label, and image excluded |
+| Activity | Image and contents never included |
+| Offline | Not displayed; the member is asked to connect |
+
+The QR is display-only. Salo does not scan it; the member scans with their banking app. Scanning has no
+effect on the ledger; the payer still records and the recipient still confirms.
+
 ## Local-First Model (IndexedDB / Dexie)
 
 The local database is a cache and a private-draft store, not a second source of truth.
@@ -372,7 +402,8 @@ open → expired                 (expiry passes)
 |---|---|---|
 | `profiles` | Self; group members see display names | Self update |
 | `groups` | Active members | Owner update; create by authenticated user |
-| `group_adults` | Group members | Owner insert/update; claim via invitation function |
+| `group_adults` | Group members | Owner insert/update; self update own payment QR; claim via invitation function |
+| `payment-qrs` (storage) | Active group members; signed URL only | Self for own active adult; owner for pending adult |
 | `invitations` | Owner; invitee via token function | Owner create/revoke; accept via function |
 | `students` | Group members | Owner create/update/archive |
 | `outings` | Group members; private drafts author + owner | Active members while draft; owner finalize/reopen |

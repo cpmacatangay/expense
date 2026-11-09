@@ -92,6 +92,7 @@ The manifest must provide:
 - Fallback: download the PNG and copy the text.
 - CSV/JSON export: download a file; no broad storage permission.
 - iOS share sheet works from the installed PWA; the browser fallback still allows download/copy.
+- A payment QR is displayed in-app only; it is never included in a recap, export, or share target.
 
 ## Safe Areas and Layout
 

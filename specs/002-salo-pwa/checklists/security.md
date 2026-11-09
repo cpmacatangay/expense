@@ -58,6 +58,12 @@ confirmed the requirement criterion is satisfied; it does not mean implementatio
 - [ ] CHK034 Is the platform shell override required to change appearance only, never data or permissions? [Consistency, Spec §FR-004, §FR-005]
 - [ ] CHK035 Are sensitive activity events required to include actor and before/after values? [Completeness, Spec §FR-083, §FR-110]
 - [ ] CHK036 Is the owner-offline finalization state explained to members? [Coverage, Spec Edge Cases; DESIGN §6]
+- [ ] CHK037 Is the payment QR scoped to one group adult and limited to one primary image? [Clarity, Spec §FR-120]
+- [ ] CHK038 Is QR storage private, group-only, and served through short-lived signed access? [Completeness, Spec §FR-122, §FR-132]
+- [ ] CHK039 Are upload formats, size limits, and metadata stripping specified? [Measurability, Spec §FR-123, §FR-124]
+- [ ] CHK040 Is the QR excluded from recaps, exports, invites, activity payloads, and public surfaces? [Consistency, Spec §FR-129, §FR-135]
+- [ ] CHK041 Is the missing-QR fallback defined without blocking settlement recording? [Coverage, Spec §FR-128]
+- [ ] CHK042 Is the display-only rule explicit: no camera, no in-app scanning, no ledger effect? [Clarity, Spec §FR-125, §FR-133]
 
 ## Notes
 

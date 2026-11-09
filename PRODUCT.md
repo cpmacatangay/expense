@@ -73,6 +73,9 @@ the person who receives the money.
   Fixed. No tax, service charge, discount, or printed-receipt reconciliation.
 - **Settlements**: payer records; recipient confirms or declines with a note. Only confirmed amounts
   affect balances. The owner can record for a pending adult, but confirmation waits until they join.
+- **Payment QR**: each group adult may add one private payment QR and label. Members can open the
+  payee's QR from Home, Ledger, or the finalized outing and scan it with their banking app. Salo never
+  scans the code, and the QR never appears in a recap or export.
 - **Live activity**: outings, items, shares, settlements, and membership update in real time when
   connected. A full activity feed records who changed what.
 - **Offline reads and private drafts**: shared writes require connectivity; cached reads and private
@@ -101,7 +104,7 @@ the person who receives the money.
 
 ## Evidence on Hand
 
-- `specs/002-salo-pwa/spec.md` — seven user stories, edge cases, functional requirements, success
+- `specs/002-salo-pwa/spec.md` - eight user stories, edge cases, functional requirements, success
   criteria, assumptions, and explicit out-of-scope.
 - `specs/002-salo-pwa/plan.md`, `research.md`, `data-model.md`, `contracts/`, `quickstart.md`, and
   `tasks.md` — the shared-PWA architecture and validation plan.

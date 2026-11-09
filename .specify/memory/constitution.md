@@ -1,9 +1,9 @@
 <!--
 Sync Impact Report
-- Version change: 3.0.0 → 4.0.0
+- Version change: 3.0.0 → 4.0.0 (shared PWA rewrite); 4.0.0 → 4.1.0 (payment QR privacy)
 - Modified principles:
   - I. Money Correctness Is Non-Negotiable (present adults; item-sum rule; one payer)
-  - II. Privacy by Default → II. Shared by Design, Private by Default
+  - II. Privacy by Default → II. Shared by Design, Private by Default (payment QR images)
   - III. Offline-First → III. Connected Shared Edits
   - IV. Android-Native, Single Owner → IV. One PWA, Two Native Shells
   - V. Explicit and Simple Money Rules (custom groups; present adults; confirmed settlements)
@@ -12,8 +12,10 @@ Sync Impact Report
   - VIII. Zero Recurring Cost → IX. Zero Recurring Cost (no Apple Developer Program)
 - Added principles:
   - VII. Owner-Controlled, Member-Collaborative
+- Added constraints:
+  - Payment QR images are group-private, display-only, and excluded from recaps and exports.
 - Removed sections: the Android-native single-owner model and snapshot-only backup model
-- Follow-up TODOs: implement the shared PWA backend and both platform shells; archive the Android app
+- Follow-up TODOs: implement the shared PWA backend, both platform shells, and private payment-QR storage; archive the Android app
 -->
 
 # Salo Constitution
@@ -46,7 +48,9 @@ name and optional notes. The app MUST NOT collect student contact details, photo
 data, and MUST NOT include third-party analytics or advertising SDKs.
 
 Receipt images MUST NOT be captured or stored. No receipt text or image may be sent to a third-party
-OCR or AI service. Only ledger data MAY be stored in the shared backend.
+OCR or AI service. Payment QR images MAY be stored as a convenience for settlements; they MUST be
+private to the group, served through short-lived access, excluded from recaps and exports, and never
+processed by an in-app scanner. Only ledger data MAY be stored in the shared backend.
 
 **Rationale**: The product now holds shared financial records and student names. Privacy is a group
 boundary, not a device boundary.
@@ -186,7 +190,9 @@ a subscription.
   code MUST NOT grant access to any other group.
 - Student records MUST be limited to display name and optional notes.
 - The app MUST NOT include third-party analytics, ad SDKs, or tracking pixels.
-- The app MUST NOT capture or upload receipt images.
+- Payment QR images MUST be private to the group, served through short-lived access, excluded from
+  recaps and exports, and never read by an in-app scanner.
+- A payment QR is a convenience only; it MUST NOT change the settlement state machine.
 - The owner MUST be able to export the full group; a member MUST be able to export their own data.
 - A user MUST be able to delete their account only after transferring or archiving groups they own.
 - Group data MUST be recoverable from soft deletion by the owner for a 30-day retention window, after
@@ -224,4 +230,4 @@ update the version, ratification date, and last-amended date. Compliance is revi
 stage and before every release. When a principle conflicts with a feature request, the constitution
 wins until it is formally amended.
 
-**Version**: 4.0.0 | **Ratified**: 2026-11-07 | **Last Amended**: 2026-11-09
+**Version**: 4.1.0 | **Ratified**: 2026-11-07 | **Last Amended**: 2026-11-09

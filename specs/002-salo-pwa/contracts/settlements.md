@@ -100,6 +100,13 @@ Each transition writes an activity event:
 - declined (actor, reason);
 - voided (actor, reason, previous status).
 
+## Payment QR
+
+A payee may show a payment QR from the settlement or debt row. The QR is display-only and scanned with
+the member's banking app. It does not create, update, confirm, or decline a settlement. The payer still
+records the payment and the recipient still confirms it. A missing QR falls back to asking the payee;
+the settlement flow remains available.
+
 ## Edge Cases
 
 - Amount exceeds the outstanding balance: blocked.
