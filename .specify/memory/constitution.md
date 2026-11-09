@@ -1,15 +1,19 @@
 <!--
 Sync Impact Report
-- Version change: 2.0.0 → 3.0.0
+- Version change: 3.0.0 → 4.0.0
 - Modified principles:
-  - I. Money Correctness Is Non-Negotiable (outing total; legacy adjustments)
-  - II. Privacy by Default (no receipt images are captured)
-  - V. Explicit and Simple Money Rules (item sum authoritative; manual override)
-  - VII. Low-Friction at the Table (manual entry only)
-  - VIII. Zero Recurring Cost (no OCR path)
-- Added sections: none
-- Removed sections: receipt OCR path
-- Follow-up TODOs: implement the manual-only flow and item-sum total
+  - I. Money Correctness Is Non-Negotiable (present adults; item-sum rule; one payer)
+  - II. Privacy by Default → II. Shared by Design, Private by Default
+  - III. Offline-First → III. Connected Shared Edits
+  - IV. Android-Native, Single Owner → IV. One PWA, Two Native Shells
+  - V. Explicit and Simple Money Rules (custom groups; present adults; confirmed settlements)
+  - VI. Auditable and Reversible (activity feed; soft removal; group lifecycle)
+  - VII. Low-Friction at the Table → VIII. Low-Friction on a Phone
+  - VIII. Zero Recurring Cost → IX. Zero Recurring Cost (no Apple Developer Program)
+- Added principles:
+  - VII. Owner-Controlled, Member-Collaborative
+- Removed sections: the Android-native single-owner model and snapshot-only backup model
+- Follow-up TODOs: implement the shared PWA backend and both platform shells; archive the Android app
 -->
 
 # Salo Constitution
@@ -20,165 +24,204 @@ Sync Impact Report
 
 All monetary values MUST be stored and computed as integer centavos. Every finalized split MUST sum
 exactly to the outing total. Rounding MUST be deterministic and documented. Floating-point
-arithmetic MUST NOT be used for money. The money engine MUST be a pure, independently testable
-Kotlin module with automated tests covering item assignment, student coverage, shared per-head
-costs, total-gap distribution, settlement netting, and rounding remainders. Legacy outings that
-carry stored tax/service/discount adjustments MUST remain covered. A change that can alter any peso
-amount MUST include a test that proves the ledger still balances.
+arithmetic MUST NOT be used for money.
 
-**Rationale**: This app exists to replace a spreadsheet ledger. A single lost or invented centavo
-destroys trust faster than any missing feature.
+The money engine MUST be a pure, independently testable module covering item assignment, present
+adults, present students, shared per-head costs, the per-head fallback, manual total overrides,
+settlement netting, and rounding remainders. A change that can alter any peso amount MUST include a
+test that proves the ledger still balances.
 
-### II. Privacy by Default
+**Rationale**: A shared ledger is only trusted if every member can reproduce the number. One lost or
+invented centavo damages the group faster than any missing feature.
 
-The app MUST NOT capture or store receipt images. Receipt text and images MUST NOT be sent to a
-third-party OCR or AI service and MUST NOT be uploaded to Supabase. Student records MUST contain
-only the minimum needed to operate the ledger: a display name and optional notes. The app MUST NOT
-collect student contact details, photos, or other personal data. Third-party analytics and
-advertising SDKs MUST NOT be included. Only ledger data — outings, items, assignments, shares,
-settlements, and the roster — MAY be backed up to the owner's private Supabase account, and access
-MUST be enforced by row-level security.
+### II. Shared by Design, Private by Default
 
-**Rationale**: The ledger involves students, potentially minors, and private financial records.
-Not collecting receipt images keeps the privacy surface small and avoids an unnecessary storage
-and OCR cost.
+A group is shared only with its invited members. Every active adult in a group MUST have an account; a
+pending adult is an identity that must claim an account before becoming active. Students MUST NOT have
+accounts.
 
-### III. Offline-First
+Group data MUST be isolated by row-level security. A member MUST NOT read or write another group's
+outings, items, shares, settlements, activity, or roster. Student records MUST contain only a display
+name and optional notes. The app MUST NOT collect student contact details, photos, or other personal
+data, and MUST NOT include third-party analytics or advertising SDKs.
 
-Creating an outing, entering items, assigning items, assigning coverage, finalizing a split, and
-recording a settlement MUST work without network connectivity. Room is the source of truth for the
-active session. Backup MUST be eventual, retryable, and MUST NOT block the table-side flow. The UI
-MUST show whether data is local-only, backing up, backed up, or in error. A failed backup MUST
-preserve the local record and surface a clear retry path. Restore MUST only populate an empty local
-database; existing local data MUST NOT be silently replaced.
+Receipt images MUST NOT be captured or stored. No receipt text or image may be sent to a third-party
+OCR or AI service. Only ledger data MAY be stored in the shared backend.
 
-**Rationale**: Restaurants frequently have poor signal. The app must be usable at the moment the
-bill arrives, and a backup must never put the only copy of the ledger at risk.
+**Rationale**: The product now holds shared financial records and student names. Privacy is a group
+boundary, not a device boundary.
 
-### IV. Android-Native, Single Owner
+### III. Connected Shared Edits
 
-The application MUST be a native Android app written in Kotlin with Jetpack Compose and Material
-Design 3. It MUST target Android 17 (API 37) and run on the owner's Samsung S26 Ultra. The app MUST
-NOT include a web build, PWA, iPhone target, React, Capacitor, or cross-platform UI layer. The owner
-is the only authenticated user. CP, Mai, Kent, and Llanmer are local adult profiles on the same
-device, not separate accounts. The other adults receive shared recaps; they do not install the app
-or sign in. Google sign-in is used only for the owner's private backup.
+The shared backend is the source of truth. The client MAY cache reads locally and MUST keep private
+drafts locally, but shared writes MUST require connectivity in v1.
 
-**Rationale**: The product is now deliberately single-device. A native Kotlin app removes the web
-runtime, iPhone support burden, and multi-user synchronization complexity while keeping the
-table-side flow fast.
+A write that conflicts with a newer version MUST be rejected rather than silently overwriting it. The
+member MUST see the latest data before retrying. Live updates SHOULD appear without a manual refresh.
+
+The app MUST distinguish and display: online, offline, connecting, syncing, published, private draft,
+and error states. A private draft MUST remain invisible to other members until its author or the group
+owner publishes it.
+
+**Rationale**: Offline shared writes are a conflict-resolution problem that can corrupt money data.
+Cached reads and private drafts preserve the table-side flow without pretending the network is
+reliable.
+
+### IV. One PWA, Two Native Shells
+
+Salo MUST ship as one installable web application. It MUST NOT ship a native Android or iOS app, a
+Trusted Web Activity, or a store listing in v1.
+
+The same information architecture and domain logic MUST serve two platform shells:
+
+- On iOS, the iPhone-first shell MUST follow native iOS conventions: large titles, grouped inset
+  lists, sheets, bottom tabs, safe-area handling, system typography, and 44pt targets.
+- On Android, the Material 3 shell MUST follow Material 3 conventions: a top app bar, navigation
+  bar, cards, filled buttons, Roboto, and Material color roles.
+
+The app MUST detect the platform and MUST offer a manual appearance override. Visual components MUST
+NOT be mixed across shells. Both shells MUST share money rules, permissions, validation, and copy
+tone.
+
+**Rationale**: A PWA can feel native on both platforms without maintaining two codebases. Sharing the
+domain prevents the shells from drifting; separating the visual layer prevents a generic compromise.
 
 ### V. Explicit and Simple Money Rules
 
-The ledger has exactly four adult profiles: CP, Mai, Kent, and Llanmer. All four are present at
-every outing. Each outing has exactly one receipt and exactly one payer. Every present student MUST
-be assigned to exactly one adult. Students never pay for themselves.
+A group has 2–12 adults. Each adult MUST have an account, though an invited adult MAY remain pending.
+Each outing MUST mark which adults and students were present. Shared items and the per-head fallback
+MUST split across present adults plus present students; a student's share is borne by the covering
+adult.
 
-The split is a hybrid of item assignment and shared per-head costs:
+Each outing has exactly one payer, and the payer MUST be marked present. Each item MUST be assigned
+to one present adult, one present student, or explicitly shared. Every present student MUST have
+exactly one present covering adult.
 
-- Each receipt item MUST be assigned to exactly one adult, one student, or explicitly marked shared.
-- An item assigned to an adult is that adult's cost.
-- An item assigned to a student is the cost of the adult covering that student for the outing.
-- Shared items are split per head across the four adults and all present students; a student's
-  share is borne by the covering adult.
-- For new outings, the sum of the item amounts is the authoritative bill. Tax, service charge, and
-  discount are not used in new outings.
-- The total MUST follow the item sum by default. Typing a total is an explicit manual override; it
-  disables auto-follow until the owner chooses to use the item total again.
-- A reopened outing keeps its saved total. Item changes in a reopened outing MUST NOT update the
-  total automatically.
-- Legacy outings MAY retain stored tax/service/discount values; those values continue to apply when
-  the outing is reopened so its historical split does not change without an explicit edit.
-- If no receipt items are entered, the outing falls back to a per-head split across the four adults
-  and present students.
+For new outings, the item sum is the authoritative bill. The total MUST follow the item sum by
+default (Auto). Typing a total MUST switch it to Manual; "Use items total" MUST restore Auto. A
+reopened outing MUST keep its saved total (Fixed). Tax, service charge, discount, and printed-receipt
+reconciliation MUST NOT be used. OCR and LLM extraction MUST NOT be used.
 
-Every computed share MUST be visible before finalization. There MUST be no hidden allocations,
-multiple payers, fairness scores, or automatic coverage suggestions. Assigning an item to a student
-MUST mark that student present.
+A settlement MUST be recorded by the payer and confirmed or declined with a note by the recipient.
+Only confirmed settlements affect balances. The owner MAY record a settlement for a pending adult;
+confirmation MUST wait until that adult joins.
 
-**Rationale**: Item assignment matches how a table actually orders food, while shared per-head
-costs handle rice, appetizers, and other table-wide amounts. A single authoritative item sum keeps
-the rule simple to explain and test, and the manual override handles per-head outings and
-corrections without silently rewriting history.
+**Rationale**: Attendance, one payer, and confirmed settlements are the minimum rules a group can
+explain at the table. Refusing hidden adjustments and OCR guesses keeps the ledger auditable.
 
 ### VI. Auditable and Reversible
 
 Finalizing an outing MUST write an immutable share snapshot. Reopening or correcting a finalized
-outing MUST require explicit confirmation, MUST warn when settlements already exist, and MUST
-record an audit event with the actor profile and the before/after values. Settlement records MUST be
-append-only. Deletions MUST be soft deletes so that history remains recoverable. The app MUST expose
-a portable data export. Backup snapshots MUST be versioned and validated before restore.
+outing MUST require explicit confirmation, MUST warn when settlements already exist, and MUST record
+an activity event with the actor and before/after values.
 
-**Rationale**: A ledger needs a clear answer to "why did my balance change?" and a recovery path
-for mistakes.
+Settlements MUST be append-only in effect: voiding or declining MUST retain the original record.
+Removing a member or adult MUST be a soft removal that preserves historical shares and activity.
 
-### VII. Low-Friction at the Table
+The group MUST expose a full activity feed to its members. The owner MUST be able to export the whole
+group; a member MUST be able to export their own data. The owner MUST be able to archive a group and
+soft-delete it with confirmation.
 
-The primary flow — create outing, enter items manually, assign items, assign present students
-to adults, review the split, and finalize — SHOULD be completable in under 3 minutes for a typical
-receipt with up to 10 items. A per-head outing without items SHOULD be completable in under 90
-seconds. Manual entry MUST always be available. Item assignment MUST be fast: one tap per item plus
-a shared option. Tap targets MUST be at least 44 logical pixels. The flow MUST be usable
-one-handed. Steps that do not affect the split MUST NOT block finalization.
+**Rationale**: A shared ledger needs a clear answer to "who changed this, and why?" and a recovery
+path for mistakes.
 
-**Rationale**: The app competes with a group chat and a paper receipt. Item assignment is valuable
-only if it remains faster than rebuilding the spreadsheet.
+### VII. Owner-Controlled, Member-Collaborative
 
-### VIII. Zero Recurring Cost
+Each group has exactly one owner. In v1 the owner is the only admin. The owner MUST be able to invite
+and soft-remove members, create pending adults and manage claims, manage the student roster, publish any
+private draft, finalize and reopen outings, export the full group, transfer ownership, and archive or
+delete the group.
 
-The project MUST run on free service tiers and on-device processing. It MUST NOT require a paid
-subscription, paid OCR API, paid sync service, or Apple Developer Program membership. Any new
-recurring cost MUST be explicitly approved before adoption. The app MUST NOT upload receipt images
-or consume cloud storage for them. The Android app MUST be distributable as a sideloaded debug or
-signed release APK without a store listing. Supabase free-tier usage MUST remain within the
-included database and bandwidth limits.
+Members MUST be able to create and edit shared drafts, add and assign items, mark present adults and
+students, set coverage, record their own settlements, confirm or decline settlements addressed to
+them, and view group activity.
 
-**Rationale**: The group explicitly rejected recurring fees. Cost discipline is a product
-constraint, not an optimization.
+A group MUST NOT be left ownerless. Ownership transfer MUST be explicit and audited. An outing MUST NOT
+be finalized with fewer than two present adults.
+
+**Rationale**: A single accountable owner keeps invitations, finalization, and destructive actions
+controlled. Members still need enough freedom to record the meal without waiting for the owner.
+
+### VIII. Low-Friction on a Phone
+
+The primary flow MUST be iPhone-first and usable one-handed. A typical 10-item outing SHOULD be
+completable in under 3 minutes; a per-head outing without items SHOULD be completable in under 90
+seconds.
+
+Onboarding MUST be guided: sign in, create or join a group, invite or claim adults, then record the
+first outing. Navigation MUST use four bottom tabs: Home, Ledger, Activity, Settings. Home MUST lead
+with the member's balance and pending actions. The group switcher MUST live on Home.
+
+Private offline drafts MUST preserve the table-side flow when the connection is poor. Tap targets
+MUST be at least 44pt. The app MUST support system light/dark, Dynamic Type, reduced motion, screen
+readers, and keyboard focus. No interaction may depend on hover.
+
+**Rationale**: The app competes with a group chat at the table. Speed and clarity beat decorative
+complexity.
+
+### IX. Zero Recurring Cost
+
+The project MUST run on free tiers: Supabase for backend, a free static host and subdomain, and a
+free-tier transactional email provider. It MUST NOT require an Apple Developer Program membership,
+paid OCR, paid sync, or a store listing.
+
+Any new recurring cost MUST be explicitly approved by the owner before adoption. Free-tier limits
+MUST be monitored; export and cleanup paths MUST exist if a limit is approached.
+
+**Rationale**: The group rejected recurring fees. A small friends-and-family ledger should not create
+a subscription.
 
 ## Security, Privacy & Data Constraints
 
-- The app is a single private ledger on the owner's Android phone.
-- The owner MUST authenticate with one authorized Google account for backup and restore.
-- No other adult account, invite, group membership, or shared backend access is supported.
-- All Supabase access MUST be scoped to the authenticated owner via row-level security.
-- The app MUST NOT capture or upload receipt images.
-- Student records MUST be limited to display name and optional notes; no contact details.
+- Authentication MUST use Google OAuth or an email one-time code/magic link. Sign in with Apple is
+  out of scope in v1.
+- Authentication MUST use redirect-based OAuth with PKCE; popups MUST NOT be required.
+- Custom SMTP MUST be configured for reliable email delivery. Supabase's built-in email is for
+  development only.
+- Secrets and the service-role key MUST never ship in the client. Privileged operations MUST run in
+  a server-side function or a protected database function.
+- Row-level security MUST enforce group isolation, owner-only administration, and recipient-only
+  settlement confirmation.
+- Invitations MUST be revocable, expiring, and bound to a pending adult identity. A share link or
+  code MUST NOT grant access to any other group.
+- Student records MUST be limited to display name and optional notes.
 - The app MUST NOT include third-party analytics, ad SDKs, or tracking pixels.
-- All data export MUST be initiated by the owner and MUST include outings, items, assignments,
-  shares, settlements, and the student roster.
-- Secrets and service-role keys MUST never ship in the client.
-- The owner MUST be able to delete local data and remote backup snapshots.
-- Restore MUST require an empty local database and an explicit confirmation.
+- The app MUST NOT capture or upload receipt images.
+- The owner MUST be able to export the full group; a member MUST be able to export their own data.
+- A user MUST be able to delete their account only after transferring or archiving groups they own.
+- Group data MUST be recoverable from soft deletion by the owner for a 30-day retention window, after
+  which it may be purged.
 
 ## Development Workflow & Quality Gates
 
-- Development MUST follow Spec Kit stages: constitution, specify, clarify, plan, tasks, implement,
+- Development MUST follow the Spec Kit stages: constitution, specify, clarify, plan, tasks, implement,
   converge.
 - No implementation work may start before the feature spec and plan are approved.
-- The Kotlin money engine MUST have unit tests and property-based invariant tests proving that
-  every finalized split sums to the outing total, including item assignment, shared costs, legacy
-  adjustments, negative discounts, and total differences.
-- Room DAO tests MUST cover item assignment, coverage, settlement, and backup snapshot persistence.
-- Compose UI tests MUST cover the item assignment flow, shared items, student auto-presence, and
-  the final review.
-- Offline and backup behavior MUST be tested on the owner's Samsung S26 Ultra running Android 17.
-- Manual entry and total-state tests MUST cover auto-follow, manual override, fixed reopened
-  outings, and exact item sums.
-- Accessibility MUST be reviewed for tap target size, contrast, labels, and focus order.
-- The definition of done for any money-related change includes: tests pass, the ledger balances,
-  and the change is documented in the plan or tasks.
-- Code reviews MUST verify compliance with this constitution. Unjustified complexity MUST be
-  removed or documented.
+- The money engine MUST have unit tests and property-based invariant tests proving that every
+  finalized split sums exactly to the outing total, including present adults, present students,
+  shared items, manual overrides, and per-head fallbacks.
+- Row-level security MUST have integration tests covering cross-group denial, owner-only actions,
+  member collaboration, recipient-only confirmation, and pending-adult restrictions.
+- Invitation, ownership transfer, settlement, reopen, and soft-removal transitions MUST have tests.
+- The PWA MUST be tested on iOS Safari (installed and browser) and Android Chrome, at 390px and
+  430px iPhone widths and 360px and 412px Android widths.
+- The PWA MUST pass an installability and performance review: first usable screen under 3 seconds on
+  a typical 4G connection, interactions under 100ms, live updates under 2 seconds.
+- Accessibility MUST be reviewed for 44pt targets, contrast, focus order, screen-reader labels,
+  Dynamic Type, and reduced motion.
+- The definition of done for any money-related change includes: tests pass, the ledger balances, RLS
+  is verified, and the change is documented in the plan or tasks.
+- Code reviews MUST verify compliance with this constitution. Unjustified complexity MUST be removed
+  or documented.
 
 ## Governance
 
 This constitution supersedes ad hoc practices for the Salo project. Amendments require a written
 proposal, a review of affected specs and plans, and explicit approval from the project owner.
-Versioning follows semantic rules: MAJOR for incompatible governance or principle changes, MINOR
-for new principles or materially expanded guidance, and PATCH for clarifications. Every amendment
-MUST update the version, ratification date, and last-amended date. Compliance is reviewed at each
-Spec Kit stage and before every release. When a principle conflicts with a feature request, the
-constitution wins until it is formally amended.
+Versioning follows semantic rules: MAJOR for incompatible governance or principle changes, MINOR for
+new principles or materially expanded guidance, and PATCH for clarifications. Every amendment MUST
+update the version, ratification date, and last-amended date. Compliance is reviewed at each Spec Kit
+stage and before every release. When a principle conflicts with a feature request, the constitution
+wins until it is formally amended.
 
-**Version**: 3.0.0 | **Ratified**: 2026-11-07 | **Last Amended**: 2026-11-09
+**Version**: 4.0.0 | **Ratified**: 2026-11-07 | **Last Amended**: 2026-11-09

@@ -1,121 +1,132 @@
+# PRODUCT.md
+
 # Product
 
 <!-- impeccable:product-schema 1 -->
 
 ## Platform
 
-android
+web
 
 ## Users
 
-**The owner (CP)** is the only person who installs and uses Salo. He is a single adult in a fixed
-group of four — CP, Mai, Kent, and Llanmer — who eats out with students in tow and ends up being the
-one who pays and does the arithmetic.
+**The owner (CP)** is the person who creates the group and keeps it correct. He eats out with friends
+and students, usually pays, and wants the split to be obvious before everyone leaves.
 
-The situation is the table at the end of a meal: the bill arrives, one person has already paid, some
-items belong to one adult, some belong to a student, some are shared, and everyone wants a number
-that is obviously fair before they leave. Later, the same person reconciles the running balance
-across many outings, in messages, at home.
+**The other adults** are invited members with their own accounts: Mai, Kent, Llanmer, and the friends
+who join later. They install the PWA from a link, claim an adult identity, and see the same shared
+ledger. Some adults may stay pending for a while; the app still lets the owner record an outing that
+includes them.
 
-The other three adults never install the app. They receive a recap and pay the person who paid.
+**Students** are names on the ledger, not users. They are covered by an adult and never sign in.
+
+The situation is the table at the end of a meal: the bill arrives, one person has paid, some items
+belong to one adult, some belong to a student, some are shared, and everyone wants a number that is
+obviously fair. Later, the same group reconciles the running balance across many outings, in the app
+and in messages.
 
 ## Product Purpose
 
-Salo records a shared meal, charges every item to the person or people who consumed it, and produces
-an exact peso split plus a running ledger of who owes whom until it is settled.
+Salo is a shared group meal ledger. A group records an outing, marks which adults and students were
+present, charges every item to the person or people who consumed it, and produces an exact peso split
+plus a running ledger of who owes whom until it is settled.
 
-Success means the owner never opens a spreadsheet again: the split sums to the item total to the
+Success means the group never opens a spreadsheet again: the split sums to the item total to the
 centavo, the recap is clear enough that nobody argues, and the ledger stays correct across months.
 
 ## Positioning
 
-Most bill splitters divide evenly and stop at one meal. Salo assigns each line to an adult, a
-student, or the table, then charges student lines to the adult covering that student and divides
-shared lines per head. The item sum is the bill; the owner can type a total as an explicit override,
-but there is no printed-receipt reconciliation. The split and the cross-outing ledger are the same
-data, so a past mistake can be reopened, corrected, and audited instead of silently forked.
+Most bill splitters divide evenly and stop at one meal. Salo assigns each line to an adult, a student,
+or the table, then charges student lines to the adult covering that student and divides shared lines
+per head across the people who actually attended. The item sum is the bill. A typed total is an
+explicit override, not a hidden adjustment.
+
+Salo is one installable PWA with two native-feeling shells: an iPhone-first shell on iOS and a
+Material 3 shell on Android. The group is shared, the ledger is live, and settlements are confirmed by
+the person who receives the money.
 
 ## Operating Context
 
-- Used one-handed, in poor-signal restaurants, at the moment the bill arrives. Everything that
-  matters works offline.
-- The receipt is the source of truth for the items. The owner lists each line manually at the table;
-  there is no camera or OCR step.
-- Four adults are always counted, whether or not they attended. A student who was not at the meal is
-  not counted.
-- Payment happens outside the app (cash, transfer). The app records the settlement afterwards.
-- Recaps leave the app through the Android share sheet as text and as a 1080×1350 image.
-- One phone holds the ledger. Supabase holds a private snapshot for restore, not a shared source of
-  truth.
+- Used one-handed on a phone, at the table, often with poor signal.
+- One person records the meal; the owner finalizes; everyone can see the draft and the result.
+- A private draft can be prepared offline and published when the connection returns.
+- Payment happens outside the app (cash, transfer). The app records a settlement and the recipient
+  confirms it.
+- Recaps leave the app through the web share sheet or a download.
+- Supabase holds the shared ledger; no receipt images are captured.
 
 ## Capabilities and Constraints
 
-- **Native Android only**: Kotlin, Jetpack Compose, Material 3, `ph.salo.app`. `compileSdk`,
-  `targetSdk`, and `minSdk` are all 37 (Android 17); the target device is a Samsung S26 Ultra.
-- **Exactly four adult participants**, fixed forever: CP, Mai, Kent, Llanmer. Seeded at first launch,
-  never added, removed, or reordered. They are participants in the split, not accounts: only CP
-  installs and operates the app, and every outing is recorded as him. There is no profile switcher.
-  The money engine validates a four-adult set.
-- **Hybrid money model**: each item is assigned to one adult, one student, or shared; shared items
-  split per head across the four adults plus present students; the item sum is the bill. The total
-  is Auto by default, becomes Manual when typed, and is Fixed for a reopened outing. All money is
-  integer centavos; a finalized split sums exactly.
-- **No fairness score and no auto-balance.** The owner decides who covers a student.
-- **Students are a roster of at most 10 active**, with a display name and optional notes, archivable
-  and restorable. No contact details, photos, or other personal data.
-- **Manual item entry only.** There is no camera, OCR, receipt image, or LLM path.
-- **Private backup**: JSON snapshots to the owner's own Supabase project, guarded by row-level
-  security and a single allowed owner email. Restore is allowed only into an empty local ledger and
-  never overwrites data.
-- **Auditable and reversible**: a finalized outing can be reopened with a confirmation, which clears
-  its shares and writes an audit event with before/after values. Settlements can be voided.
-- **Zero recurring cost** is a constraint: no paid services beyond free tiers, no ads, no analytics
-  SDKs.
-- **Deliberately absent**: multi-device sync, other-adult accounts, receipt OCR or image capture,
-  receipt image archive in the cloud, LLM assists, currency other than PHP, recurring budgets, and
-  automatic fairness suggestions.
-- **Undecided**: iOS or any second platform; a landing page or public website.
+- **Installable PWA only**: iPhone Safari 16.4+ and current Android Chrome. No native app, Trusted Web
+  Activity, or store listing in v1.
+- **Two platform shells**: iPhone-first on iOS; Material 3 on Android. Shared information
+  architecture, money rules, permissions, and copy. A manual appearance override exists.
+- **Accounts for every adult**: Google OAuth or email one-time code. No Sign in with Apple in v1.
+  Students never have accounts. Pending adults are allowed until they join.
+- **Shared groups of 2–12 adults**: one owner per group; the owner is the only admin in v1. A user may
+  own one group and join many; a group switcher lives on Home.
+- **Invitations**: share link and short code, bound to a pending adult, revocable and expiring.
+- **Present adults and students per outing**: shared items and the per-head fallback split across the
+  people who attended; student shares go to their covering adult.
+- **One payer per outing**: the payer must be present.
+- **Item-sum money rule**: Auto follows the items; typing switches to Manual; a reopened outing is
+  Fixed. No tax, service charge, discount, or printed-receipt reconciliation.
+- **Settlements**: payer records; recipient confirms or declines with a note. Only confirmed amounts
+  affect balances. The owner can record for a pending adult, but confirmation waits until they join.
+- **Live activity**: outings, items, shares, settlements, and membership update in real time when
+  connected. A full activity feed records who changed what.
+- **Offline reads and private drafts**: shared writes require connectivity; cached reads and private
+  drafts keep the table-side flow.
+- **Owner controls**: invite, remove, manage students, finalize, reopen, transfer ownership, archive,
+  soft-delete, and export the full group. A member can export their own data.
+- **No OCR or LLM**: manual entry only. No receipt images, no external recognition.
+- **Currency and time**: Philippine pesos, English, Asia/Manila.
+- **Zero recurring cost**: Supabase free tier, a free static host and subdomain, a free-tier email
+  provider. No Apple Developer Program, paid OCR, or store fees.
+- **Deliberately absent**: multiple payers, multiple admins, multi-currency, photo avatars, public
+  group discovery, push notifications, and offline shared writes.
 
 ## Brand Commitments
 
-- Name: **Salo**. Application label and launcher name are `Salo`.
+- Name: **Salo**. Application label and install name are `Salo`.
 - Voice: plain, compact, quietly confident. Philippine context — pesos, "outing", "students",
   "covered by". No hedging, no exclamation marks, no growth-marketing language.
-- A green identity: a fixed scheme seeded from `#1F5C45`. The app deliberately does not use
-  wallpaper-derived dynamic color.
-- The mark is an abstract "S" built from two rounded strokes, shipped as an adaptive icon with a
-  monochrome themed layer.
+- A green identity: Ledger Green `#1F5C45`, warm neutral surfaces, mint in dark mode.
+- iPhone shell: SF Pro, large titles, grouped inset lists, sheets, bottom tabs, safe areas, quiet iOS
+  motion. The "shared table" is the signature: member initials, group presence, and the table around
+  which the split happens.
+- Android shell: Material 3, Roboto, top app bar, navigation bar, cards, filled buttons, system
+  light-first with a true dark theme.
 - Interface language is English. Currency formatting is `₱1,234.56`.
 
 ## Evidence on Hand
 
-- `specs/001-salo-expense-sharing/spec.md` — seven user stories, edge cases, functional requirements,
-  success criteria, explicit out-of-scope list.
-- `.specify/memory/constitution.md` (3.0.0) — eight enforceable principles, including money
-  correctness, privacy, offline-first, and zero recurring cost.
-- `specs/001-salo-expense-sharing/device-test-2026-11-07.md` — real run on the S26 Ultra: the
-  historical ₱825 case produced CP ₱451.00 / Mai ₱308.00 / Kent ₱33.00 / Llanmer ₱33.00, plus
-  ledger, recap, export, sign-in, backup, and restore. This is a legacy outing under the item-sum
-  rule.
-- `app/src/test/java/ph/salo/app/core/money/` and `feature/outing/` — unit tests covering
-  allocation, rounding, total modes, and merge exactness.
+- `specs/002-salo-pwa/spec.md` — seven user stories, edge cases, functional requirements, success
+  criteria, assumptions, and explicit out-of-scope.
+- `specs/002-salo-pwa/plan.md`, `research.md`, `data-model.md`, `contracts/`, `quickstart.md`, and
+  `tasks.md` — the shared-PWA architecture and validation plan.
+- `.specify/memory/constitution.md` (4.0.0) — nine enforceable principles, including money
+  correctness, shared privacy, connected edits, two shells, and zero recurring cost.
+- `specs/001-salo-expense-sharing/` — the archived Android app spec and its Material 3 design.
 - No testimonials, benchmarks, press, pricing page, or customer logos exist. Future work must not
   invent them.
 
 ## Product Principles
 
-1. **The item sum wins.** The visible math reconciles to the items the owner listed. A typed total
-   is an explicit override, never a hidden gap.
-2. **Assign, don't average.** A number is only trustworthy if it can be traced to who ate what.
-3. **The table beats the network.** Recording, splitting, and settling never wait on a connection.
-4. **Private by construction.** Students are names on a ledger, not profiles; no receipt images are
-   captured; only the owner's snapshot leaves the phone.
-5. **Reversible over clever.** A wrong split can be reopened and corrected with a record of what
-   changed.
+1. **The item sum wins.** The visible math reconciles to the items the group listed. A typed total is
+   an explicit override, never a hidden gap.
+2. **Present people only.** Shared costs go to the adults and students who were actually there.
+3. **Assign, don't average.** A number is only trustworthy if it can be traced to who ate what.
+4. **Shared by design, private by default.** A group sees its own ledger; no one else does. Students
+   are names, not profiles.
+5. **Confirmed money.** A settlement changes a balance only after the recipient confirms it.
+6. **Native on both phones.** The PWA should feel like an iPhone app on iOS and a Material app on
+   Android, without two codebases.
+7. **The table beats the network.** Cached reads and private drafts keep the flow alive when the
+   signal drops.
 
 ## Accessibility & Inclusion
 
-The project requires an accessibility pass on tap targets (48 dp), contrast in both light and dark
-themes, labels for icon-only controls, and focus order, verified on the owner's device. Students and
-adults are referred to by first name only; there is no requirement for screen-reader-first operation
-beyond standard TalkBack correctness.
+The product requires 44pt targets, contrast in both themes, accessible names for icon-only controls,
+visible focus, Dynamic Type support, reduced-motion support, and a logical reading order. It is
+verified on the owner's iPhone and Android phone, in both installed and browser modes.

@@ -1,4 +1,7 @@
-# Tasks: Salo — Android Meal Ledger
+# Tasks: Salo - Android Meal Ledger
+
+> **Status: Superseded (2026-11-09).** These tasks describe the archived Android app. The active task
+> list is [`specs/002-salo-pwa/tasks.md`](../002-salo-pwa/tasks.md).
 
 **Input**: `specs/001-salo-expense-sharing/plan.md`, `specs/001-salo-expense-sharing/spec.md`
 

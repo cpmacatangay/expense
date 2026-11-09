@@ -1,10 +1,14 @@
 # Feature Specification: Salo — Android Meal Ledger
 
+> **Status: Superseded (2026-11-09).** This spec describes the archived Android app. The active
+> product is the shared PWA in [`specs/002-salo-pwa`](../002-salo-pwa/spec.md). The Android code and
+> local ledger are kept as historical backups; no data is migrated into the shared product.
+
 **Feature Branch**: `001-salo-expense-sharing`
 
 **Created**: 2026-11-07
 
-**Status**: Draft
+**Status**: Superseded
 
 **Input**: User description: "An Android-only Kotlin app for one owner on a Samsung S26 Ultra running Android 17. The app maintains a private meal ledger for four local adult profiles - CP, Mai, Kent, and Llanmer - and a student roster. The owner manually enters receipt items, assigns each item to an adult, a student, or shared, splits the bill, tracks who paid, settles balances, shares a recap with the other adults, and backs up ledger data to a private Supabase account."
 

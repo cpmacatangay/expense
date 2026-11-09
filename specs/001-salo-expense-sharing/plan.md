@@ -1,4 +1,7 @@
-# Implementation Plan: Salo — Android Meal Ledger
+# Implementation Plan: Salo - Android Meal Ledger
+
+> **Status: Superseded (2026-11-09).** This plan describes the archived Android app. The active plan
+> is [`specs/002-salo-pwa/plan.md`](../002-salo-pwa/plan.md).
 
 **Branch**: `001-salo-expense-sharing` | **Date**: 2026-11-07 | **Spec**: `specs/001-salo-expense-sharing/spec.md`
 

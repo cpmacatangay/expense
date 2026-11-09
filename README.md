@@ -1,211 +1,111 @@
 # Salo
 
-Salo is a private, Android-only meal ledger for four adult profiles — CP, Mai, Kent, and Llanmer —
-who cover meals for a roster of students. The owner records outings and receipt items, assigns each
-item to an adult, a student, or the shared table, and shares a recap with the other adults.
+Salo is a shared group meal ledger: a single installable PWA with an iPhone-first shell on iOS and a
+Material 3 shell on Android. A group records an outing, marks which adults and students attended,
+charges every item to the person or people who consumed it, and keeps a running ledger of who owes
+whom until it is settled.
+
+The item sum is the bill. A typed total is an explicit override. Settlements are recorded by the payer
+and confirmed by the recipient. Groups, invitations, present adults, live activity, and private
+offline drafts are part of the shared product.
 
 ## Status
 
-The specification and plan have been revised for a native Kotlin Android app. The previous
-React/Capacitor/PWA implementation has been removed and preserved in Git history.
-
-The Kotlin project is scaffolded with Jetpack Compose, Material 3, Room, Hilt, WorkManager, and
-the navigation shell. The pure Kotlin money engine is implemented and tested, including item
-assignment, shared per-head costs, item-sum totals, manual overrides, balances, and settlements.
-The feature screens and persistence layer are next.
+**Specs hardened; implementation not started.** The active feature is
+[`specs/002-salo-pwa`](specs/002-salo-pwa/spec.md). The previous Android app is archived in
+[`specs/001-salo-expense-sharing`](specs/001-salo-expense-sharing/spec.md); its code will move to
+`archive/android/` when implementation begins. The old local database is kept as an unlisted backup;
+there is no migration into the shared product.
 
 ## Product decisions
 
-- **Platform**: Android only; Samsung S26 Ultra, Android 17 / One UI 9.0.
-- **UI**: Kotlin + Jetpack Compose + Material Design 3.
-- **SDK**: `compileSdk 37`, `targetSdk 37`, `minSdk 37`.
-- **Adults**: four local profiles on one phone. Only the owner uses the app.
-- **Other adults**: receive text/image recaps; they do not install or sign in.
-- **Money model**: hybrid item assignment + per-head shared costs.
-  - Each item is assigned to one adult, one student, or shared.
-  - Student items are charged to the adult covering that student.
-  - Shared items split per head across four adults and present students.
-  - The item sum is the bill. A typed total is an explicit manual override.
-  - Legacy tax/service/discount values remain supported for old outings.
-  - Every finalized split sums exactly in integer centavos.
-- **Manual item entry**: the only item-entry path; no camera or OCR.
-- **Item-sum total**: Auto by default, Manual when typed, Fixed on reopen.
-- **No items**: fall back to a per-head split.
-- **Fairness**: fairness scores and auto-balance are removed.
-- **Backup**: private Supabase JSON snapshots for the owner's Google account.
-- **Restore**: only when the local database is empty.
-- **Receipt images**: none captured or uploaded.
-- **Distribution**: sideloaded APK, application id `ph.salo.app`.
+- **Platform**: one installable PWA. Browser install on iPhone (Safari 16.4+) and Android (Chrome).
+  No native app, TWA, or store listing in v1.
+- **UI**: iPhone-first shell on iOS; Material 3 shell on Android. Shared information architecture and
+  domain rules. Manual appearance override.
+- **Identity**: sign-in required. Google OAuth or email one-time code. No Sign in with Apple in v1.
+  Every adult has an account; students do not. Pending adults are allowed until they join.
+- **Groups**: 2–12 adults; one owner per group; owner is the only admin in v1. A user may own one
+  group and join many. Group switcher on Home.
+- **Invitations**: share link plus short code, bound to a pending adult, revocable and expiring.
+- **Money**: present adults and students per outing; one present payer; item-sum rule; Auto/Manual/
+  Fixed total; no tax, service charge, discount, or printed-receipt reconciliation.
+- **Settlements**: payer records; recipient confirms or declines with a note; only confirmed amounts
+  affect balances.
+- **Collaboration**: live updates; shared edits require connectivity; stale writes are rejected.
+  Private drafts are local-first and visible only to the author and owner until published.
+- **Activity**: full activity feed with actor and before/after values for sensitive changes.
+- **Export**: owner exports the full group; a member exports their own data.
+- **Students**: owner manages the roster; members mark present and set coverage.
+- **Recap**: text plus a portrait image; no invite link or QR code.
+- **Currency/time**: Philippine pesos, English, Asia/Manila.
+- **Notifications**: in-app only in v1.
+- **Cost**: Supabase free tier, free static host and subdomain, free-tier transactional email. No
+  Apple Developer Program, paid OCR, or store fees.
 
-## Current implementation
+## Design
 
-- Native Android Gradle project at the repository root, openable in Android Studio.
-- Single-activity Compose app with Material 3 theme and the fixed Ledger Green palette.
-- Full navigation: Home, Students, New Outing, Outing Detail, Ledger, History, and Settings.
-- Room database, DAOs, and repositories for adults, students, outings, receipts, items,
-  coverage, shares, settlements, audit events, and backup state.
-- Hilt dependency injection, WorkManager backup scheduling, DataStore preferences and session.
-- Pure Kotlin money engine:
-  - item assignment to adult, student, or shared;
-  - student items charged to the covering adult;
-  - shared items split per head;
-  - the item sum is the bill; a typed total is an explicit manual override;
-  - legacy tax/service/discount values remain supported for old outings;
-  - exact-centavo largest-remainder rounding;
-  - per-head fallback when there are no items;
-  - balances and simplified settlements.
-- New Outing wizard: details, receipt, manual items, item editing/splitting/merging,
-  assignment, coverage, review, payer, and finalize.
-- Manual-only item entry; no camera, OCR, or receipt images.
-- Text and 1080×1350 image recaps through the Android share sheet.
-- Ledger with balances, suggested transfers, partial payments, and void.
-- History with date filters, per-student summaries, and CSV/JSON export.
-- Private Supabase snapshot backup and restore, Google Credential Manager sign-in, retry worker,
-  and owner-only RLS. Backup is disabled until the config keys are added.
-- Adaptive launcher icon and Android 13+ monochrome themed icon.
-- JUnit tests for the money engine and total-state rules, including randomized exact-total
-  invariants.
+- **iPhone shell**: Apple-native, warm neutral ground, Ledger Green accent, grouped inset lists, one
+  balance card, SF Pro, light-first, deep green-black/mint dark, a shared-table signature, initials.
+- **Android shell**: Material 3 light-first, system dark, same green identity, Roboto.
+- **Shared idea**: the table — member initials, group presence, and a balance that belongs to the
+  group.
+- Full design system: [`DESIGN.md`](DESIGN.md).
+- Product context: [`PRODUCT.md`](PRODUCT.md).
 
-Pending: R8 rule review under a real release build, the TalkBack/accessibility pass, a light-theme
-check, and offline + backup retry verification. Reopen/audit and release signing are implemented;
-the release APK uses debug signing until a `keystore.properties` file is added. The app has been
-compiled, unit-tested, linted, release-built, and run on the S26 Ultra.
+## Architecture
 
-## Planned architecture
+- Vite + React + TypeScript PWA.
+- Supabase Auth, Postgres, Row-Level Security, Realtime, and Edge Functions.
+- Dexie/IndexedDB for cached reads and private drafts.
+- `vite-plugin-pwa` and Workbox for the installable shell.
+- Vercel free tier with a `*.vercel.app` subdomain.
+- Resend free tier as custom SMTP for email one-time codes.
+- Pure TypeScript money engine shared by the client preview and the server finalization function.
 
-- Single-activity Jetpack Compose app.
-- MVVM + repository layer.
-- Room + KSP as the local source of truth.
-- Hilt for dependency injection.
-- WorkManager for retryable backup.
-- Google Credential Manager + Supabase Auth.
-- Manual item entry; no camera or OCR.
-- Android share sheet for recaps; Storage Access Framework for CSV/JSON export.
+See [`specs/002-salo-pwa/plan.md`](specs/002-salo-pwa/plan.md) for the full plan.
 
 ## Repository layout
 
 ```text
-app/                     Android application module
-gradle/                  Gradle wrapper and version catalog
-supabase/
-  migrations/            Private ledger snapshot schema
-  seed.sql               No demo data
+app/                             archived Android app (moves to archive/android/)
+gradle/                          archived Android build tooling
 specs/
-  001-salo-expense-sharing/
-    spec.md              Revised product specification
-    plan.md              Revised Kotlin/Compose plan
-    tasks.md             Implementation tasks
-    data-model.md        Room entities and snapshot shape
-    quickstart.md        Build, Supabase, and validation scenarios
-    contracts/           Money, backup, recap, and platform contracts
-.specify/                Spec Kit scaffolding and constitution
+  001-salo-expense-sharing/      superseded Android spec and Material 3 design
+  002-salo-pwa/                  active shared-PWA spec, plan, tasks, contracts
+.specify/                        Spec Kit scaffolding and constitution 4.0.0
+PRODUCT.md                       product context
+DESIGN.md                        PWA design system
 ```
 
-## Supabase backup
+The PWA will live at the repository root once implementation starts: `src/`, `public/`, `supabase/`,
+`tests/`, `package.json`, and `vite.config.ts`.
 
-1. Create a Supabase project.
-2. Apply every file in `supabase/migrations/` in filename order (currently
-   `0001_ledger_snapshots.sql` then `0002_prune_snapshots_invoker.sql`). The SQL Editor is
-   enough; each file is idempotent.
-3. Disable sign-ups and provision the owner's Google account.
-4. Add these ignored values to `local.properties`:
+## Documentation
 
-   ```properties
-   SUPABASE_URL=https://<project>.supabase.co
-   SUPABASE_ANON_KEY=<anon-key>
-   GOOGLE_WEB_CLIENT_ID=<web-client-id>.apps.googleusercontent.com
-   OWNER_EMAIL=<your-google-account>
-   ```
-
-5. Never commit the service-role key or these values.
-
-The schema stores versioned JSON snapshots in `public.ledger_snapshots` with owner-only row-level
-security. Receipt images are never captured, and credentials are never included.
-
-## Brand
-
-The final identity is **Salo S** — a bold custom S built from the same rounded geometry as a shared
-table. Brand sources and the full kit live in `brand/logo/`:
-
-- `brand/logo/final-salo-s.svg` — symbol master
-- `brand/logo/final-wordmark.svg` — custom wordmark
-- `brand/logo/salo-horizontal.svg` — primary lockup
-- `brand/logo/salo-stacked.svg` — stacked lockup
-- `brand/logo/kit/` — colour variants, Android adaptive icon, web icons, guidelines, and presentation
-
-The Android launcher icon has been updated to the new mark. See
-`brand/logo/kit/brand-guidelines.md` for colour, clear space, minimum sizes, and misuse rules.
-
-## Build
-
-The Kotlin project is scaffolded at the repository root.
-
-```powershell
-.\gradlew.bat assembleDebug
-adb install -r app\build\outputs\apk\debug\app-debug.apk
-```
-
-### Android Studio
-
-Open the **repository root** in Android Studio. It is a standard root Gradle project with the
-`app` module. Let Android Studio use its bundled JBR (the project is verified with Android Studio
-2026.2.1 / JBR 25) or any JDK 21+. JVM target is 21.
-
-1. Open `C:\projects\expense` as a project.
-2. Let Gradle sync with the wrapper (Gradle 9.5.0).
-3. Select the `app` run configuration.
-4. Use an API 37 device or the S26 Ultra over USB debugging.
-5. Run or install the debug APK.
-
-Toolchain used by the scaffold:
-
-- Gradle 9.5.0
-- Android Gradle Plugin 9.2.1
-- Kotlin 2.2.20
-- JDK 21+ (the project is verified with Android Studio's JBR 25; JVM target 21)
-- compileSdk / targetSdk / minSdk 37
-
-KSP and Hilt currently require opting out of AGP's built-in Kotlin support, so
-`gradle.properties` contains:
-
-```properties
-android.builtInKotlin=false
-android.newDsl=false
-```
-
-These options are required until the KSP/Hilt toolchain supports built-in Kotlin.
-The app builds and produces `app/build/outputs/apk/debug/app-debug.apk`.
-
-### Release signing
-
-Generate a keystore in Android Studio or with `keytool`, then copy
-`keystore.properties.example` to `keystore.properties` (ignored by Git) and fill in the paths and
-passwords. The release build uses that keystore when present; without it, the release APK falls back
-to debug signing for local sideloading only.
-
-```powershell
-.\gradlew.bat assembleRelease
-```
-
-Output: `app/build/outputs/apk/release/app-release.apk`.
-
-The release build enables R8 and resource shrinking. Debug and release APKs are both installable on
-the S26 Ultra.
-
-## Specification
-
-The authoritative documents are:
-
-- `specs/001-salo-expense-sharing/spec.md`
-- `specs/001-salo-expense-sharing/plan.md`
-- `specs/001-salo-expense-sharing/tasks.md`
-- `.specify/memory/constitution.md`
+- Product spec: [`specs/002-salo-pwa/spec.md`](specs/002-salo-pwa/spec.md)
+- Technical plan: [`specs/002-salo-pwa/plan.md`](specs/002-salo-pwa/plan.md)
+- Research: [`specs/002-salo-pwa/research.md`](specs/002-salo-pwa/research.md)
+- Data model: [`specs/002-salo-pwa/data-model.md`](specs/002-salo-pwa/data-model.md)
+- Contracts: [`specs/002-salo-pwa/contracts/`](specs/002-salo-pwa/contracts/)
+- Quickstart: [`specs/002-salo-pwa/quickstart.md`](specs/002-salo-pwa/quickstart.md)
+- Tasks: [`specs/002-salo-pwa/tasks.md`](specs/002-salo-pwa/tasks.md)
+- Constitution: [`.specify/memory/constitution.md`](.specify/memory/constitution.md)
 
 ## Privacy and cost
 
-- No camera, OCR, or external recognition service.
-- No receipt images are captured or uploaded.
-- Ledger data is backed up privately to the owner's Supabase account.
-- Student records are display name and optional notes only.
+- No receipt images, OCR, or LLM extraction.
+- Student records are a display name and optional notes only.
 - No analytics, ad SDKs, or tracking.
-- Free-tier Supabase and a sideloaded APK; no recurring cost.
+- Group data is isolated by row-level security.
+- Only the owner can export the full group; a member can export their own data.
+- Free-tier services only; any new recurring cost requires explicit approval.
+
+## Archived Android app
+
+The Kotlin/Compose app is no longer a maintained client. Its spec is preserved at
+[`specs/001-salo-expense-sharing/spec.md`](specs/001-salo-expense-sharing/spec.md), its Material 3
+design at
+[`specs/001-salo-expense-sharing/DESIGN-android.md`](specs/001-salo-expense-sharing/DESIGN-android.md),
+and its code will be moved to `archive/android/` with git history retained. The installed APK remains
+on the owner's phone until the PWA reaches parity; the old local database is kept as a backup.
