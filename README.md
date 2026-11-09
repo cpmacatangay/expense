@@ -52,6 +52,8 @@ there is no migration into the shared product.
 - **Android shell**: Material 3 light-first, system dark, same green identity, Roboto.
 - **Shared idea**: the table — member initials, group presence, and a balance that belongs to the
   group.
+- **Prototypes**: iPhone at [`design/pwa-prototype/`](design/pwa-prototype/); Android Material 3 at
+  [`design/pwa-prototype-android/`](design/pwa-prototype-android/). Static, same data, demo QR.
 - Full design system: [`DESIGN.md`](DESIGN.md).
 - Product context: [`PRODUCT.md`](PRODUCT.md).
 

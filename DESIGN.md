@@ -21,6 +21,8 @@
 - **Ledger Green replaces the style's blue chart hue.** The brand is fixed; the one hue is green, and
   red is reserved for "you owe" and destructive confirmation.
 
+**Prototypes**: iPhone at `design/pwa-prototype/`; Android Material 3 at `design/pwa-prototype-android/`.
+
 
 ## 1. Design Intent
 
@@ -192,14 +194,36 @@ The balance card is the only card with a filled field color. Everything else is 
 ### Structure
 
 - Top app bar with the Salo mark, group name, and group switcher.
-- Navigation bar: Home, Ledger, Activity, Settings.
+- Navigation bar: Home, Ledger, Activity, Settings, with a 64×32 active indicator pill.
 - Content uses Material 3 cards, lists, chips, and filled buttons.
 - Sheets for new outing, item entry, settlement, and invites.
 - System light/dark; light-first design with a true dark theme.
+- Prototype: `design/pwa-prototype-android/`.
+
+### Tokens
+
+| Role | Value | Use |
+|---|---|---|
+| `surface` | `#F7FAF5` | Page ground |
+| `surfaceContainerLowest` | `#FFFFFF` | Cards and rows |
+| `outlineVariant` | `#E1E8DE` | Card and row outlines |
+| `primary` | `#1F5C45` | Filled actions, positive money |
+| `primaryContainer` | `#B4F0CE` | Selected chips, active indicator |
+| `errorContainer` | `#F9DEDC` | "You owe" balance card |
+| `onErrorContainer` | `#410E0B` | Text on the owed card |
+| `secondaryContainer` | `#D9EFE2` | Confirmed, selected segments |
+| `amberContainer` | `#F3E7D2` | Pending |
+| Page title | Roboto 400, 28/36 | Screen title |
+| Balance | Roboto 500, 36/44 | The one balance number |
+| Row title | Roboto 500, 16/24 | Lists |
+| Body | Roboto 400, 14/20 | Supporting text |
+
+Radii: 12px cards, 16px large cards and sheets, 20px buttons, 8px chips, 4px text fields.
 
 ### Components
 
-- **Balance card**: filled tonal card, display amount, label, and pending count.
+- **Balance card**: a filled card — `errorContainer` when you owe, `secondaryContainer` when you are
+  owed — with a display amount, label, and pending count.
 - **Group switcher**: exposed dropdown or bottom sheet.
 - **Member rows**: initials in tonal circles, name, role, net amount.
 - **Outing rows**: card with place, date, total, payer, and member initials.

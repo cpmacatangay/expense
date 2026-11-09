@@ -1,0 +1,610 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#F7FAF5">
+  <title>Salo — shared group ledger</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app" id="app">
+    <header class="app-head">
+      <div class="topline" id="topline">
+        <img class="wordmark" src="../../brand/logo/kit/variants/salo-wordmark-mono-1f5c45.svg" alt="Salo">
+        <button class="group-switch" type="button" data-modal="group" aria-label="Switch group">
+          <span class="group-mark">SC</span>
+          <span class="group-name">Salo Crew</span>
+          <svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+      </div>
+      <div class="detail-topline" id="detailTopline" hidden>
+        <button class="back" type="button" data-back="home" aria-label="Back">
+          <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M12.5 4.5 7 10l5.5 5.5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <img class="wordmark" src="../../brand/logo/kit/variants/salo-wordmark-mono-1f5c45.svg" alt="Salo">
+      </div>
+      <h1 class="page-title" id="pageTitle">Hi, CP</h1>
+      <p class="page-sub" id="pageSub">Salo Crew · 4 at the table</p>
+    </header>
+
+    <main class="screen-host" id="screenHost">
+      <section class="screen" data-screen="home">
+        <section class="balance-card" aria-label="Your balance">
+          <div class="balance-top">
+            <span class="label">You owe</span>
+            <span class="balance-note">2 payments</span>
+          </div>
+          <div class="balance-amount negative">₱819.00</div>
+          <p class="balance-sub">To Mai and Kent. Settle when you are ready.</p>
+          <div class="balance-foot">
+            <div class="table-people" aria-label="The table">
+              <span class="avatar cp">CP</span>
+              <span class="avatar mai">M</span>
+              <span class="avatar kent">K</span>
+              <span class="avatar llanmer">L</span>
+              <span class="table-label">The table</span>
+            </div>
+            <button class="text-action" type="button" data-target="ledger">Pay</button>
+          </div>
+        </section>
+
+        <button class="primary wide" type="button" data-open="new">New outing</button>
+
+        <div class="section-head">
+          <h2>Needs you</h2>
+          <span class="count">2</span>
+        </div>
+        <div class="list card">
+          <button class="row" type="button" data-modal="pay" data-payee="Kent" data-amount="485.00" data-label="Maya">
+            <span class="avatar kent">K</span>
+            <span class="row-main">
+              <span class="row-title">Confirm Kent's payment</span>
+              <span class="row-sub">₱485.00 · recorded 2h ago · you receive it</span>
+            </span>
+            <span class="pill amber">Pending</span>
+            <svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="m6 4 4 4-4 4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <button class="row" type="button" data-open="draft">
+            <span class="avatar kent">K</span>
+            <span class="row-main">
+              <span class="row-title">Publish Kent's draft</span>
+              <span class="row-sub">Jollibee · ₱1,240.00 · Nov 9</span>
+            </span>
+            <span class="pill">Draft</span>
+            <svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="m6 4 4 4-4 4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+        </div>
+
+        <div class="section-head">
+          <h2>Recent outings</h2>
+          <button class="text-action" type="button" data-target="activity">View all</button>
+        </div>
+        <div class="list card">
+          <button class="row outing" type="button" data-open="outing">
+            <span class="avatar mai">M</span>
+            <span class="row-main">
+              <span class="row-title">McDo Il Corso</span>
+              <span class="row-sub">Nov 7, 2026 · Paid by Mai · 4 at the table</span>
+            </span>
+            <span class="amount">₱825.00</span>
+          </button>
+          <button class="row outing" type="button" data-open="outing">
+            <span class="avatar cp">CP</span>
+            <span class="row-main">
+              <span class="row-title">Jollibee Uptown</span>
+              <span class="row-sub">Nov 2, 2026 · Paid by you · 3 at the table</span>
+            </span>
+            <span class="amount">₱1,240.00</span>
+          </button>
+          <button class="row outing" type="button" data-open="outing">
+            <span class="avatar kent">K</span>
+            <span class="row-main">
+              <span class="row-title">Manam Greenbelt</span>
+              <span class="row-sub">Oct 28, 2026 · Paid by Kent · 4 at the table</span>
+            </span>
+            <span class="amount">₱980.00</span>
+          </button>
+        </div>
+      </section>
+
+      <section class="screen" data-screen="ledger" hidden>
+        <div class="list card net-list">
+          <div class="net-row">
+            <span class="avatar cp">CP</span>
+            <span class="net-name">CP <span class="you">You</span></span>
+            <span class="net-state muted">owes</span>
+            <span class="net-amount negative">₱819.00</span>
+          </div>
+          <div class="net-row">
+            <span class="avatar mai">M</span>
+            <span class="net-name">Mai</span>
+            <span class="net-state muted">is owed</span>
+            <span class="net-amount positive">₱766.00</span>
+          </div>
+          <div class="net-row">
+            <span class="avatar kent">K</span>
+            <span class="net-name">Kent</span>
+            <span class="net-state muted">is owed</span>
+            <span class="net-amount positive">₱1,015.00</span>
+          </div>
+          <div class="net-row">
+            <span class="avatar llanmer">L</span>
+            <span class="net-name">Llanmer</span>
+            <span class="net-state muted">owes</span>
+            <span class="net-amount negative">₱962.00</span>
+          </div>
+        </div>
+
+        <div class="section-head">
+          <h2>Who owes whom</h2>
+          <span class="hint">Scan to pay</span>
+        </div>
+        <div class="list card">
+          <div class="row debt">
+            <span class="avatar cp">CP</span>
+            <svg class="arrow" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8h9m-3.5-3.5L12 8l-3.5 3.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span class="avatar mai">M</span>
+            <span class="row-main"><span class="row-title">Mai</span><span class="row-sub">Your payment</span></span>
+            <span class="amount">₱334.00</span>
+            <button class="text-action" type="button" data-modal="pay" data-payee="Mai" data-amount="334.00" data-label="GCash">Pay</button>
+          </div>
+          <div class="row debt">
+            <span class="avatar cp">CP</span>
+            <svg class="arrow" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8h9m-3.5-3.5L12 8l-3.5 3.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span class="avatar kent">K</span>
+            <span class="row-main"><span class="row-title">Kent</span><span class="row-sub">Your payment</span></span>
+            <span class="amount">₱485.00</span>
+            <button class="text-action" type="button" data-modal="pay" data-payee="Kent" data-amount="485.00" data-label="Maya">Pay</button>
+          </div>
+          <div class="row debt">
+            <span class="avatar llanmer">L</span>
+            <svg class="arrow" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8h9m-3.5-3.5L12 8l-3.5 3.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span class="avatar mai">M</span>
+            <span class="row-main"><span class="row-title">Mai</span><span class="row-sub">From Llanmer</span></span>
+            <span class="amount">₱392.00</span>
+            <button class="text-action" type="button" data-modal="pay" data-payee="Mai" data-amount="392.00" data-label="GCash">View</button>
+          </div>
+          <div class="row debt">
+            <span class="avatar llanmer">L</span>
+            <svg class="arrow" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8h9m-3.5-3.5L12 8l-3.5 3.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span class="avatar kent">K</span>
+            <span class="row-main"><span class="row-title">Kent</span><span class="row-sub">From Llanmer</span></span>
+            <span class="amount">₱570.00</span>
+            <button class="text-action" type="button" data-modal="pay" data-payee="Kent" data-amount="570.00" data-label="Maya">View</button>
+          </div>
+          <div class="row debt">
+            <span class="avatar kent">K</span>
+            <svg class="arrow" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8h9m-3.5-3.5L12 8l-3.5 3.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span class="avatar mai">M</span>
+            <span class="row-main"><span class="row-title">Mai</span><span class="row-sub">From Kent</span></span>
+            <span class="amount">₱40.00</span>
+            <button class="text-action" type="button" data-modal="pay" data-payee="Mai" data-amount="40.00" data-label="GCash">View</button>
+          </div>
+        </div>
+
+        <div class="section-head">
+          <h2>Pending</h2>
+          <span class="hint">2</span>
+        </div>
+        <div class="list card">
+          <div class="row">
+            <span class="avatar cp">CP</span>
+            <span class="row-main">
+              <span class="row-title">You recorded ₱334.00 to Mai</span>
+              <span class="row-sub">Today · waiting for Mai to confirm</span>
+            </span>
+            <span class="pill amber">Pending</span>
+          </div>
+          <div class="row">
+            <span class="avatar kent">K</span>
+            <span class="row-main">
+              <span class="row-title">Kent recorded ₱485.00 to you</span>
+              <span class="row-sub">2h ago · confirm in Needs you</span>
+            </span>
+            <span class="pill amber">Pending</span>
+          </div>
+        </div>
+
+        <button class="primary wide" type="button" data-modal="pay" data-payee="Mai" data-amount="334.00" data-label="GCash">Record payment</button>
+      </section>
+
+      <section class="screen" data-screen="activity" hidden>
+        <div class="tabs" role="tablist" aria-label="Activity filters">
+          <button class="tab is-active" type="button" role="tab" aria-selected="true">All</button>
+          <button class="tab" type="button" role="tab" aria-selected="false">Settlements</button>
+          <button class="tab" type="button" role="tab" aria-selected="false">Outings</button>
+          <button class="tab" type="button" role="tab" aria-selected="false">Members</button>
+        </div>
+        <div class="list card feed">
+          <div class="row">
+            <span class="avatar kent">K</span>
+            <span class="row-main">
+              <span class="row-title">Kent recorded ₱485.00 to you</span>
+              <span class="row-sub">Settlement · 2h ago</span>
+            </span>
+            <span class="pill amber">Pending</span>
+          </div>
+          <div class="row">
+            <span class="avatar cp">CP</span>
+            <span class="row-main">
+              <span class="row-title">You finalized McDo Il Corso</span>
+              <span class="row-sub">Outing · ₱825.00 · yesterday</span>
+            </span>
+          </div>
+          <div class="row">
+            <span class="avatar mai">M</span>
+            <span class="row-main">
+              <span class="row-title">Mai added a GCash payment QR</span>
+              <span class="row-sub">Payment method · 2d ago</span>
+            </span>
+            <span class="pill">Private</span>
+          </div>
+          <div class="row">
+            <span class="avatar llanmer">L</span>
+            <span class="row-main">
+              <span class="row-title">Llanmer confirmed ₱570.00 to Kent</span>
+              <span class="row-sub">Settlement · 3d ago</span>
+            </span>
+            <span class="pill">Confirmed</span>
+          </div>
+          <div class="row">
+            <span class="avatar kent">K</span>
+            <span class="row-main">
+              <span class="row-title">Kent joined Salo Crew</span>
+              <span class="row-sub">Member · 4d ago</span>
+            </span>
+          </div>
+          <div class="row">
+            <span class="avatar cp">CP</span>
+            <span class="row-main">
+              <span class="row-title">You reopened and re-finalized McDo Il Corso</span>
+              <span class="row-sub">Before ₱825.00 → after ₱825.00 · shares cleared and rebuilt</span>
+            </span>
+            <span class="pill">Audit</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen" data-screen="settings" hidden>
+        <div class="list card">
+          <button class="row group-row" type="button" data-modal="group">
+            <span class="group-mark large">SC</span>
+            <span class="row-main">
+              <span class="row-title">Salo Crew</span>
+              <span class="row-sub">4 adults · 1 pending invite</span>
+            </span>
+            <svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="m6 4 4 4-4 4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+        </div>
+
+        <div class="section-head"><h2>Your payment QR</h2></div>
+        <div class="list card">
+          <button class="row" type="button" data-modal="pay" data-payee="CP" data-amount="0.00" data-label="GCash" data-own="true">
+            <span class="qr-thumb" id="qrThumb" aria-hidden="true"></span>
+            <span class="row-main">
+              <span class="row-title">GCash</span>
+              <span class="row-sub">Added · only Salo Crew can see it</span>
+            </span>
+            <span class="text-action">Manage</span>
+          </button>
+        </div>
+
+        <div class="section-head"><h2>Group</h2></div>
+        <div class="list card">
+          <button class="row" type="button" data-target="ledger">
+            <span class="row-main">
+              <span class="row-title">Members &amp; invites</span>
+              <span class="row-sub">4 adults · 1 pending</span>
+            </span>
+            <svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="m6 4 4 4-4 4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <button class="row" type="button" data-target="new">
+            <span class="row-main">
+              <span class="row-title">Students</span>
+              <span class="row-sub">5 active · Ana and Ben covered</span>
+            </span>
+            <svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="m6 4 4 4-4 4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <div class="row stacked">
+            <span class="row-main">
+              <span class="row-title">Appearance</span>
+              <span class="row-sub">iPhone shell on iOS; Material 3 on Android</span>
+            </span>
+            <div class="segmented" role="group" aria-label="Appearance">
+              <button type="button" aria-pressed="false">Auto</button>
+              <button type="button" aria-pressed="false">iPhone</button>
+              <button type="button" class="is-active" aria-pressed="true">Android</button>
+            </div>
+          </div>
+          <button class="row" type="button" data-modal="group">
+            <span class="row-main">
+              <span class="row-title">Export</span>
+              <span class="row-sub">Full group · CSV or JSON</span>
+            </span>
+            <svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="m6 4 4 4-4 4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+        </div>
+
+        <div class="section-head"><h2>Account</h2></div>
+        <div class="list card">
+          <button class="row" type="button">
+            <span class="row-main"><span class="row-title">Sign out</span><span class="row-sub">[redacted-email]</span></span>
+          </button>
+          <button class="row destructive" type="button">
+            <span class="row-main"><span class="row-title">Delete account</span><span class="row-sub">Transfer or delete owned groups first</span></span>
+          </button>
+        </div>
+      </section>
+
+      <section class="screen" data-screen="outing" hidden>
+        <section class="summary-card">
+          <div class="summary-top"><span class="label">Total</span><span class="pill confirmed">Finalized</span></div>
+          <div class="summary-amount">₱825.00</div>
+          <p class="summary-sub">4 at the table · 2 students covered · no adjustments</p>
+        </section>
+
+        <div class="section-head"><h2>Shares</h2></div>
+        <div class="list card">
+          <div class="row">
+            <span class="avatar cp">CP</span>
+            <span class="row-main"><span class="row-title">CP</span><span class="row-sub">Own ₱220 · Ana ₱165 · shared ₱66</span></span>
+            <span class="amount">₱451.00</span>
+          </div>
+          <div class="row">
+            <span class="avatar mai">M</span>
+            <span class="row-main"><span class="row-title">Mai</span><span class="row-sub">Own ₱110 · Ben ₱132 · shared ₱66</span></span>
+            <span class="amount">₱308.00</span>
+          </div>
+          <div class="row">
+            <span class="avatar kent">K</span>
+            <span class="row-main"><span class="row-title">Kent</span><span class="row-sub">Shared head only</span></span>
+            <span class="amount">₱33.00</span>
+          </div>
+          <div class="row">
+            <span class="avatar llanmer">L</span>
+            <span class="row-main"><span class="row-title">Llanmer</span><span class="row-sub">Shared head only</span></span>
+            <span class="amount">₱33.00</span>
+          </div>
+        </div>
+
+        <button class="primary wide" type="button" data-modal="pay" data-payee="Mai" data-amount="451.00" data-label="GCash">Scan to pay Mai · ₱451.00</button>
+
+        <div class="section-head">
+          <h2>The table</h2>
+          <span class="hint">5 items</span>
+        </div>
+        <div class="list card">
+          <div class="row item">
+            <span class="row-main"><span class="row-title">CP meal</span><span class="row-sub">1 × ₱220.00</span></span>
+            <span class="pill">CP</span>
+            <span class="amount">₱220.00</span>
+          </div>
+          <div class="row item">
+            <span class="row-main"><span class="row-title">Mai meal</span><span class="row-sub">1 × ₱110.00</span></span>
+            <span class="pill">Mai</span>
+            <span class="amount">₱110.00</span>
+          </div>
+          <div class="row item">
+            <span class="row-main"><span class="row-title">Ana meal</span><span class="row-sub">1 × ₱165.00 · covered by CP</span></span>
+            <span class="pill">Ana</span>
+            <span class="amount">₱165.00</span>
+          </div>
+          <div class="row item">
+            <span class="row-main"><span class="row-title">Ben meal</span><span class="row-sub">1 × ₱132.00 · covered by Mai</span></span>
+            <span class="pill">Ben</span>
+            <span class="amount">₱132.00</span>
+          </div>
+          <div class="row item">
+            <span class="row-main"><span class="row-title">Shared rice</span><span class="row-sub">1 × ₱198.00 · split across 6</span></span>
+            <span class="pill">Shared</span>
+            <span class="amount">₱198.00</span>
+          </div>
+        </div>
+
+        <div class="section-head"><h2>Activity</h2></div>
+        <div class="list card">
+          <div class="row">
+            <span class="avatar cp">CP</span>
+            <span class="row-main"><span class="row-title">You finalized this outing</span><span class="row-sub">Yesterday · 8:42 PM</span></span>
+          </div>
+          <div class="row">
+            <span class="avatar mai">M</span>
+            <span class="row-main"><span class="row-title">Mai uploaded a GCash QR</span><span class="row-sub">2d ago · payment method</span></span>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen" data-screen="new" hidden>
+        <div class="list card form-card">
+          <label class="field">
+            <span>Date</span>
+            <input type="text" value="Nov 7, 2026" readonly>
+          </label>
+          <label class="field">
+            <span>Place</span>
+            <input type="text" value="McDo Il Corso">
+          </label>
+          <label class="field">
+            <span>Notes</span>
+            <input type="text" value="Friday dinner">
+          </label>
+        </div>
+
+        <div class="section-head">
+          <h2>At the table</h2>
+          <span class="hint">4 adults</span>
+        </div>
+        <div class="people-grid">
+          <button class="person is-on" type="button" aria-pressed="true"><span class="avatar cp">CP</span><span>CP</span></button>
+          <button class="person is-on" type="button" aria-pressed="true"><span class="avatar mai">M</span><span>Mai</span></button>
+          <button class="person is-on" type="button" aria-pressed="true"><span class="avatar kent">K</span><span>Kent</span></button>
+          <button class="person is-on" type="button" aria-pressed="true"><span class="avatar llanmer">L</span><span>Llanmer</span></button>
+        </div>
+
+        <div class="list card student-card">
+          <div class="row">
+            <span class="row-main"><span class="row-title">Ana</span><span class="row-sub">Covered by CP</span></span>
+            <span class="switch is-on" aria-hidden="true"><span></span></span>
+          </div>
+          <div class="row">
+            <span class="row-main"><span class="row-title">Ben</span><span class="row-sub">Covered by Mai</span></span>
+            <span class="switch is-on" aria-hidden="true"><span></span></span>
+          </div>
+        </div>
+
+        <div class="section-head">
+          <h2>Items</h2>
+          <button class="text-action" type="button">Add</button>
+        </div>
+        <div class="list card">
+          <div class="row item">
+            <span class="row-main"><span class="row-title">CP meal</span><span class="row-sub">1 × ₱220.00 · adult</span></span>
+            <span class="amount">₱220.00</span>
+          </div>
+          <div class="row item">
+            <span class="row-main"><span class="row-title">Mai meal</span><span class="row-sub">1 × ₱110.00 · adult</span></span>
+            <span class="amount">₱110.00</span>
+          </div>
+          <div class="row item">
+            <span class="row-main"><span class="row-title">Ana meal</span><span class="row-sub">1 × ₱165.00 · student</span></span>
+            <span class="amount">₱165.00</span>
+          </div>
+          <div class="row item">
+            <span class="row-main"><span class="row-title">Ben meal</span><span class="row-sub">1 × ₱132.00 · student</span></span>
+            <span class="amount">₱132.00</span>
+          </div>
+          <div class="row item">
+            <span class="row-main"><span class="row-title">Shared rice</span><span class="row-sub">1 × ₱198.00 · shared</span></span>
+            <span class="amount">₱198.00</span>
+          </div>
+        </div>
+
+        <div class="sticky-total">
+          <div>
+            <div class="sticky-label">Total</div>
+            <div class="sticky-value">₱825.00</div>
+            <div class="sticky-sub">Following 5 items</div>
+          </div>
+          <button class="primary compact" type="button" id="reviewButton">Review</button>
+        </div>
+      </section>
+
+      <section class="screen" data-screen="draft" hidden>
+        <div class="draft-banner">Private draft · only you and Kent can see this until you publish.</div>
+
+        <section class="summary-card">
+          <div class="summary-top"><span class="label">Draft total</span><span class="pill">Private</span></div>
+          <div class="summary-amount">₱1,240.00</div>
+          <p class="summary-sub">5 items · 4 at the table · prepared by Kent · Nov 9</p>
+        </section>
+
+        <div class="section-head">
+          <h2>Items</h2>
+          <span class="hint">5</span>
+        </div>
+        <div class="list card">
+          <div class="row item">
+            <span class="row-main"><span class="row-title">CP meal</span><span class="row-sub">1 × ₱300.00 · adult</span></span>
+            <span class="amount">₱300.00</span>
+          </div>
+          <div class="row item">
+            <span class="row-main"><span class="row-title">Mai meal</span><span class="row-sub">1 × ₱280.00 · adult</span></span>
+            <span class="amount">₱280.00</span>
+          </div>
+          <div class="row item">
+            <span class="row-main"><span class="row-title">Kent meal</span><span class="row-sub">1 × ₱260.00 · adult</span></span>
+            <span class="amount">₱260.00</span>
+          </div>
+          <div class="row item">
+            <span class="row-main"><span class="row-title">Llanmer meal</span><span class="row-sub">1 × ₱220.00 · adult</span></span>
+            <span class="amount">₱220.00</span>
+          </div>
+          <div class="row item">
+            <span class="row-main"><span class="row-title">Shared fries</span><span class="row-sub">1 × ₱180.00 · shared</span></span>
+            <span class="amount">₱180.00</span>
+          </div>
+        </div>
+
+        <button class="primary wide" type="button" id="publishDraft">Publish draft</button>
+        <button class="text-action centered danger" type="button">Discard draft</button>
+      </section>
+    </main>
+
+    <nav class="tabbar" id="tabbar" aria-label="Main">
+      <button class="tab-item is-active" type="button" data-target="home">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10.5 12 4l8 6.5V20a1 1 0 0 1-1 1h-5v-6H10v6H5a1 1 0 0 1-1-1v-9.5Z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span>Home</span>
+      </button>
+      <button class="tab-item" type="button" data-target="ledger">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h11a2 2 0 0 1 2 2v14H7a2 2 0 0 1-2-2V4Zm0 14h13M8 8h7M8 12h7" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span>Ledger</span>
+      </button>
+      <button class="tab-item" type="button" data-target="activity">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12h4l2.5-6 5 12 2.5-6h4" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span>Activity</span>
+      </button>
+      <button class="tab-item" type="button" data-target="settings">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15.2a3.2 3.2 0 1 0 0-6.4 3.2 3.2 0 0 0 0 6.4Z" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M19.4 13.5a7.8 7.8 0 0 0 0-3l1.8-1.4-2-3.4-2.1.8a7.8 7.8 0 0 0-2.6-1.5L14.2 2h-4l-.3 2.3a7.8 7.8 0 0 0-2.6 1.5l-2.1-.8-2 3.4 1.8 1.4a7.8 7.8 0 0 0 0 3l-1.8 1.4 2 3.4 2.1-.8a7.8 7.8 0 0 0 2.6 1.5l.3 2.3h4l.3-2.3a7.8 7.8 0 0 0 2.6-1.5l2.1.8 2-3.4-1.8-1.4Z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span>Settings</span>
+      </button>
+    </nav>
+
+    <div class="sheet-backdrop" id="payBackdrop" hidden>
+      <section class="sheet" role="dialog" aria-modal="true" aria-labelledby="payTitle">
+        <div class="grabber" aria-hidden="true"></div>
+        <div class="sheet-head">
+          <div>
+            <h2 id="payTitle">Pay Mai</h2>
+            <p class="sheet-sub" id="paySub">₱334.00 · GCash</p>
+          </div>
+          <button class="close" type="button" data-close="pay" aria-label="Close">
+            <svg viewBox="0 0 20 20" aria-hidden="true"><path d="m5 5 10 10M15 5 5 15" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+          </button>
+        </div>
+        <div class="qr-card">
+          <svg id="payQr" class="qr" viewBox="0 0 25 25" role="img" aria-label="Demo payment QR for Mai"></svg>
+          <div class="qr-meta">
+            <span class="qr-label" id="qrLabel">GCash</span>
+            <span class="qr-demo">Demo QR · not a real payment code</span>
+          </div>
+        </div>
+        <p class="sheet-note">Only Salo Crew can see this QR. Scan it with your GCash, Maya, or bank app.</p>
+        <button class="primary wide" type="button" id="recordPayment">Record payment</button>
+        <button class="text-action centered" type="button" data-close="pay">Done</button>
+      </section>
+    </div>
+
+    <div class="sheet-backdrop" id="groupBackdrop" hidden>
+      <section class="sheet" role="dialog" aria-modal="true" aria-labelledby="groupTitle">
+        <div class="grabber" aria-hidden="true"></div>
+        <div class="sheet-head">
+          <h2 id="groupTitle">Your groups</h2>
+          <button class="close" type="button" data-close="group" aria-label="Close">
+            <svg viewBox="0 0 20 20" aria-hidden="true"><path d="m5 5 10 10M15 5 5 15" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+          </button>
+        </div>
+        <div class="list card group-list">
+          <div class="row">
+            <span class="group-mark large">SC</span>
+            <span class="row-main"><span class="row-title">Salo Crew</span><span class="row-sub">4 adults · 1 pending</span></span>
+            <span class="pill">Current</span>
+          </div>
+          <button class="row" type="button">
+            <span class="group-mark large quiet">+</span>
+            <span class="row-main"><span class="row-title">Create a group</span><span class="row-sub">Start a new shared ledger</span></span>
+            <svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="m6 4 4 4-4 4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+        </div>
+        <p class="sheet-note">You own one group and can join others. Switch anytime.</p>
+      </section>
+    </div>
+
+    <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>
