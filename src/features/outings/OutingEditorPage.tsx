@@ -9,10 +9,12 @@ import {
   deleteItem,
   finalizeOuting,
   getOuting,
+  reopenOuting,
   setAdultPresent,
   setStudentPresent,
   updateOuting
 } from "@/features/outings/api";
+import { useLedger } from "@/features/ledger/useLedger";
 import type { AssignmentType } from "@/features/outings/types";
 import { formatDate } from "@/lib/dates";
 import { getErrorMessage } from "@/lib/errors";
@@ -30,6 +32,8 @@ export function OutingEditorPage() {
     enabled: Boolean(outingId)
   });
 
+  const { data: ledgerData } = useLedger(group?.id);
+
   const [date, setDate] = useState("");
   const [place, setPlace] = useState("");
   const [notes, setNotes] = useState("");
@@ -41,6 +45,8 @@ export function OutingEditorPage() {
     kind: "error" | "notice";
     text: string;
   } | null>(null);
+  const [showReopen, setShowReopen] = useState(false);
+  const [reopenState, setReopenState] = useState<"idle" | "saving">("idle");
   const [showItemForm, setShowItemForm] = useState(true);
 
   const [itemName, setItemName] = useState("");
@@ -166,6 +172,42 @@ export function OutingEditorPage() {
     }
   }
 
+  async function handleReopen() {
+    if (!data) return;
+    setReopenState("saving");
+    setActionError(null);
+    try {
+      await reopenOuting(data.outing.id, data.outing.version);
+      await refresh();
+      if (group) await queryClient.invalidateQueries({ queryKey: ["ledger", group.id] });
+      await queryClient.invalidateQueries({ queryKey: ["activity", group?.id] });
+      setShowReopen(false);
+      setFinalizeMessage({
+        kind: "notice",
+        text: "Reopened. Adjust the items, then finalize again."
+      });
+    } catch (caught) {
+      setActionError(getErrorMessage(caught, "Could not reopen the outing"));
+    } finally {
+      setReopenState("idle");
+    }
+  }
+
+  async function handleUseItemsTotal() {
+    if (!data) return;
+    setActionError(null);
+    try {
+      await updateOuting(data.outing.id, data.outing.version, { total_mode: "auto" });
+      await refresh();
+      setFinalizeMessage({
+        kind: "notice",
+        text: "The total now follows the items again."
+      });
+    } catch (caught) {
+      setActionError(getErrorMessage(caught, "Could not change the total mode"));
+    }
+  }
+
   async function toggleAdult(adultId: string, present: boolean) {
     if (!data) return;
     setActionError(null);
@@ -260,6 +302,10 @@ export function OutingEditorPage() {
 
   const isEditable = data.outing.status !== "finalized";
   const isOwner = group?.owner_id === profile?.id;
+  const affectedSettlements =
+    ledgerData?.settlements.filter(
+      (settlement) => settlement.status === "pending" || settlement.status === "confirmed"
+    ).length ?? 0;
   const canFinalize =
     isEditable &&
     isOwner &&
@@ -280,7 +326,51 @@ export function OutingEditorPage() {
             {formatDate(data.outing.date)} · {data.outing.status}
           </p>
         </header>
+        {isOwner && data.outing.status === "finalized" ? (
+          <button
+            className="text-action"
+            type="button"
+            onClick={() => setShowReopen(true)}
+          >
+            Reopen this outing
+          </button>
+        ) : null}
       </div>
+
+      {showReopen ? (
+        <section className="panel editor-confirm" aria-label="Reopen outing">
+          <span className="panel-label">Reopen</span>
+          <h2 className="panel-title">Clear the finalized shares?</h2>
+          <p className="panel-copy">
+            This outing becomes editable again. Its share snapshot is cleared, so it leaves the
+            ledger until you finalize it again. The saved total stays fixed.
+          </p>
+          {affectedSettlements > 0 ? (
+            <p className="panel-copy">
+              This group has {affectedSettlements} pending or confirmed{" "}
+              {affectedSettlements === 1 ? "payment" : "payments"}. They stay as recorded, so the
+              ledger will recalculate with the new shares.
+            </p>
+          ) : null}
+          <div className="form-actions">
+            <button
+              className="secondary-action"
+              type="button"
+              onClick={() => setShowReopen(false)}
+            >
+              Keep finalized
+            </button>
+            <button
+              className="primary-action"
+              type="button"
+              onClick={() => void handleReopen()}
+              disabled={reopenState === "saving"}
+            >
+              {reopenState === "saving" ? "Reopening…" : "Reopen outing"}
+            </button>
+          </div>
+        </section>
+      ) : null}
 
       {actionError ? (
         <p className="form-error" role="alert">
@@ -428,6 +518,27 @@ export function OutingEditorPage() {
             </button>
           ) : null}
         </div>
+
+        {data.outing.status === "reopened" ? (
+          data.outing.total_mode === "fixed" ? (
+            <div className="reopened-note">
+              <p className="panel-copy">
+                Reopened outings keep the saved total, even when items change.
+              </p>
+              {isOwner ? (
+                <button
+                  className="text-action"
+                  type="button"
+                  onClick={() => void handleUseItemsTotal()}
+                >
+                  Use items total
+                </button>
+              ) : null}
+            </div>
+          ) : (
+            <p className="panel-copy">This outing follows the item sum again.</p>
+          )
+        ) : null}
 
         <div className="item-list">
           {data.items.map((item) => (
@@ -591,7 +702,11 @@ export function OutingEditorPage() {
 
       <div className="editor-total">
         <div>
-          <div className="total-label">Total</div>
+          <div className="total-label">
+            {data.outing.status === "reopened" && data.outing.total_mode === "fixed"
+              ? "Fixed total"
+              : "Total"}
+          </div>
           <div className="total-amount">{preview ? formatPeso(preview.totalCentavos) : "—"}</div>
         </div>
         <button

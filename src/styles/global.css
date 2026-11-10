@@ -840,6 +840,112 @@ select {
   color: var(--platform-muted);
 }
 
+.editor-confirm .form-actions {
+  margin-top: 16px;
+}
+
+.reopened-note {
+  margin-top: 10px;
+}
+
+.reopened-note .panel-copy {
+  margin-top: 0;
+}
+
+.reopened-note .text-action {
+  margin-top: 4px;
+}
+
+.activity-filters {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  scrollbar-width: none;
+}
+
+.activity-filters::-webkit-scrollbar {
+  display: none;
+}
+
+.activity-filter {
+  min-height: 36px;
+  padding: 0 14px;
+  border: 1px solid var(--platform-line);
+  border-radius: 999px;
+  background: var(--platform-surface);
+  color: var(--platform-muted);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.activity-filter.is-active {
+  border-color: transparent;
+  background: var(--platform-accent-soft);
+  color: var(--platform-accent);
+}
+
+.activity-list {
+  display: grid;
+  margin-top: 8px;
+}
+
+.activity-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--platform-line-soft);
+}
+
+.activity-row:last-child {
+  border-bottom: 0;
+}
+
+.activity-row .text-action {
+  min-height: 32px;
+  font-size: 13px;
+}
+
+.activity-detail {
+  margin-top: 6px;
+}
+
+.activity-detail summary {
+  color: var(--platform-muted);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.activity-diff {
+  display: grid;
+  gap: 4px;
+  margin-top: 6px;
+  padding: 10px;
+  border-radius: 10px;
+  background: var(--platform-surface-muted);
+  font-size: 12px;
+}
+
+.activity-diff-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.activity-diff-key {
+  color: var(--platform-muted);
+}
+
+.activity-diff-value {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .primary-action:active,
   .ios-tab:active {

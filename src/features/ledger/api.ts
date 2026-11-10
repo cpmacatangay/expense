@@ -92,3 +92,14 @@ export async function voidSettlement(
   if (error) throw error;
   return data as Settlement;
 }
+
+export async function listSettlements(groupId: string): Promise<Settlement[]> {
+  const { data, error } = await requireSupabase()
+    .from("settlements")
+    .select("*")
+    .eq("group_id", groupId)
+    .order("created_at", { ascending: false });
+
+  if (error) throw error;
+  return (data ?? []) as Settlement[];
+}

@@ -20,8 +20,9 @@ Implemented: the PWA scaffold, platform shells, tokens, routing, PWA manifest, t
 deployment, Supabase project, M1 migrations/RLS, Google sign-in, group creation, invite codes,
 joining, students, the M2 schema, outing drafts, attendance, items, live share preview,
 owner-only server-side finalization through an Edge Function that writes immutable shares and an
-activity event atomically, and the shared ledger with exact balances, who-owes-whom transfers, and
-two-sided settlement record/confirm/decline/void. Next: reopen, activity feed, recap/export/QR, and
+activity event atomically, the shared ledger with exact balances, who-owes-whom transfers, and
+two-sided settlement record/confirm/decline/void, owner-only reopening with a fixed total, and the
+full activity feed with actor and before/after details. Next: history filters, recap/export/QR, and
 offline/realtime. The old local database is kept as an unlisted backup; there is no migration into the
 shared product.
 

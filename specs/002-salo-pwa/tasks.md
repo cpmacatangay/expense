@@ -69,7 +69,7 @@ can ship without these.
 - [ ] T026 [P] Add RLS policies for `invitations` and `students` in `supabase/migrations/`
 - [x] T027 [P] Add RLS policies for `outings`, `outing_adults`, `outing_students`, `items`, and `shares` in `supabase/migrations/`
 - [x] T028 [P] Add RLS policies for `settlements` and `activity_events` in `supabase/migrations/`
-- [ ] T029 Add database triggers or functions for activity events in `supabase/migrations/`
+- [x] T029 Add database triggers or functions for activity events in `supabase/migrations/`
 
 ### Auth and state
 
@@ -154,7 +154,7 @@ Manual, have the owner finalize, and verify exact shares.
 - [ ] T070 [US2] Build the outing review with share preview in `src/features/outings/OutingReview.tsx`
 - [ ] T071 [US2] Build the finalized outing detail in `src/features/outings/OutingDetail.tsx`
 - [x] T072 [US2] Implement the finalize Edge Function in `supabase/functions/finalize-outing/`
-- [ ] T073 [US2] Implement the reopen Edge Function in `supabase/functions/reopen-outing/`
+- [x] T073 [US2] Implement reopen as the `reopen_outing` RPC in `supabase/migrations/0012_reopen_outing.sql`
 - [ ] T074 [US2] Implement version checks and stale-write errors in `src/data/supabase/outings.ts`
 - [ ] T075 [US2] Implement shared-draft editing and member visibility in `src/features/outings/`
 - [ ] T076 [US2] Implement local private drafts in `src/data/drafts/`
@@ -262,7 +262,7 @@ publish online, and confirm shared data.
 
 ### Implementation
 
-- [ ] T129 [US5] Build the Activity feed with actor, action, and before/after in `src/features/activity/ActivityScreen.tsx`
+- [x] T129 [US5] Build the Activity feed with actor, action, and before/after in `src/pages/ActivityPage.tsx`
 - [ ] T130 [US5] Implement activity pagination and realtime append in `src/features/activity/`
 - [ ] T131 [US5] Build History filters by date, adult, and student in `src/features/outings/HistoryScreen.tsx`
 - [ ] T132 [US5] Implement owner CSV export in `src/features/settings/exportCsv.ts`
@@ -271,7 +271,7 @@ publish online, and confirm shared data.
 - [ ] T135 [US5] Add export privacy notice and empty-group handling
 - [ ] T136 [US5] Add iPhone and Material 3 variants for Activity and History
 - [ ] T137 [US5] Add accessibility labels and focus order for the feed and filters
-- [ ] T138 [US5] Add copy for activity actions and export scope
+- [x] T138 [US5] Add copy for activity actions and export scope
 - [ ] T139 [US5] Verify export contents against the data model
 - [ ] T140 [US5] Measure activity pagination and history performance
 

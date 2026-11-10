@@ -176,6 +176,16 @@ export type FinalizeResult = {
   }[];
 };
 
+export async function reopenOuting(outingId: string, expectedVersion: number): Promise<Outing> {
+  const { data, error } = await requireSupabase().rpc("reopen_outing", {
+    p_outing_id: outingId,
+    p_expected_version: expectedVersion
+  });
+
+  if (error) throw error;
+  return data as Outing;
+}
+
 export async function finalizeOuting(
   outingId: string,
   expectedVersion: number
