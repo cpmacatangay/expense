@@ -1,0 +1,71 @@
+:root {
+  /* Brand */
+  --color-ledger-green: #1f5c45;
+  --color-green-soft: #d9efe2;
+  --color-mint: #b4f0ce;
+  --color-ink: #15221c;
+  --color-muted: #5d6b63;
+  --color-red: #a83232;
+  --color-red-soft: #f7e2e0;
+  --color-amber: #8a5a12;
+  --color-amber-soft: #f3e7d2;
+
+  /* Neutrals */
+  --color-ground: #f2f4f0;
+  --color-surface: #fcfdfb;
+  --color-surface-muted: #eaede7;
+  --color-line: #d8ddd4;
+  --color-line-soft: #e6eae3;
+  --color-canvas: #e6e9e2;
+
+  /* Shape */
+  --radius-card: 16px;
+  --radius-control: 12px;
+  --radius-tab: 22px;
+  --tab-height: 64px;
+
+  /* Type */
+  --font-ios:
+    -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Segoe UI", system-ui,
+    sans-serif;
+  --font-android: "Roboto", "Segoe UI", system-ui, sans-serif;
+
+  /* Motion */
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+  --duration-press: 160ms;
+  --duration-ui: 180ms;
+  --duration-sheet: 240ms;
+}
+
+/* Material 3 platform roles */
+:root[data-platform="android"] {
+  --m3-surface: #f7faf5;
+  --m3-surface-container-lowest: #ffffff;
+  --m3-surface-container-low: #f0f5ee;
+  --m3-surface-container: #e8efe5;
+  --m3-surface-container-high: #dfe8dc;
+  --m3-on-surface: #1a1c19;
+  --m3-on-surface-variant: #5d6b63;
+  --m3-primary: #1f5c45;
+  --m3-on-primary: #ffffff;
+  --m3-primary-container: #b4f0ce;
+  --m3-on-primary-container: #0b2e1f;
+  --m3-secondary-container: #d9efe2;
+  --m3-on-secondary-container: #123526;
+  --m3-error: #8c1d18;
+  --m3-error-container: #f9dedc;
+  --m3-on-error-container: #410e0b;
+  --m3-outline: #c9d2c6;
+  --m3-outline-variant: #e1e8de;
+  --m3-amber-container: #f3e7d2;
+  --m3-on-amber-container: #6b4610;
+  --m3-radius-card: 12px;
+  --m3-radius-large: 16px;
+  --m3-radius-button: 20px;
+  --m3-ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --m3-ease-emphasized: cubic-bezier(0.05, 0.7, 0.1, 1);
+  --m3-duration-short: 150ms;
+  --m3-duration-medium: 250ms;
+}

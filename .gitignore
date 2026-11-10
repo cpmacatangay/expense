@@ -30,7 +30,22 @@ Thumbs.db
 # Environment and editor files
 .env
 .env.*
+!.env.example
 .vscode/
+
+# Node / PWA
+node_modules/
+dist/
+coverage/
+test-results/
+playwright-report/
+*.tsbuildinfo
+
+# Local secrets kept outside the archived Android project
+.secrets/
+
+# Local agent hooks
+.github/hooks/impeccable.json
 
 # Playwright artifacts
 .playwright-mcp/
@@ -38,3 +53,6 @@ Thumbs.db
 # Design working artifacts
 .taste-skill/
 
+.vercel
+.env*
+!.env.example

@@ -5,6 +5,12 @@
 This is a validation guide, not an implementation dump. It proves the PWA works end to end on iPhone
 and Android.
 
+> **Current status (M2 in progress):** the shared shell, auth, groups, students, outing drafts,
+> attendance, items, and live share preview are implemented. Email sign-in is hidden in production
+> until a verified sending domain exists; Google sign-in is live. Finalization, the ledger, settlements,
+> and activity are next. The old Kotlin app and its Supabase migrations are archived under
+> `archive/android/`; the new tables are isolated from the legacy `ledger_snapshots` backup table.
+
 ## Prerequisites
 
 - Node 22+ and npm.
@@ -26,8 +32,18 @@ supabase db reset
 npm run dev
 ```
 
-Expected: the app opens at `http://localhost:5173`, the sign-in screen appears, and the PWA manifest is
-served.
+**Current project**
+
+- Project ref: `rfbnpkhzmxktpkmuhqyf`
+- Project URL: `https://rfbnpkhzmxktpkmuhqyf.supabase.co`
+- Local `.env.local` is configured with the publishable key and is ignored by Git.
+- Production origin: `https://salo-pi.vercel.app` (Vercel project `salo`). The local
+  `supabase/config.toml` already lists it as `site_url` and in `additional_redirect_urls`. Run
+  `supabase config push` after `supabase login` and `supabase link` to apply it remotely; that step
+  needs your Supabase access token.
+
+Expected: the app opens at `http://localhost:5173`, the shared shell appears, and the PWA manifest is
+served. Sign-in arrives in M1.
 
 ## 2. Supabase setup
 

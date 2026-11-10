@@ -4,6 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#F4F2ED">
+  <link rel="icon" type="image/svg+xml" href="../../brand/logo/kit/variants/salo-symbol-favicon.svg">
   <title>Salo — shared group ledger</title>
   <link rel="stylesheet" href="styles.css">
 </head>
@@ -11,7 +12,7 @@
   <div class="app" id="app">
     <header class="app-head">
       <div class="topline" id="topline">
-        <img class="wordmark" src="../../brand/logo/kit/variants/salo-wordmark-mono-1f5c45.svg" alt="Salo">
+        <img class="brand-mark" src="../../brand/logo/kit/variants/salo-symbol-mono-1f5c45.svg" alt="Salo">
         <button class="group-switch" type="button" data-modal="group" aria-label="Switch group">
           <span class="group-mark">SC</span>
           <span class="group-name">Salo Crew</span>
@@ -22,11 +23,15 @@
         <button class="back" type="button" data-back="home" aria-label="Back">
           <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M12.5 4.5 7 10l5.5 5.5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </button>
-        <img class="wordmark" src="../../brand/logo/kit/variants/salo-wordmark-mono-1f5c45.svg" alt="Salo">
+        <img class="brand-mark" src="../../brand/logo/kit/variants/salo-symbol-mono-1f5c45.svg" alt="Salo">
       </div>
       <h1 class="page-title" id="pageTitle">Hi, CP</h1>
       <p class="page-sub" id="pageSub">Salo Crew · 4 at the table</p>
     </header>
+
+    <div class="offline-banner" id="offlineBanner" role="status" hidden>
+      Offline. Drafts stay on this device; shared changes wait for a connection.
+    </div>
 
     <main class="screen-host" id="screenHost">
       <section class="screen" data-screen="home">
@@ -56,7 +61,7 @@
           <span class="count">2</span>
         </div>
         <div class="list card">
-          <button class="row" type="button" data-modal="pay" data-payee="Kent" data-amount="485.00" data-label="Maya">
+          <button class="row" type="button" data-modal="confirm" data-payer="Kent" data-amount="485.00" data-label="Maya" data-when="2h ago">
             <span class="avatar kent">K</span>
             <span class="row-main">
               <span class="row-title">Confirm Kent's payment</span>
@@ -147,7 +152,7 @@
             <span class="avatar mai">M</span>
             <span class="row-main"><span class="row-title">Mai</span><span class="row-sub">Your payment</span></span>
             <span class="amount">₱334.00</span>
-            <button class="text-action" type="button" data-modal="pay" data-payee="Mai" data-amount="334.00" data-label="GCash">Pay</button>
+            <button class="text-action" type="button" data-modal="pay" data-payee="Mai" data-amount="334.00" data-label="GCash" data-can-record="true">Pay</button>
           </div>
           <div class="row debt">
             <span class="avatar cp">CP</span>
@@ -155,7 +160,7 @@
             <span class="avatar kent">K</span>
             <span class="row-main"><span class="row-title">Kent</span><span class="row-sub">Your payment</span></span>
             <span class="amount">₱485.00</span>
-            <button class="text-action" type="button" data-modal="pay" data-payee="Kent" data-amount="485.00" data-label="Maya">Pay</button>
+            <button class="text-action" type="button" data-modal="pay" data-payee="Kent" data-amount="485.00" data-label="Maya" data-can-record="true">Pay</button>
           </div>
           <div class="row debt">
             <span class="avatar llanmer">L</span>
@@ -163,7 +168,7 @@
             <span class="avatar mai">M</span>
             <span class="row-main"><span class="row-title">Mai</span><span class="row-sub">From Llanmer</span></span>
             <span class="amount">₱392.00</span>
-            <button class="text-action" type="button" data-modal="pay" data-payee="Mai" data-amount="392.00" data-label="GCash">View</button>
+            <button class="text-action" type="button" data-modal="pay" data-payee="Mai" data-amount="392.00" data-label="GCash" data-can-record="false">View</button>
           </div>
           <div class="row debt">
             <span class="avatar llanmer">L</span>
@@ -171,7 +176,7 @@
             <span class="avatar kent">K</span>
             <span class="row-main"><span class="row-title">Kent</span><span class="row-sub">From Llanmer</span></span>
             <span class="amount">₱570.00</span>
-            <button class="text-action" type="button" data-modal="pay" data-payee="Kent" data-amount="570.00" data-label="Maya">View</button>
+            <button class="text-action" type="button" data-modal="pay" data-payee="Kent" data-amount="570.00" data-label="Maya" data-can-record="false">View</button>
           </div>
           <div class="row debt">
             <span class="avatar kent">K</span>
@@ -179,7 +184,7 @@
             <span class="avatar mai">M</span>
             <span class="row-main"><span class="row-title">Mai</span><span class="row-sub">From Kent</span></span>
             <span class="amount">₱40.00</span>
-            <button class="text-action" type="button" data-modal="pay" data-payee="Mai" data-amount="40.00" data-label="GCash">View</button>
+            <button class="text-action" type="button" data-modal="pay" data-payee="Mai" data-amount="40.00" data-label="GCash" data-can-record="false">View</button>
           </div>
         </div>
 
@@ -206,7 +211,7 @@
           </div>
         </div>
 
-        <button class="primary wide" type="button" data-modal="pay" data-payee="Mai" data-amount="334.00" data-label="GCash">Record payment</button>
+        <button class="primary wide" type="button" data-modal="record" data-payee="Mai" data-amount="334.00" data-label="GCash">Record payment</button>
       </section>
 
       <section class="screen" data-screen="activity" hidden>
@@ -263,6 +268,22 @@
             </span>
             <span class="pill">Audit</span>
           </div>
+          <div class="row">
+            <span class="avatar kent">K</span>
+            <span class="row-main">
+              <span class="row-title">Kent declined ₱485.00</span>
+              <span class="row-sub">Settlement · note: I paid cash · 1h ago</span>
+            </span>
+            <span class="pill declined">Declined</span>
+          </div>
+          <div class="row">
+            <span class="avatar cp">CP</span>
+            <span class="row-main">
+              <span class="row-title">Your edit was rejected as stale</span>
+              <span class="row-sub">McDo Il Corso changed on another device. Reload to continue.</span>
+            </span>
+            <span class="pill stale">Stale</span>
+          </div>
         </div>
       </section>
 
@@ -292,14 +313,14 @@
 
         <div class="section-head"><h2>Group</h2></div>
         <div class="list card">
-          <button class="row" type="button" data-target="ledger">
+          <button class="row" type="button" data-modal="members">
             <span class="row-main">
               <span class="row-title">Members &amp; invites</span>
               <span class="row-sub">4 adults · 1 pending</span>
             </span>
             <svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="m6 4 4 4-4 4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
           </button>
-          <button class="row" type="button" data-target="new">
+          <button class="row" type="button" data-modal="students">
             <span class="row-main">
               <span class="row-title">Students</span>
               <span class="row-sub">5 active · Ana and Ben covered</span>
@@ -317,7 +338,7 @@
               <button type="button" aria-pressed="false">Android</button>
             </div>
           </div>
-          <button class="row" type="button" data-modal="group">
+          <button class="row" type="button" data-modal="export">
             <span class="row-main">
               <span class="row-title">Export</span>
               <span class="row-sub">Full group · CSV or JSON</span>
@@ -328,12 +349,67 @@
 
         <div class="section-head"><h2>Account</h2></div>
         <div class="list card">
-          <button class="row" type="button">
+          <button class="row" type="button" id="signOut">
             <span class="row-main"><span class="row-title">Sign out</span><span class="row-sub">[redacted-email]</span></span>
           </button>
           <button class="row destructive" type="button">
             <span class="row-main"><span class="row-title">Delete account</span><span class="row-sub">Transfer or delete owned groups first</span></span>
           </button>
+        </div>
+      </section>
+
+      <section class="screen" data-screen="welcome" hidden>
+        <div class="onboard">
+          <section class="onboard-step" data-onboard-step="1">
+            <img class="onboard-mark" src="../../brand/logo/kit/variants/salo-symbol-mono-1f5c45.svg" alt="">
+            <h2 class="onboard-title">Eat together.<br>Settle once.</h2>
+            <p class="onboard-lede">One shared ledger for the table. Sign in so every adult sees the same balance.</p>
+            <button class="primary wide" type="button" data-onboard-next>Continue with Google</button>
+            <button class="secondary wide" type="button" data-onboard-next>Email me a code</button>
+            <p class="onboard-fine">No Apple sign-in. Email codes are sent through the group's SMTP.</p>
+            <button class="text-action centered" type="button" data-onboard-next>I have an invite</button>
+          </section>
+
+          <section class="onboard-step" data-onboard-step="2" hidden>
+            <h2 class="onboard-title">Start or join a table</h2>
+            <p class="onboard-lede">Step 2 of 3. Groups are 2 to 12 adults. Students never sign in.</p>
+            <button class="choice" type="button" data-onboard-next>
+              <span class="choice-title">Create a group</span>
+              <span class="choice-sub">You become the owner and can invite adults.</span>
+            </button>
+            <button class="choice" type="button" data-onboard-next>
+              <span class="choice-title">Join with an invite</span>
+              <span class="choice-sub">Paste the link or enter the code from an adult.</span>
+            </button>
+            <button class="text-action centered" type="button" data-onboard-back>Back</button>
+          </section>
+
+          <section class="onboard-step" data-onboard-step="3" hidden>
+            <h2 class="onboard-title">Bring the table in</h2>
+            <p class="onboard-lede">Step 3 of 3. Every active adult needs an account. Students are covered by an adult.</p>
+            <div class="list card">
+              <button class="row" type="button" data-modal="members">
+                <span class="row-main"><span class="row-title">Invite an adult</span><span class="row-sub">One link per adult</span></span>
+                <span class="pill amber">1 pending</span>
+              </button>
+              <button class="row" type="button" data-modal="students">
+                <span class="row-main"><span class="row-title">Add a student</span><span class="row-sub">No account needed</span></span>
+                <svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="m6 4 4 4-4 4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </button>
+            </div>
+            <button class="primary wide" type="button" data-onboard-done>Open Salo Crew</button>
+            <p class="onboard-fine">You can invite more people later in Settings.</p>
+          </section>
+        </div>
+      </section>
+
+      <section class="screen" data-screen="empty" hidden>
+        <div class="empty-state">
+          <img class="empty-mark" src="../../brand/logo/kit/variants/salo-symbol-mono-1f5c45.svg" alt="">
+          <h2>No outings yet</h2>
+          <p>Start with the first shared meal. Add the people at the table, then the items.</p>
+          <button class="primary wide" type="button" data-open="new">New outing</button>
+          <button class="text-action centered" type="button" data-modal="members">Invite an adult</button>
         </div>
       </section>
 
@@ -412,7 +488,25 @@
             <span class="avatar mai">M</span>
             <span class="row-main"><span class="row-title">Mai uploaded a GCash QR</span><span class="row-sub">2d ago · payment method</span></span>
           </div>
+          <div class="row">
+            <span class="avatar kent">K</span>
+            <span class="row-main">
+              <span class="row-title">Kent declined ₱485.00</span>
+              <span class="row-sub">Settlement · note: I paid cash · 1h ago</span>
+            </span>
+            <span class="pill declined">Declined</span>
+          </div>
+          <div class="row">
+            <span class="avatar cp">CP</span>
+            <span class="row-main">
+              <span class="row-title">Your edit was rejected as stale</span>
+              <span class="row-sub">McDo Il Corso changed on another device. Reload to continue.</span>
+            </span>
+            <span class="pill stale">Stale</span>
+          </div>
         </div>
+
+        <button class="secondary wide" type="button" data-modal="recap">Share recap</button>
       </section>
 
       <section class="screen" data-screen="new" hidden>
@@ -455,38 +549,38 @@
 
         <div class="section-head">
           <h2>Items</h2>
-          <button class="text-action" type="button">Add</button>
+          <button class="text-action" type="button" data-modal="item">Add</button>
         </div>
-        <div class="list card">
-          <div class="row item">
+        <div class="list card" id="newItemsList">
+          <button class="row item" type="button" data-item>
             <span class="row-main"><span class="row-title">CP meal</span><span class="row-sub">1 × ₱220.00 · adult</span></span>
             <span class="amount">₱220.00</span>
-          </div>
-          <div class="row item">
+          </button>
+          <button class="row item" type="button" data-item>
             <span class="row-main"><span class="row-title">Mai meal</span><span class="row-sub">1 × ₱110.00 · adult</span></span>
             <span class="amount">₱110.00</span>
-          </div>
-          <div class="row item">
+          </button>
+          <button class="row item" type="button" data-item>
             <span class="row-main"><span class="row-title">Ana meal</span><span class="row-sub">1 × ₱165.00 · student</span></span>
             <span class="amount">₱165.00</span>
-          </div>
-          <div class="row item">
+          </button>
+          <button class="row item" type="button" data-item>
             <span class="row-main"><span class="row-title">Ben meal</span><span class="row-sub">1 × ₱132.00 · student</span></span>
             <span class="amount">₱132.00</span>
-          </div>
-          <div class="row item">
+          </button>
+          <button class="row item" type="button" data-item>
             <span class="row-main"><span class="row-title">Shared rice</span><span class="row-sub">1 × ₱198.00 · shared</span></span>
             <span class="amount">₱198.00</span>
-          </div>
+          </button>
         </div>
 
         <div class="sticky-total">
           <div>
             <div class="sticky-label">Total</div>
-            <div class="sticky-value">₱825.00</div>
-            <div class="sticky-sub">Following 5 items</div>
+            <div class="sticky-value" id="newTotal">₱825.00</div>
+            <div class="sticky-sub" id="newItemCount">Following 5 items</div>
           </div>
-          <button class="primary compact" type="button" id="reviewButton">Review</button>
+          <button class="primary compact" type="button" id="reviewButton" data-modal="review">Review</button>
         </div>
       </section>
 
@@ -527,7 +621,7 @@
         </div>
 
         <button class="primary wide" type="button" id="publishDraft">Publish draft</button>
-        <button class="text-action centered danger" type="button">Discard draft</button>
+        <button class="text-action centered danger" type="button" data-modal="discard">Discard draft</button>
       </section>
     </main>
 
@@ -551,7 +645,7 @@
     </nav>
 
     <div class="sheet-backdrop" id="payBackdrop" hidden>
-      <section class="sheet" role="dialog" aria-modal="true" aria-labelledby="payTitle">
+      <section class="sheet" role="dialog" aria-modal="true" tabindex="-1" aria-labelledby="payTitle">
         <div class="grabber" aria-hidden="true"></div>
         <div class="sheet-head">
           <div>
@@ -571,12 +665,325 @@
         </div>
         <p class="sheet-note">Only Salo Crew can see this QR. Scan it with your GCash, Maya, or bank app.</p>
         <button class="primary wide" type="button" id="recordPayment">Record payment</button>
+        <button class="secondary wide" type="button" id="replaceQr" hidden>Replace QR image</button>
+        <button class="text-action danger centered" type="button" id="removeQr" hidden>Remove QR</button>
         <button class="text-action centered" type="button" data-close="pay">Done</button>
       </section>
     </div>
 
+    <div class="sheet-backdrop" id="confirmBackdrop" hidden>
+      <section class="sheet" role="dialog" aria-modal="true" tabindex="-1" aria-labelledby="confirmTitle">
+        <div class="grabber" aria-hidden="true"></div>
+        <div class="sheet-head">
+          <div>
+            <h2 id="confirmTitle">Confirm Kent's payment</h2>
+            <p class="sheet-sub" id="confirmSub">₱485.00 · Maya · recorded 2h ago</p>
+          </div>
+          <button class="close" type="button" data-close="confirm" aria-label="Close">
+            <svg viewBox="0 0 20 20" aria-hidden="true"><path d="m5 5 10 10M15 5 5 15" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+          </button>
+        </div>
+        <div class="list card sheet-summary">
+          <div class="row">
+            <span class="avatar kent">K</span>
+            <span class="row-main">
+              <span class="row-title"><span id="confirmPayer">Kent</span> paid you</span>
+              <span class="row-sub">Recorded in Salo Crew</span>
+            </span>
+            <span class="amount" id="confirmAmount">₱485.00</span>
+          </div>
+          <div class="row">
+            <span class="row-main">
+              <span class="row-title">Only confirmed payments change balances</span>
+              <span class="row-sub">Decline with a note if this is wrong.</span>
+            </span>
+          </div>
+        </div>
+        <label class="field sheet-field">
+          <span>Note (required to decline)</span>
+          <input id="confirmNote" type="text" placeholder="What should Kent know?" autocomplete="off">
+        </label>
+        <button class="primary wide" type="button" id="confirmSettlement">Confirm ₱485.00</button>
+        <button class="text-action danger centered" type="button" id="declineSettlement">Decline payment</button>
+      </section>
+    </div>
+
+    <div class="sheet-backdrop" id="recordBackdrop" hidden>
+      <section class="sheet" role="dialog" aria-modal="true" tabindex="-1" aria-labelledby="recordTitle">
+        <div class="grabber" aria-hidden="true"></div>
+        <div class="sheet-head">
+          <div>
+            <h2 id="recordTitle">Record a payment</h2>
+            <p class="sheet-sub" id="recordSub">Only the payer records. The recipient confirms.</p>
+          </div>
+          <button class="close" type="button" data-close="record" aria-label="Close">
+            <svg viewBox="0 0 20 20" aria-hidden="true"><path d="m5 5 10 10M15 5 5 15" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+          </button>
+        </div>
+        <div class="list card form-card sheet-summary">
+          <label class="field">
+            <span>From</span>
+            <input type="text" value="CP (you)" readonly>
+          </label>
+          <label class="field">
+            <span>To</span>
+            <input id="recordPayee" type="text" value="Mai" autocomplete="off">
+          </label>
+          <label class="field">
+            <span>Amount</span>
+            <input id="recordAmount" type="text" inputmode="decimal" value="334.00" autocomplete="off">
+          </label>
+          <label class="field">
+            <span>Date</span>
+            <input id="recordDate" type="text" value="Nov 9, 2026" autocomplete="off">
+          </label>
+          <label class="field">
+            <span>Note (optional)</span>
+            <input id="recordNote" type="text" placeholder="Dinner at McDo" autocomplete="off">
+          </label>
+        </div>
+        <p class="sheet-note">Nothing changes until the recipient confirms.</p>
+        <button class="primary wide" type="button" id="recordSettlement">Record ₱334.00</button>
+      </section>
+    </div>
+
+    <div class="sheet-backdrop" id="membersBackdrop" hidden>
+      <section class="sheet" role="dialog" aria-modal="true" tabindex="-1" aria-labelledby="membersTitle">
+        <div class="grabber" aria-hidden="true"></div>
+        <div class="sheet-head">
+          <div>
+            <h2 id="membersTitle">Members &amp; invites</h2>
+            <p class="sheet-sub">Salo Crew · 4 adults</p>
+          </div>
+          <button class="close" type="button" data-close="members" aria-label="Close">
+            <svg viewBox="0 0 20 20" aria-hidden="true"><path d="m5 5 10 10M15 5 5 15" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+          </button>
+        </div>
+        <div class="list card sheet-summary">
+          <div class="row">
+            <span class="avatar cp">CP</span>
+            <span class="row-main"><span class="row-title">CP</span><span class="row-sub">Owner · you</span></span>
+            <span class="pill confirmed">Owner</span>
+          </div>
+          <div class="row">
+            <span class="avatar mai">M</span>
+            <span class="row-main"><span class="row-title">Mai</span><span class="row-sub">Adult · active</span></span>
+          </div>
+          <div class="row">
+            <span class="avatar kent">K</span>
+            <span class="row-main"><span class="row-title">Kent</span><span class="row-sub">Adult · active</span></span>
+          </div>
+          <div class="row">
+            <span class="avatar llanmer">L</span>
+            <span class="row-main"><span class="row-title">Llanmer</span><span class="row-sub">Adult · active</span></span>
+          </div>
+          <div class="row">
+            <span class="avatar quiet">C</span>
+            <span class="row-main"><span class="row-title">Carlo</span><span class="row-sub">Invited · no account yet</span></span>
+            <span class="pill amber">Pending</span>
+          </div>
+        </div>
+        <button class="primary wide" type="button" id="inviteAdult">Invite an adult</button>
+        <p class="sheet-note">Every active adult has an account. As owner, you can remove adults and transfer ownership.</p>
+      </section>
+    </div>
+
+    <div class="sheet-backdrop" id="studentsBackdrop" hidden>
+      <section class="sheet" role="dialog" aria-modal="true" tabindex="-1" aria-labelledby="studentsTitle">
+        <div class="grabber" aria-hidden="true"></div>
+        <div class="sheet-head">
+          <div>
+            <h2 id="studentsTitle">Students</h2>
+            <p class="sheet-sub">5 active · no accounts</p>
+          </div>
+          <button class="close" type="button" data-close="students" aria-label="Close">
+            <svg viewBox="0 0 20 20" aria-hidden="true"><path d="m5 5 10 10M15 5 5 15" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+          </button>
+        </div>
+        <div class="list card sheet-summary">
+          <div class="row">
+            <span class="avatar quiet">A</span>
+            <span class="row-main"><span class="row-title">Ana</span><span class="row-sub">Covered by CP</span></span>
+          </div>
+          <div class="row">
+            <span class="avatar quiet">B</span>
+            <span class="row-main"><span class="row-title">Ben</span><span class="row-sub">Covered by Mai</span></span>
+          </div>
+          <div class="row">
+            <span class="avatar quiet">C</span>
+            <span class="row-main"><span class="row-title">CJ</span><span class="row-sub">Covered by Kent</span></span>
+          </div>
+          <div class="row">
+            <span class="avatar quiet">D</span>
+            <span class="row-main"><span class="row-title">Dessa</span><span class="row-sub">Covered by Llanmer</span></span>
+          </div>
+          <div class="row">
+            <span class="avatar quiet">M</span>
+            <span class="row-main"><span class="row-title">Migs</span><span class="row-sub">Covered by CP</span></span>
+          </div>
+        </div>
+        <button class="primary wide" type="button" id="addStudent">Add a student</button>
+        <p class="sheet-note">Students never sign in. An adult covers their share on each outing.</p>
+      </section>
+    </div>
+
+    <div class="sheet-backdrop" id="itemBackdrop" hidden>
+      <section class="sheet" role="dialog" aria-modal="true" tabindex="-1" aria-labelledby="itemTitle">
+        <div class="grabber" aria-hidden="true"></div>
+        <div class="sheet-head">
+          <div>
+            <h2 id="itemTitle">Add item</h2>
+            <p class="sheet-sub" id="itemSub">Split across the people who share it.</p>
+          </div>
+          <button class="close" type="button" data-close="item" aria-label="Close">
+            <svg viewBox="0 0 20 20" aria-hidden="true"><path d="m5 5 10 10M15 5 5 15" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+          </button>
+        </div>
+        <div class="list card form-card sheet-summary">
+          <label class="field">
+            <span>Item</span>
+            <input id="itemName" type="text" placeholder="Shared rice" autocomplete="off">
+          </label>
+          <div class="field-pair">
+            <label class="field">
+              <span>Quantity</span>
+              <input id="itemQty" type="text" inputmode="numeric" value="1" autocomplete="off">
+            </label>
+            <label class="field">
+              <span>Unit price</span>
+              <input id="itemPrice" type="text" inputmode="decimal" placeholder="0.00" autocomplete="off">
+            </label>
+          </div>
+        </div>
+        <div class="section-head">
+          <h2>Who shares it</h2>
+          <span class="hint" id="itemAmount">₱0.00</span>
+        </div>
+        <div class="people-grid compact" id="itemPeople">
+          <button class="person is-on" type="button" aria-pressed="true"><span class="avatar cp">CP</span><span>CP</span></button>
+          <button class="person is-on" type="button" aria-pressed="true"><span class="avatar mai">M</span><span>Mai</span></button>
+          <button class="person is-on" type="button" aria-pressed="true"><span class="avatar kent">K</span><span>Kent</span></button>
+          <button class="person is-on" type="button" aria-pressed="true"><span class="avatar llanmer">L</span><span>Llanmer</span></button>
+          <button class="person is-on" type="button" aria-pressed="true"><span class="avatar quiet">A</span><span>Ana</span></button>
+          <button class="person is-on" type="button" aria-pressed="true"><span class="avatar quiet">B</span><span>Ben</span></button>
+        </div>
+        <button class="primary wide" type="button" id="saveItem">Add ₱0.00 to the outing</button>
+      </section>
+    </div>
+
+    <div class="sheet-backdrop" id="reviewBackdrop" hidden>
+      <section class="sheet" role="dialog" aria-modal="true" tabindex="-1" aria-labelledby="reviewTitle">
+        <div class="grabber" aria-hidden="true"></div>
+        <div class="sheet-head">
+          <div>
+            <h2 id="reviewTitle">Review outing</h2>
+            <p class="sheet-sub">Nov 7, 2026 · McDo Il Corso</p>
+          </div>
+          <button class="close" type="button" data-close="review" aria-label="Close">
+            <svg viewBox="0 0 20 20" aria-hidden="true"><path d="m5 5 10 10M15 5 5 15" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+          </button>
+        </div>
+        <section class="summary-card sheet-summary">
+          <div class="summary-top"><span class="label">Total</span><span class="pill">Item sum</span></div>
+          <div class="summary-amount" id="reviewTotal">₱825.00</div>
+          <p class="summary-sub" id="reviewMeta">5 items · 4 adults · 2 students</p>
+        </section>
+        <div class="list card sheet-summary">
+          <div class="row">
+            <span class="row-main"><span class="row-title">Paid by CP (you)</span><span class="row-sub">One payer records the full bill.</span></span>
+          </div>
+          <div class="row">
+            <span class="row-main"><span class="row-title">Split by items</span><span class="row-sub">The item sum is authoritative. No tax, service, or discount.</span></span>
+          </div>
+          <div class="row">
+            <span class="row-main"><span class="row-title">Only the owner can finalize</span><span class="row-sub">Finalizing fixes shares for everyone.</span></span>
+          </div>
+        </div>
+        <button class="primary wide" type="button" id="finalizeOuting">Finalize outing</button>
+        <button class="text-action centered" type="button" data-close="review">Keep editing</button>
+      </section>
+    </div>
+
+    <div class="sheet-backdrop" id="recapBackdrop" hidden>
+      <section class="sheet" role="dialog" aria-modal="true" tabindex="-1" aria-labelledby="recapTitle">
+        <div class="grabber" aria-hidden="true"></div>
+        <div class="sheet-head">
+          <div>
+            <h2 id="recapTitle">Share recap</h2>
+            <p class="sheet-sub">McDo Il Corso · ₱825.00</p>
+          </div>
+          <button class="close" type="button" data-close="recap" aria-label="Close">
+            <svg viewBox="0 0 20 20" aria-hidden="true"><path d="m5 5 10 10M15 5 5 15" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+          </button>
+        </div>
+        <div class="list card sheet-summary">
+          <div class="row">
+            <span class="row-main"><span class="row-title">Total</span><span class="row-sub">Finalized Nov 7, 2026</span></span>
+            <span class="amount">₱825.00</span>
+          </div>
+          <div class="row">
+            <span class="row-main"><span class="row-title">Paid by Mai</span><span class="row-sub">4 at the table · 2 students covered</span></span>
+          </div>
+          <div class="row">
+            <span class="row-main"><span class="row-title">Your share</span><span class="row-sub">CP · own meal, Ana, and shared rice</span></span>
+            <span class="amount">₱451.00</span>
+          </div>
+        </div>
+        <p class="sheet-note">The recap never includes payment QR codes or private claim links.</p>
+        <button class="primary wide" type="button" id="copyRecap">Copy text recap</button>
+        <button class="secondary wide" type="button" id="saveRecap">Save image</button>
+      </section>
+    </div>
+
+    <div class="sheet-backdrop" id="exportBackdrop" hidden>
+      <section class="sheet" role="dialog" aria-modal="true" tabindex="-1" aria-labelledby="exportTitle">
+        <div class="grabber" aria-hidden="true"></div>
+        <div class="sheet-head">
+          <div>
+            <h2 id="exportTitle">Export Salo Crew</h2>
+            <p class="sheet-sub">Owner export · full group</p>
+          </div>
+          <button class="close" type="button" data-close="export" aria-label="Close">
+            <svg viewBox="0 0 20 20" aria-hidden="true"><path d="m5 5 10 10M15 5 5 15" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+          </button>
+        </div>
+        <div class="list card sheet-summary">
+          <div class="row">
+            <span class="row-main"><span class="row-title">Scope</span><span class="row-sub">Full group for the owner</span></span>
+            <span class="pill confirmed">Owner</span>
+          </div>
+          <div class="row">
+            <span class="row-main"><span class="row-title">Format</span><span class="row-sub">CSV or JSON</span></span>
+          </div>
+          <div class="row">
+            <span class="row-main"><span class="row-title">Includes</span><span class="row-sub">Outings, items, shares, settlements, activity</span></span>
+          </div>
+        </div>
+        <p class="sheet-note">Payment QR codes, invite links, and private claims are never included.</p>
+        <button class="primary wide" type="button" id="prepareExport">Prepare export</button>
+      </section>
+    </div>
+
+    <div class="sheet-backdrop" id="discardBackdrop" hidden>
+      <section class="sheet" role="dialog" aria-modal="true" tabindex="-1" aria-labelledby="discardTitle">
+        <div class="grabber" aria-hidden="true"></div>
+        <div class="sheet-head">
+          <div>
+            <h2 id="discardTitle">Discard this draft?</h2>
+            <p class="sheet-sub">Jollibee Uptown · ₱1,240.00</p>
+          </div>
+          <button class="close" type="button" data-close="discard" aria-label="Close">
+            <svg viewBox="0 0 20 20" aria-hidden="true"><path d="m5 5 10 10M15 5 5 15" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+          </button>
+        </div>
+        <p class="sheet-note">This deletes the private draft for you and Kent. It cannot be undone.</p>
+        <button class="primary danger wide" type="button" id="confirmDiscard">Discard draft</button>
+        <button class="text-action centered" type="button" data-close="discard">Keep draft</button>
+      </section>
+    </div>
+
     <div class="sheet-backdrop" id="groupBackdrop" hidden>
-      <section class="sheet" role="dialog" aria-modal="true" aria-labelledby="groupTitle">
+      <section class="sheet" role="dialog" aria-modal="true" tabindex="-1" aria-labelledby="groupTitle">
         <div class="grabber" aria-hidden="true"></div>
         <div class="sheet-head">
           <h2 id="groupTitle">Your groups</h2>

@@ -27,21 +27,21 @@ the structure in `plan.md`. The Android app is moved to `archive/android/`.
 
 **Purpose**: Move the old client aside and scaffold the PWA, backend, hosting, and design tokens.
 
-- [ ] T001 Move the Kotlin app, Gradle files, and Android configuration to `archive/android/`; keep secrets out of the archive
-- [ ] T002 Scaffold Vite + React + TypeScript at the repository root with `package.json`, `tsconfig.json`, and `vite.config.ts`
-- [ ] T003 Add dependencies for routing, server state, Supabase, Dexie, Zod, PWA, and testing in `package.json`
-- [ ] T004 Configure ESLint, Prettier, Vitest, Playwright, and npm scripts in `package.json` and `tests/`
-- [ ] T005 Create `.env.example` with Supabase URL and anon key placeholders
-- [ ] T006 Initialize Supabase locally in `supabase/config.toml` and `supabase/migrations/`
-- [ ] T007 Create the new Supabase project and document the project ref in `specs/002-salo-pwa/quickstart.md`
-- [ ] T008 [P] Create the Vercel project and free subdomain; document the origin in `specs/002-salo-pwa/quickstart.md`
-- [ ] T009 [P] Create shared design tokens in `src/ui/tokens/tokens.css`
-- [ ] T010 [P] Create the iPhone shell token layer in `src/platform/ios/iOSTokens.css`
-- [ ] T011 [P] Create the Material 3 token layer in `src/platform/android/androidTokens.css`
-- [ ] T012 [P] Create the PWA manifest, icons, and splash assets in `public/`
-- [ ] T013 Create the app entry, router, and provider skeleton in `src/main.tsx` and `src/app/`
-- [ ] T014 Add a CI workflow for typecheck, unit tests, build, and Playwright in `.github/workflows/ci.yml`
-- [ ] T015 Write `archive/android/README.md` explaining that the Kotlin app is archived and how to recover it
+- [x] T001 Move the Kotlin app, Gradle files, and Android configuration to `archive/android/`; keep secrets out of the archive
+- [x] T002 Scaffold Vite + React + TypeScript at the repository root with `package.json`, `tsconfig.json`, and `vite.config.ts`
+- [x] T003 Add dependencies for routing, server state, Supabase, Dexie, Zod, PWA, and testing in `package.json`
+- [x] T004 Configure ESLint, Prettier, Vitest, Playwright, and npm scripts in `package.json` and `tests/`
+- [x] T005 Create `.env.example` with Supabase URL and anon key placeholders
+- [x] T006 Initialize Supabase locally in `supabase/config.toml` and `supabase/migrations/`
+- [x] T007 Create the new Supabase project and document the project ref in `specs/002-salo-pwa/quickstart.md`
+- [x] T008 [P] Create the Vercel project and free subdomain; document the origin in `specs/002-salo-pwa/quickstart.md`
+- [x] T009 [P] Create shared design tokens in `src/ui/tokens/tokens.css`
+- [x] T010 [P] Create the iPhone shell token layer in `src/platform/ios/iOSTokens.css`
+- [x] T011 [P] Create the Material 3 token layer in `src/platform/android/androidTokens.css`
+- [x] T012 [P] Create the PWA manifest, icons, and splash assets in `public/`
+- [x] T013 Create the app entry, router, and provider skeleton in `src/main.tsx` and `src/app/`
+- [x] T014 Add a CI workflow for typecheck, unit tests, build, and Playwright in `.github/workflows/ci.yml`
+- [x] T015 Write `archive/android/README.md` explaining that the Kotlin app is archived and how to recover it
 
 **Checkpoint**: The PWA skeleton, backend project, hosting, and design tokens exist.
 
@@ -56,40 +56,40 @@ can ship without these.
 
 ### Database and access
 
-- [ ] T016 Create the `profiles` and `groups` migrations in `supabase/migrations/`
-- [ ] T017 Create the `group_adults` migration with pending/active/removed states in `supabase/migrations/`
-- [ ] T018 Create the `invitations` migration with hashed token/code and expiry in `supabase/migrations/`
-- [ ] T019 Create the `students` migration in `supabase/migrations/`
-- [ ] T020 Create the `outings`, `outing_adults`, and `outing_students` migrations in `supabase/migrations/`
-- [ ] T021 Create the `items` migration with assignment constraints in `supabase/migrations/`
-- [ ] T022 Create the `shares` migration with exact-total constraints in `supabase/migrations/`
-- [ ] T023 Create the `settlements` migration with the settlement state machine in `supabase/migrations/`
-- [ ] T024 Create the `activity_events` migration in `supabase/migrations/`
-- [ ] T025 [P] Add RLS policies for `profiles`, `groups`, and `group_adults` in `supabase/migrations/`
+- [x] T016 Create the `profiles` and `groups` migrations in `supabase/migrations/`
+- [x] T017 Create the `group_adults` migration with pending/active/removed states in `supabase/migrations/`
+- [x] T018 Create the `invitations` migration with hashed token/code and expiry in `supabase/migrations/`
+- [x] T019 Create the `students` migration in `supabase/migrations/`
+- [x] T020 Create the `outings`, `outing_adults`, and `outing_students` migrations in `supabase/migrations/`
+- [x] T021 Create the `items` migration with assignment constraints in `supabase/migrations/`
+- [x] T022 Create the `shares` migration with exact-total constraints in `supabase/migrations/`
+- [x] T023 Create the `settlements` migration with the settlement state machine in `supabase/migrations/`
+- [x] T024 Create the `activity_events` migration in `supabase/migrations/`
+- [x] T025 [P] Add RLS policies for `profiles`, `groups`, and `group_adults` in `supabase/migrations/`
 - [ ] T026 [P] Add RLS policies for `invitations` and `students` in `supabase/migrations/`
-- [ ] T027 [P] Add RLS policies for `outings`, `outing_adults`, `outing_students`, `items`, and `shares` in `supabase/migrations/`
-- [ ] T028 [P] Add RLS policies for `settlements` and `activity_events` in `supabase/migrations/`
+- [x] T027 [P] Add RLS policies for `outings`, `outing_adults`, `outing_students`, `items`, and `shares` in `supabase/migrations/`
+- [x] T028 [P] Add RLS policies for `settlements` and `activity_events` in `supabase/migrations/`
 - [ ] T029 Add database triggers or functions for activity events in `supabase/migrations/`
 
 ### Auth and state
 
-- [ ] T030 Create the Supabase client, session, and auth provider in `src/data/supabase/`
-- [ ] T031 Create the profile bootstrap on first sign-in in `src/features/auth/`
+- [x] T030 Create the Supabase client, session, and auth provider in `src/data/supabase/`
+- [x] T031 Create the profile bootstrap on first sign-in in `src/features/auth/`
 - [ ] T032 [P] Create the Dexie schema for cached reads and private drafts in `src/data/cache/` and `src/data/drafts/`
-- [ ] T033 [P] Create the query client and cache invalidation policy in `src/app/providers.tsx`
+- [x] T033 [P] Create the query client and cache invalidation policy in `src/app/providers.tsx`
 - [ ] T034 [P] Create the realtime subscription base in `src/data/realtime/`
-- [ ] T035 Create the platform provider and detection in `src/platform/PlatformProvider.tsx` and `src/platform/detectPlatform.ts`
+- [x] T035 Create the platform provider and detection in `src/platform/PlatformProvider.tsx` and `src/platform/detectPlatform.ts`
 - [ ] T036 [P] Create shared primitives for buttons, fields, lists, sheets, and empty states in `src/ui/primitives/`
-- [ ] T037 [P] Create the iPhone shell skeleton in `src/platform/ios/IOSShell.tsx`
-- [ ] T038 [P] Create the Material 3 shell skeleton in `src/platform/android/AndroidShell.tsx`
+- [x] T037 [P] Create the iPhone shell skeleton in `src/platform/ios/IOSShell.tsx`
+- [x] T038 [P] Create the Material 3 shell skeleton in `src/platform/android/AndroidShell.tsx`
 - [ ] T039 Create shared loading, error, offline, and sync-state primitives in `src/ui/primitives/`
 
 ### Money and tests
 
-- [ ] T040 Create the money engine types and validation in `src/domain/money/types.ts` and `src/domain/money/validate.ts`
-- [ ] T041 Create the money engine allocation and rounding in `src/domain/money/allocate.ts`
-- [ ] T042 Add money property tests for present adults, present students, shared items, manual overrides, and per-head fallback in `tests/unit/money/`
-- [ ] T043 Add total-mode tests for Auto, Manual, Fixed, and merge exactness in `tests/unit/totals/`
+- [x] T040 Create the money engine types and validation in `src/domain/money/types.ts` and `src/domain/money/validate.ts`
+- [x] T041 Create the money engine allocation and rounding in `src/domain/money/allocate.ts`
+- [x] T042 Add money property tests for present adults, present students, shared items, manual overrides, and per-head fallback in `tests/unit/money/`
+- [x] T043 Add total-mode tests for Auto, Manual, Fixed, and merge exactness in `tests/unit/totals/`
 
 **Checkpoint**: Schema, RLS, auth, shells, cache, realtime, and the money engine are ready.
 
@@ -109,15 +109,15 @@ and verify both members see the same group.
 
 ### Implementation
 
-- [ ] T046 [US1] Build the sign-in screen with Google and email one-time code in `src/features/auth/SignInScreen.tsx`
+- [x] T046 [US1] Build the sign-in screen with Google and email one-time code in `src/features/auth/SignInScreen.tsx`
 - [ ] T047 [US1] Build the guided onboarding flow in `src/features/onboarding/`
-- [ ] T048 [US1] Build group creation with name and color in `src/features/groups/CreateGroupScreen.tsx`
+- [x] T048 [US1] Build group creation with name and color in `src/features/groups/CreateGroupScreen.tsx`
 - [ ] T049 [US1] Build invite creation with link, code, expiry, and revocation in `src/features/groups/InviteScreen.tsx`
-- [ ] T050 [US1] Build the join and claim screen in `src/features/groups/JoinGroupScreen.tsx`
+- [x] T050 [US1] Build the join and claim screen in `src/features/groups/JoinGroupScreen.tsx`
 - [ ] T051 [US1] Build pending-adult creation in `src/features/members/PendingAdultSheet.tsx`
 - [ ] T052 [US1] Build the group switcher on Home in `src/features/groups/GroupSwitcher.tsx`
 - [ ] T053 [US1] Build the members list with pending/active/removed states in `src/features/members/MembersScreen.tsx`
-- [ ] T054 [US1] Implement invitation acceptance and claim RPC calls in `src/data/supabase/invitations.ts`
+- [x] T054 [US1] Implement invitation acceptance and claim RPC calls in `src/data/supabase/invitations.ts`
 - [ ] T055 [US1] Add onboarding empty, error, expired-invite, and full-group states
 - [ ] T056 [US1] Add iPhone and Material 3 variants for onboarding and group switcher in `src/platform/`
 - [ ] T057 [US1] Add accessibility labels and focus order for onboarding

@@ -130,17 +130,24 @@ same rhythm; only the component chrome differs.
 - Android: Material 3 cards at 12px, filled buttons as pills, text fields at 4px, sheets at 16px top
   radius.
 - No shadows at rest. Depth comes from tonal steps and separators.
-- Shadows only on sheets and dialogs that truly float.
+- Shadows only on sheets, dialogs, and the floating iPhone tab bar.
 
 ## 4. iPhone Shell
 
 ### Structure
 
 - Large title at the top of Home, Ledger, Activity, and Settings.
-- Bottom tab bar: Home, Ledger, Activity, Settings.
+- The top line carries the S mark, not the wordmark.
+- Floating bottom tab bar: Home, Ledger, Activity, Settings. 12px side inset, 10px plus safe area
+  from the bottom, 64px tall, 22px radius, solid surface with a 1px border and a soft shadow. The
+  active item is a green-soft pill. It is never glass.
+- The scroll area ends 12px above the bar, so content never runs underneath it.
+- The bar is hidden on outing detail, draft, and new-outing screens.
 - Safe-area insets on all edges.
-- Content scrolls under the large title; the tab bar stays fixed.
-- Sheets for new outing, item entry, settlement, invites, and appearance.
+- Content scrolls under the large title; the bar stays put.
+- Sheets for new outing, item entry, review/finalize, settlement, invites, recap, QR management, export,
+  and appearance.
+- Onboarding: sign in, then create or join a group, then invite adults and add students.
 - A sticky total at the bottom of the outing editor, above the safe area.
 
 ### Home
@@ -193,10 +200,12 @@ The balance card is the only card with a filled field color. Everything else is 
 
 ### Structure
 
-- Top app bar with the Salo mark, group name, and group switcher.
+- Top app bar with the S symbol, group name, and group switcher.
 - Navigation bar: Home, Ledger, Activity, Settings, with a 64×32 active indicator pill.
 - Content uses Material 3 cards, lists, chips, and filled buttons.
-- Sheets for new outing, item entry, settlement, and invites.
+- Sheets for new outing, item entry, review/finalize, settlement, invites, recap, QR management, export,
+  and appearance.
+- Onboarding: sign in, then create or join a group, then invite adults and add students.
 - System light/dark; light-first design with a true dark theme.
 - Prototype: `design/pwa-prototype-android/`.
 
@@ -217,6 +226,9 @@ The balance card is the only card with a filled field color. Everything else is 
 | Balance | Roboto 500, 36/44 | The one balance number |
 | Row title | Roboto 500, 16/24 | Lists |
 | Body | Roboto 400, 14/20 | Supporting text |
+| `easeStandard` | `cubic-bezier(0.2, 0, 0, 1)` | Exits and simple state changes |
+| `easeEmphasized` | `cubic-bezier(0.05, 0.7, 0.1, 1)` | Sheet and dialog entrances |
+| Duration | 150ms short · 250ms medium | Press feedback, sheets |
 
 Radii: 12px cards, 16px large cards and sheets, 20px buttons, 8px chips, 4px text fields.
 
@@ -240,6 +252,14 @@ Material 3 rules:
 
 ## 6. Shared Components
 
+### Brand mark
+
+- The header uses the bare S symbol, not the Salo wordmark.
+- The S sits at 24px tall in both shells, optically matched to the group switcher.
+- The wordmark is reserved for splash, share cards, README, and external lockups.
+- Install icons and the favicon use the rounded-square app-icon variant.
+- Keep the accessible name "Salo"; the mark is decorative next to the group context.
+
 ### Initials
 
 - Two-letter initials in a circle; color from the group's fixed set.
@@ -262,11 +282,11 @@ Material 3 rules:
 - Fixed: "Saved total; item changes do not update it."
 - 16px type; no shrinking; single line.
 
-### Settlement sheet
+### Settlement sheets
 
-- From → To, amount, date, note.
+- Confirm sheet (recipient): payer, amount, date, note; Confirm and Decline. Decline requires a note.
+- Record sheet (payer): From → To, amount, date, note. Only the payer records; the recipient then confirms.
 - Pending/confirmed/declined states.
-- Confirm and Decline actions for the recipient; Decline requires a note.
 - Payer sees Void/Edit for pending or declined.
 - A "Scan to pay" action opens the payee's payment QR sheet when one exists.
 
@@ -279,18 +299,33 @@ Material 3 rules:
 - Missing QR: "Ask <payee> for their payment QR." The record-payment action stays available.
 - Privacy line: "Only members of this group can see this QR."
 - The QR is never in a recap, export, invite, or public surface, and Salo never opens the camera.
-- The QR sheet has a "Record payment" action; scanning does not change the ledger by itself.
+- The QR sheet has a "Record payment" action for the payer only; other members see the QR read-only. Scanning does not change the ledger by itself.
+- The owner's own QR sheet offers Replace and Remove. The owner can manage a pending adult's QR from Members.
 - iPhone: a sheet with a white QR card and a large code. Android: a bottom sheet/dialog with a tonal
   card. Both use the payee's name and amount above the code.
 
+### Recap
+
+- Share text or an image after an outing is finalized.
+- Includes the place, date, total, payer, and each person's share.
+- Never includes payment QR codes, invite links, or private claims.
+
+### Export
+
+- The owner exports the full group; a member exports their own data.
+- CSV or JSON.
+- Includes outings, items, shares, settlements, and activity.
+- Never includes QR images or invite tokens.
+
 ### Empty, error, offline, and sync states
 
-- Empty: one sentence, one action.
+- Empty: "No outings yet" with one primary action.
 - Error: what happened, what to do next, retry.
-- Offline: a quiet banner; shared actions disabled with an explanation.
+- Offline: a quiet amber banner; shared writes stay in the sheet with an explanation. Private drafts remain usable.
 - Syncing: inline progress; do not block reading.
 - Private draft: "Only you and the owner can see this until you publish."
-- Stale: "Someone changed this outing" with refresh.
+- Stale: "Your edit was rejected as stale" with reload. The client never overwrites a newer version.
+- Declined: the recipient's note stays visible; only confirmed payments affect balances.
 - Waiting for owner: "Ready — waiting for CP to finalize." The owner is the only finalizer.
 - Removed member: history rows show "Removed"; pending settlements involving them can be voided by the owner.
 - No payment QR: "Ask <payee> for their payment QR." The record-payment action remains.
@@ -299,12 +334,20 @@ Material 3 rules:
 
 ## 7. Motion
 
-- Quiet iOS-native: sheet springs, 180–260ms; list insertion/removal; number transitions.
-- No decorative loops.
-- Respect `prefers-reduced-motion`; remove travel, keep content.
+- Tokens: `--ease-out: cubic-bezier(0.23, 1, 0.32, 1)`, `--ease-in-out: cubic-bezier(0.77, 0, 0.175, 1)`,
+  `--ease-drawer: cubic-bezier(0.32, 0.72, 0, 1)`; press 160ms, UI 180ms, sheet enter 240ms, sheet
+  exit 180ms.
+- Sheets are class-based transitions on opacity and translate only. Enter 240ms with the drawer curve;
+  exit 180ms. The backdrop fades over 180ms.
+- Toasts enter over 180ms and exit over 140ms. They are class-based, so rapid toasts retarget instead of
+  restarting, and the timer pauses when the tab is hidden in production.
+- Press feedback: scale 0.97 on buttons, rows, tabs, chips, and segmented controls; rows also take a
+  quiet surface tint. Never animate `transition: all`.
+- Tab switches are instant by design; the floating bar has no entrance animation.
+- Respect `prefers-reduced-motion`: keep opacity, remove travel and press scale.
 - One signature moment: the balance card settling after a confirmed payment, or the group's initials
   clustering on Home.
-- Android uses Material motion; iPhone uses iOS-like springs. Do not share motion curves.
+- Android uses Material motion; iPhone uses iOS-like curves. Do not share motion curves.
 
 ## 8. Accessibility
 

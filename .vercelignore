@@ -1,0 +1,17 @@
+/node_modules
+/dist
+/coverage
+/test-results
+/playwright-report
+/.playwright-mcp
+/.taste-skill
+/.specify
+/.impeccable
+/plans
+/specs
+/design
+/archive
+/brand
+/.git
+/.secrets
+*.log
