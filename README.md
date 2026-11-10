@@ -32,6 +32,9 @@ shared product.
   domain rules. Manual appearance override.
 - **Identity**: sign-in required. Google OAuth or email one-time code. No Sign in with Apple in v1.
   Every adult has an account; students do not. Pending adults are allowed until they join.
+- **Homepage nickname**: four predetermined people get a preset nickname shown only in the Home
+  greeting. Every money surface — rosters, payer, shares, ledger, activity, recaps, exports — keeps
+  the exact `display_name`.
 - **Groups**: 2–12 adults; one owner per group; owner is the only admin in v1. A user may own one
   group and join many. Group switcher on Home.
 - **Invitations**: share link plus short code, bound to a pending adult, revocable and expiring.

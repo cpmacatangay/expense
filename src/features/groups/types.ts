@@ -2,6 +2,7 @@ export type Profile = {
   id: string;
   email: string;
   display_name: string;
+  nickname: string | null;
 };
 
 export type Group = {

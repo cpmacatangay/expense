@@ -7,7 +7,7 @@ import { useGroup } from "@/features/groups/groupContext";
 import { createOuting, listOutings, todayInManila } from "@/features/outings/api";
 import { formatDate } from "@/lib/dates";
 import { getErrorMessage } from "@/lib/errors";
-import { initials } from "@/lib/names";
+import { greetingName, initials } from "@/lib/names";
 
 export function HomePage() {
   const { user } = useAuth();
@@ -23,8 +23,7 @@ export function HomePage() {
     enabled: Boolean(group?.id)
   });
 
-  const firstName =
-    profile?.display_name?.split(" ")[0] ?? user?.email?.split("@")[0] ?? "there";
+  const greeting = greetingName(profile, user?.email);
   const activeAdults = adults.filter((adult) => adult.status === "active");
   const pendingAdults = adults.filter((adult) => adult.status === "pending");
 
@@ -50,7 +49,7 @@ export function HomePage() {
   return (
     <div className="page">
       <header className="page-head">
-        <h1 className="page-title">Hi, {firstName}</h1>
+        <h1 className="page-title">Hi, {greeting}</h1>
         <p className="page-sub">
           {group?.name ?? "Salo"} · {activeAdults.length} at the table
         </p>
