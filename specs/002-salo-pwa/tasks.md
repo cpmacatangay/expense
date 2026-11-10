@@ -153,7 +153,7 @@ Manual, have the owner finalize, and verify exact shares.
 - [ ] T069 [US2] Build the total field with Auto, Manual, Fixed, and Use items total in `src/features/outings/TotalField.tsx`
 - [ ] T070 [US2] Build the outing review with share preview in `src/features/outings/OutingReview.tsx`
 - [ ] T071 [US2] Build the finalized outing detail in `src/features/outings/OutingDetail.tsx`
-- [ ] T072 [US2] Implement the finalize Edge Function in `supabase/functions/finalize-outing/`
+- [x] T072 [US2] Implement the finalize Edge Function in `supabase/functions/finalize-outing/`
 - [ ] T073 [US2] Implement the reopen Edge Function in `supabase/functions/reopen-outing/`
 - [ ] T074 [US2] Implement version checks and stale-write errors in `src/data/supabase/outings.ts`
 - [ ] T075 [US2] Implement shared-draft editing and member visibility in `src/features/outings/`

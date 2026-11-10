@@ -7,6 +7,7 @@ import { useGroup } from "@/features/groups/groupContext";
 import {
   addItem,
   deleteItem,
+  finalizeOuting,
   getOuting,
   setAdultPresent,
   setStudentPresent,
@@ -32,8 +33,14 @@ export function OutingEditorPage() {
   const [date, setDate] = useState("");
   const [place, setPlace] = useState("");
   const [notes, setNotes] = useState("");
+  const [payerAdultId, setPayerAdultId] = useState("");
   const [saveState, setSaveState] = useState<"idle" | "saving" | "saved">("idle");
   const [actionError, setActionError] = useState<string | null>(null);
+  const [finalizeState, setFinalizeState] = useState<"idle" | "saving">("idle");
+  const [finalizeMessage, setFinalizeMessage] = useState<{
+    kind: "error" | "notice";
+    text: string;
+  } | null>(null);
   const [showItemForm, setShowItemForm] = useState(true);
 
   const [itemName, setItemName] = useState("");
@@ -48,6 +55,7 @@ export function OutingEditorPage() {
     setDate(data.outing.date);
     setPlace(data.outing.place ?? "");
     setNotes(data.outing.notes ?? "");
+    setPayerAdultId(data.outing.payer_adult_id ?? "");
   }, [data]);
 
   useEffect(() => {
@@ -110,7 +118,8 @@ export function OutingEditorPage() {
       await updateOuting(data.outing.id, data.outing.version, {
         date,
         place: place.trim() || null,
-        notes: notes.trim() || null
+        notes: notes.trim() || null,
+        payer_adult_id: payerAdultId || null
       });
       await refresh();
       setSaveState("saved");
@@ -120,11 +129,48 @@ export function OutingEditorPage() {
     }
   }
 
+  async function changePayer(value: string) {
+    if (!data) return;
+    setPayerAdultId(value);
+    setActionError(null);
+    try {
+      await updateOuting(data.outing.id, data.outing.version, {
+        date,
+        place: place.trim() || null,
+        notes: notes.trim() || null,
+        payer_adult_id: value || null
+      });
+      await refresh();
+    } catch (caught) {
+      setActionError(getErrorMessage(caught, "Could not save the payer"));
+    }
+  }
+
+  async function handleFinalize() {
+    if (!data) return;
+    setFinalizeState("saving");
+    setFinalizeMessage(null);
+    setActionError(null);
+    try {
+      await finalizeOuting(data.outing.id, data.outing.version);
+      await refresh();
+      setFinalizeMessage({ kind: "notice", text: "Finalized. Shares are now fixed." });
+    } catch (caught) {
+      setFinalizeMessage({
+        kind: "error",
+        text: getErrorMessage(caught, "Could not finalize the outing")
+      });
+    } finally {
+      setFinalizeState("idle");
+    }
+  }
+
   async function toggleAdult(adultId: string, present: boolean) {
     if (!data) return;
     setActionError(null);
     try {
       await setAdultPresent(data.outing.id, adultId, present);
+      if (!present && payerAdultId === adultId) setPayerAdultId("");
       await refresh();
     } catch (caught) {
       setActionError(getErrorMessage(caught, "Could not update attendance"));
@@ -212,6 +258,14 @@ export function OutingEditorPage() {
   }
 
   const isEditable = data.outing.status !== "finalized";
+  const isOwner = group?.owner_id === profile?.id;
+  const canFinalize =
+    isEditable &&
+    isOwner &&
+    Boolean(payerAdultId) &&
+    presentAdultIds.includes(payerAdultId) &&
+    presentAdultIds.length >= 2 &&
+    finalizeState !== "saving";
 
   return (
     <div className="page page--editor">
@@ -267,6 +321,23 @@ export function OutingEditorPage() {
             disabled={!isEditable}
           />
         </label>
+        <label className="field">
+          <span>Paid by</span>
+          <select
+            value={payerAdultId}
+            onChange={(event) => void changePayer(event.target.value)}
+            disabled={!isEditable}
+          >
+            <option value="">Choose a payer</option>
+            {groupAdults
+              .filter((adult) => adult.status !== "removed" && presentAdultIds.includes(adult.id))
+              .map((adult) => (
+                <option key={adult.id} value={adult.id}>
+                  {adult.display_name}
+                </option>
+              ))}
+          </select>
+        </label>
         {isEditable ? (
           <div className="form-actions">
             <button className="text-action" type="submit" disabled={saveState === "saving"}>
@@ -281,7 +352,7 @@ export function OutingEditorPage() {
         <h2 className="panel-title">At the table</h2>
         <div className="attendance-grid">
           {groupAdults
-            .filter((adult) => adult.status === "active")
+            .filter((adult) => adult.status !== "removed")
             .map((adult) => {
               const present = presentAdultIds.includes(adult.id);
               return (
@@ -325,9 +396,7 @@ export function OutingEditorPage() {
                       disabled={!isEditable}
                     >
                       {groupAdults
-                        .filter(
-                          (adult) => adult.status === "active" && presentAdultIds.includes(adult.id)
-                        )
+                        .filter((adult) => presentAdultIds.includes(adult.id))
                         .map((adult) => (
                           <option key={adult.id} value={adult.id}>
                             {adult.display_name}
@@ -503,7 +572,20 @@ export function OutingEditorPage() {
         <p className="panel-copy">
           Item sum is authoritative. Shared items split across present adults and students.
         </p>
-        <p className="panel-copy">Finalization arrives in the next step.</p>
+        {isEditable && isOwner && (presentAdultIds.length < 2 || !payerAdultId) ? (
+          <p className="panel-copy">
+            {presentAdultIds.length < 2 ? "Mark at least two adults present." : "Choose who paid."}
+          </p>
+        ) : null}
+        {!isOwner ? <p className="panel-copy">Only the owner can finalize.</p> : null}
+        {finalizeMessage ? (
+          <p
+            className={finalizeMessage.kind === "error" ? "form-error" : "form-notice"}
+            role={finalizeMessage.kind === "error" ? "alert" : undefined}
+          >
+            {finalizeMessage.text}
+          </p>
+        ) : null}
       </section>
 
       <div className="editor-total">
@@ -511,8 +593,18 @@ export function OutingEditorPage() {
           <div className="total-label">Total</div>
           <div className="total-amount">{preview ? formatPeso(preview.totalCentavos) : "—"}</div>
         </div>
-        <button className="primary-action" type="button" disabled>
-          Finalize
+        <button
+          className="primary-action"
+          type="button"
+          onClick={() => void handleFinalize()}
+          disabled={!canFinalize}
+          title={!isOwner ? "Only the owner can finalize" : undefined}
+        >
+          {data.outing.status === "finalized"
+            ? "Finalized"
+            : finalizeState === "saving"
+              ? "Finalizing…"
+              : "Finalize"}
         </button>
       </div>
     </div>

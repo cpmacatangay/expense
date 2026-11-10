@@ -1,4 +1,4 @@
-import { MoneyValidationError } from "./validate";
+import { MoneyValidationError } from "./validate.ts";
 
 /**
  * Split an integer total across weights with largest-remainder rounding.

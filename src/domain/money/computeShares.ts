@@ -1,6 +1,6 @@
-import { largestRemainder } from "./allocate";
-import { assertCentavos, MoneyValidationError } from "./validate";
-import type { AdultShare, ComputeSharesInput, PresentStudent, SharesResult } from "./types";
+import { largestRemainder } from "./allocate.ts";
+import { assertCentavos, MoneyValidationError } from "./validate.ts";
+import type { AdultShare, ComputeSharesInput, PresentStudent, SharesResult } from "./types.ts";
 
 type Head =
   | { kind: "adult"; adultId: string }

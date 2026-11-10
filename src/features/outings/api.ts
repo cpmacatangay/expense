@@ -168,6 +168,35 @@ export async function deleteItem(id: string) {
   if (error) throw error;
 }
 
+export type FinalizeResult = {
+  totalCentavos: number;
+  shares: {
+    adultId: string;
+    totalCentavos: number;
+  }[];
+};
+
+export async function finalizeOuting(
+  outingId: string,
+  expectedVersion: number
+): Promise<FinalizeResult> {
+  const { data, error } = await requireSupabase().functions.invoke("finalize-outing", {
+    body: { outingId, expectedVersion }
+  });
+
+  if (error) {
+    let message = error.message;
+    const response = (error as { context?: Response }).context;
+    if (response) {
+      const payload = (await response.json().catch(() => null)) as { error?: string } | null;
+      if (payload?.error) message = payload.error;
+    }
+    throw new Error(message);
+  }
+
+  return data as FinalizeResult;
+}
+
 export function todayInManila(): string {
   return new Intl.DateTimeFormat("en-CA", {
     timeZone: "Asia/Manila",
