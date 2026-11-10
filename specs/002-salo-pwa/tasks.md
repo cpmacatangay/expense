@@ -182,26 +182,26 @@ confirmed settlements change balances.
 
 ### Tests
 
-- [ ] T086 [P] [US3] Add settlement state-machine and balance tests in `tests/unit/settlements/`
+- [x] T086 [P] [US3] Add settlement state-machine and balance tests in `src/domain/ledger/computeLedger.test.ts`
 - [ ] T087 [P] [US3] Add RLS tests for recipient-only confirmation and cross-group denial in `tests/integration/settlements/`
 - [ ] T088 [P] [US3] Add E2E tests for record, confirm, decline, and void in `tests/e2e/settlements.spec.ts`
 
 ### Implementation
 
-- [ ] T089 [US3] Implement balance computation in `src/domain/settlements/balances.ts`
-- [ ] T090 [US3] Build the Ledger screen with member balances in `src/features/ledger/LedgerScreen.tsx`
-- [ ] T091 [US3] Build pairwise who-owes-whom rows in `src/features/ledger/DebtRows.tsx`
-- [ ] T092 [US3] Build the settlement record sheet in `src/features/settlements/RecordSettlementSheet.tsx`
-- [ ] T093 [US3] Implement the record-settlement Edge Function in `supabase/functions/record-settlement/`
-- [ ] T094 [US3] Implement the confirm-settlement Edge Function in `supabase/functions/confirm-settlement/`
-- [ ] T095 [US3] Implement the decline-settlement Edge Function in `supabase/functions/decline-settlement/`
-- [ ] T096 [US3] Build pending, confirmed, declined, and void history in `src/features/settlements/HistoryList.tsx`
-- [ ] T097 [US3] Implement void by payer or owner in `src/features/settlements/voidSettlement.ts`
+- [x] T089 [US3] Implement balance computation in `src/domain/ledger/computeLedger.ts`
+- [x] T090 [US3] Build the Ledger screen with member balances in `src/pages/LedgerPage.tsx`
+- [x] T091 [US3] Build pairwise who-owes-whom rows in `src/pages/LedgerPage.tsx`
+- [x] T092 [US3] Build the settlement record form in `src/pages/LedgerPage.tsx`
+- [x] T093 [US3] Implement record settlement as the `record_settlement` RPC in `supabase/migrations/0011_settlements.sql`
+- [x] T094 [US3] Implement confirm settlement as the `decide_settlement` RPC in `supabase/migrations/0011_settlements.sql`
+- [x] T095 [US3] Implement decline settlement as the `decide_settlement` RPC in `supabase/migrations/0011_settlements.sql`
+- [x] T096 [US3] Build pending, confirmed, declined, and void history in `src/pages/LedgerPage.tsx`
+- [x] T097 [US3] Implement void by payer or owner as the `void_settlement` RPC in `supabase/migrations/0011_settlements.sql`
 - [ ] T098 [US3] Add overpayment, self-payment, duplicate, and pending-recipient validation
 - [ ] T099 [US3] Add the owner-assisted pending-adult settlement flow
 - [ ] T100 [US3] Add iPhone and Material 3 variants for Ledger and settlement sheets
 - [ ] T101 [US3] Add accessibility labels and state announcements for settlement states
-- [ ] T102 [US3] Add copy for pending, confirmed, declined, void, overpayment, and duplicate
+- [x] T102 [US3] Add copy for pending, confirmed, declined, void, overpayment, and duplicate
 - [ ] T103 [US3] Add realtime updates for settlements and balances
 - [ ] T104 [US3] Verify the full US3 flow on iPhone and Android widths
 - [ ] T105 [US3] Measure record/confirm/decline against the 30-second target

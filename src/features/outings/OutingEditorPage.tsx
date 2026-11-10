@@ -154,6 +154,7 @@ export function OutingEditorPage() {
     try {
       await finalizeOuting(data.outing.id, data.outing.version);
       await refresh();
+      if (group) await queryClient.invalidateQueries({ queryKey: ["ledger", group.id] });
       setFinalizeMessage({ kind: "notice", text: "Finalized. Shares are now fixed." });
     } catch (caught) {
       setFinalizeMessage({

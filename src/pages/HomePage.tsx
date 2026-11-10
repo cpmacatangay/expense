@@ -4,6 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { formatPeso } from "@/domain/money/format";
 import { useAuth } from "@/features/auth/authContext";
 import { useGroup } from "@/features/groups/groupContext";
+import { useLedgerView } from "@/features/ledger/useLedger";
 import { createOuting, listOutings, todayInManila } from "@/features/outings/api";
 import { formatDate } from "@/lib/dates";
 import { getErrorMessage } from "@/lib/errors";
@@ -26,6 +27,16 @@ export function HomePage() {
   const greeting = greetingName(profile, user?.email);
   const activeAdults = adults.filter((adult) => adult.status === "active");
   const pendingAdults = adults.filter((adult) => adult.status === "pending");
+  const { data: ledgerData, ledger } = useLedgerView(group?.id, adults);
+  const myAdult =
+    activeAdults.find((adult) => adult.profile_id === profile?.id) ?? null;
+  const myNet = myAdult && ledger ? (ledger.netByAdult[myAdult.id] ?? 0) : 0;
+  const pendingIncoming =
+    ledgerData?.settlements.filter(
+      (settlement) =>
+        settlement.status === "pending" && settlement.to_adult_id === myAdult?.id
+    ).length ?? 0;
+  const hasFinalizedOuting = outings?.some((outing) => outing.status === "finalized") ?? false;
 
   async function handleNewOuting() {
     if (!group || !profile) return;
@@ -62,10 +73,32 @@ export function HomePage() {
       ) : null}
 
       <div className="home-lead">
-        <section className="panel balance-anchor" aria-label="Your balance">
-          <span className="panel-label">Your balance</span>
-          <div className="balance-amount">{formatPeso(0)}</div>
-          <p className="panel-copy">No finalized outings yet.</p>
+        <section
+          className={`panel balance-anchor ${myNet < 0 ? "is-negative" : ""}`}
+          aria-label="Your balance"
+        >
+          <span className="panel-label">
+            {myNet < 0 ? "You owe" : myNet > 0 ? "You are owed" : "Your balance"}
+          </span>
+          <div className="balance-amount">{formatPeso(Math.abs(myNet))}</div>
+          <p className="panel-copy">
+            {myNet < 0
+              ? `Settle ${formatPeso(Math.abs(myNet))} with the table when you are ready.`
+              : myNet > 0
+                ? "Waiting for the table to settle."
+                : hasFinalizedOuting
+                  ? "All square."
+                  : "No finalized outings yet."}
+          </p>
+          {pendingIncoming > 0 ? (
+            <p className="panel-copy">
+              {pendingIncoming} {pendingIncoming === 1 ? "payment needs" : "payments need"} your
+              confirmation.
+            </p>
+          ) : null}
+          <Link className="text-action" to="/ledger">
+            Open ledger
+          </Link>
         </section>
         <button
           className="primary-action"
