@@ -11,9 +11,19 @@ const adults: Adult[] = [
     profile_id: "p1",
     display_name: "[redacted-name]",
     status: "active",
-    color: "#1F5C45"
+    color: "#1F5C45",
+    payment_qr_path: null,
+    payment_qr_label: null
   },
-  { id: "a2", profile_id: "p2", display_name: "Mai", status: "active", color: "#A83232" }
+  {
+    id: "a2",
+    profile_id: "p2",
+    display_name: "Mai",
+    status: "active",
+    color: "#A83232",
+    payment_qr_path: null,
+    payment_qr_label: null
+  }
 ];
 
 const outing: Outing = {

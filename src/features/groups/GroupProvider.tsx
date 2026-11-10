@@ -55,7 +55,9 @@ export function GroupProvider({ children }: { children: ReactNode }) {
             await Promise.all([
               client
                 .from("group_adults")
-                .select("id, profile_id, display_name, status, color")
+                .select(
+                  "id, profile_id, display_name, status, color, payment_qr_path, payment_qr_label"
+                )
                 .eq("group_id", nextGroup.id)
                 .order("created_at", { ascending: true }),
               client

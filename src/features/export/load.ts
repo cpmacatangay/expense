@@ -1,7 +1,6 @@
 import { requireSupabase } from "@/data/supabase/client";
+import { fetchAllRows } from "@/data/supabase/fetchAllRows";
 import type { Group } from "@/features/groups/types";
-
-const PAGE_SIZE = 1000;
 
 export const SAFE_ADULT_COLUMNS =
   "id, group_id, profile_id, display_name, status, color, joined_at, created_at";
@@ -44,16 +43,6 @@ export type MemberExport = {
 
 export type ExportData = GroupExport | MemberExport;
 
-async function collect<T>(run: (from: number, to: number) => Promise<T[]>): Promise<T[]> {
-  const rows: T[] = [];
-  for (let from = 0; ; from += PAGE_SIZE) {
-    const batch = await run(from, from + PAGE_SIZE - 1);
-    rows.push(...batch);
-    if (batch.length < PAGE_SIZE) break;
-  }
-  return rows;
-}
-
 export async function loadGroupExport(groupId: string): Promise<GroupExport> {
   const client = requireSupabase();
 
@@ -65,7 +54,7 @@ export async function loadGroupExport(groupId: string): Promise<GroupExport> {
   if (groupError) throw groupError;
 
   const [adults, students, outings] = await Promise.all([
-    collect(async (from, to) => {
+    fetchAllRows(async (from, to) => {
       const { data, error } = await client
         .from("group_adults")
         .select(SAFE_ADULT_COLUMNS)
@@ -75,7 +64,7 @@ export async function loadGroupExport(groupId: string): Promise<GroupExport> {
       if (error) throw error;
       return (data ?? []) as Record<string, unknown>[];
     }),
-    collect(async (from, to) => {
+    fetchAllRows(async (from, to) => {
       const { data, error } = await client
         .from("students")
         .select("*")
@@ -85,7 +74,7 @@ export async function loadGroupExport(groupId: string): Promise<GroupExport> {
       if (error) throw error;
       return (data ?? []) as Record<string, unknown>[];
     }),
-    collect(async (from, to) => {
+    fetchAllRows(async (from, to) => {
       const { data, error } = await client
         .from("outings")
         .select("*")
@@ -106,7 +95,7 @@ export async function loadGroupExport(groupId: string): Promise<GroupExport> {
     await Promise.all([
       outingIds.length === 0
         ? []
-        : collect(async (from, to) => {
+        : fetchAllRows(async (from, to) => {
             const { data, error } = await client
               .from("outing_adults")
               .select("*")
@@ -117,7 +106,7 @@ export async function loadGroupExport(groupId: string): Promise<GroupExport> {
           }),
       outingIds.length === 0
         ? []
-        : collect(async (from, to) => {
+        : fetchAllRows(async (from, to) => {
             const { data, error } = await client
               .from("outing_students")
               .select("*")
@@ -128,7 +117,7 @@ export async function loadGroupExport(groupId: string): Promise<GroupExport> {
           }),
       outingIds.length === 0
         ? []
-        : collect(async (from, to) => {
+        : fetchAllRows(async (from, to) => {
             const { data, error } = await client
               .from("items")
               .select("*")
@@ -140,7 +129,7 @@ export async function loadGroupExport(groupId: string): Promise<GroupExport> {
           }),
       outingIds.length === 0
         ? []
-        : collect(async (from, to) => {
+        : fetchAllRows(async (from, to) => {
             const { data, error } = await client
               .from("shares")
               .select("*")
@@ -150,7 +139,7 @@ export async function loadGroupExport(groupId: string): Promise<GroupExport> {
             if (error) throw error;
             return (data ?? []) as Record<string, unknown>[];
           }),
-      collect(async (from, to) => {
+      fetchAllRows(async (from, to) => {
         const { data, error } = await client
           .from("settlements")
           .select("*")
@@ -160,7 +149,7 @@ export async function loadGroupExport(groupId: string): Promise<GroupExport> {
         if (error) throw error;
         return (data ?? []) as Record<string, unknown>[];
       }),
-      collect(async (from, to) => {
+      fetchAllRows(async (from, to) => {
         const { data, error } = await client
           .from("activity_events")
           .select("*")
@@ -180,7 +169,7 @@ export async function loadGroupExport(groupId: string): Promise<GroupExport> {
   const profiles =
     profileIds.length === 0
       ? []
-      : await collect(async (from, to) => {
+      : await fetchAllRows(async (from, to) => {
           const { data, error } = await client
             .from("profiles")
             .select("id, email, display_name")
@@ -232,7 +221,7 @@ export async function loadMemberExport(
   const adultId = adult.id as string;
   const adultRow = adult as Record<string, unknown>;
 
-  const shares = await collect(async (from, to) => {
+  const shares = await fetchAllRows(async (from, to) => {
     const { data, error } = await client
       .from("shares")
       .select("*")
@@ -254,7 +243,7 @@ export async function loadMemberExport(
   const [outings, settlements, activity] = await Promise.all([
     outingIds.length === 0
       ? []
-      : collect(async (from, to) => {
+      : fetchAllRows(async (from, to) => {
           const { data, error } = await client
             .from("outings")
             .select("*")
@@ -264,7 +253,7 @@ export async function loadMemberExport(
           if (error) throw error;
           return (data ?? []) as Record<string, unknown>[];
         }),
-    collect(async (from, to) => {
+    fetchAllRows(async (from, to) => {
       const { data, error } = await client
         .from("settlements")
         .select("*")
@@ -275,7 +264,7 @@ export async function loadMemberExport(
       if (error) throw error;
       return (data ?? []) as Record<string, unknown>[];
     }),
-    collect(async (from, to) => {
+    fetchAllRows(async (from, to) => {
       const { data, error } = await client
         .from("activity_events")
         .select("*")

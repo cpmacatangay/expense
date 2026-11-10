@@ -23,8 +23,10 @@ owner-only server-side finalization through an Edge Function that writes immutab
 activity event atomically, the shared ledger with exact balances, who-owes-whom transfers, and
 two-sided settlement record/confirm/decline/void, owner-only reopening with a fixed total, the full
 activity feed with actor and before/after details, owner and member exports as JSON or zipped CSV,
-and text plus portrait-image recaps. Next: history filters, payment QR storage, and offline/realtime.
-The old local database is kept as an unlisted backup; there is no migration into the shared product.
+text plus portrait-image recaps, date/adult/student history filters, and private per-adult payment QR
+images with short-lived signed links. Next: offline/realtime, group lifecycle controls, and the final
+accessibility and install pass. The old local database is kept as an unlisted backup; there is no
+migration into the shared product.
 
 ## Product decisions
 

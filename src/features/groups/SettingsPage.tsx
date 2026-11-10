@@ -1,7 +1,9 @@
-import { useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import { useAuth } from "@/features/auth/authContext";
 import { buildCsvFiles, exportBaseName, zipCsvFiles } from "@/features/export/csv";
 import { loadGroupExport, loadMemberExport } from "@/features/export/load";
+import { PaymentQrImage } from "@/features/payments/PaymentQrImage";
+import { clearPaymentQr, uploadPaymentQr, validatePaymentQrFile } from "@/features/payments/qr";
 import { downloadBlob } from "@/lib/download";
 import { useGroup } from "./groupContext";
 import { getErrorMessage } from "@/lib/errors";
@@ -9,7 +11,7 @@ import { initials } from "@/lib/names";
 import type { Invitation } from "./types";
 
 export function SettingsPage() {
-  const { profile, group, adults, students, inviteAdult, createStudent } = useGroup();
+  const { profile, group, adults, students, inviteAdult, createStudent, refresh } = useGroup();
   const { signOut } = useAuth();
   const [name, setName] = useState("");
   const [invitation, setInvitation] = useState<Invitation | null>(null);
@@ -22,10 +24,23 @@ export function SettingsPage() {
   const [exporting, setExporting] = useState<"json" | "csv" | null>(null);
   const [exportError, setExportError] = useState<string | null>(null);
   const [exportNotice, setExportNotice] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const [qrLabel, setQrLabel] = useState("");
+  const [qrFile, setQrFile] = useState<File | null>(null);
+  const [qrBusy, setQrBusy] = useState(false);
+  const [qrError, setQrError] = useState<string | null>(null);
+  const [qrNotice, setQrNotice] = useState<string | null>(null);
+  const [qrConfirmRemove, setQrConfirmRemove] = useState(false);
 
   const activeAdults = adults.filter((adult) => adult.status === "active");
   const pendingAdults = adults.filter((adult) => adult.status === "pending");
   const isOwner = group?.owner_id === profile?.id;
+  const myAdult =
+    activeAdults.find((adult) => adult.profile_id === profile?.id) ?? null;
+
+  useEffect(() => {
+    setQrLabel(myAdult?.payment_qr_label ?? "");
+  }, [myAdult?.payment_qr_label]);
 
   async function handleInvite(event: FormEvent) {
     event.preventDefault();
@@ -89,6 +104,66 @@ export function SettingsPage() {
       setExportError(getErrorMessage(caught, "Could not prepare the export"));
     } finally {
       setExporting(null);
+    }
+  }
+
+  function handleQrFile(file: File | null) {
+    setQrError(null);
+    setQrNotice(null);
+    setQrFile(null);
+
+    if (!file) return;
+
+    try {
+      validatePaymentQrFile(file);
+      setQrFile(file);
+    } catch (caught) {
+      setQrError(getErrorMessage(caught, "Choose a PNG or JPEG under 2 MB."));
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  }
+
+  async function handleQrUpload() {
+    if (!group || !myAdult || !qrFile) return;
+    setQrBusy(true);
+    setQrError(null);
+    setQrNotice(null);
+    try {
+      await uploadPaymentQr({
+        groupId: group.id,
+        adultId: myAdult.id,
+        file: qrFile,
+        label: qrLabel,
+        previousPath: myAdult.payment_qr_path
+      });
+      await refresh();
+      setQrFile(null);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+      setQrNotice("Payment QR saved.");
+    } catch (caught) {
+      setQrError(getErrorMessage(caught, "Could not save the payment QR"));
+    } finally {
+      setQrBusy(false);
+    }
+  }
+
+  async function handleQrRemove() {
+    if (!myAdult) return;
+    setQrBusy(true);
+    setQrError(null);
+    setQrNotice(null);
+    try {
+      await clearPaymentQr(myAdult.id, myAdult.payment_qr_path);
+      await refresh();
+      setQrConfirmRemove(false);
+      setQrLabel("");
+      setQrFile(null);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+      setQrNotice("Payment QR removed.");
+    } catch (caught) {
+      setQrError(getErrorMessage(caught, "Could not remove the payment QR"));
+    } finally {
+      setQrBusy(false);
     }
   }
 
@@ -211,6 +286,109 @@ export function SettingsPage() {
               {studentBusy ? "Adding…" : "Add student"}
             </button>
           </form>
+        </section>
+      ) : null}
+
+      {myAdult ? (
+        <section className="panel">
+          <span className="panel-label">Payment QR</span>
+          <h2 className="panel-title">Your payment QR</h2>
+          <p className="panel-copy">
+            Private to this group. Members scan it with their banking app. It never appears in
+            recaps or exports.
+          </p>
+
+          <div className="qr-preview">
+            {myAdult.payment_qr_path ? (
+              <PaymentQrImage
+                path={myAdult.payment_qr_path}
+                name={myAdult.display_name}
+              />
+            ) : (
+              <div className="qr-placeholder">
+                No QR yet. Upload a PNG or JPEG under 2 MB.
+              </div>
+            )}
+          </div>
+
+          {myAdult.payment_qr_label ? (
+            <p className="form-notice">Label: {myAdult.payment_qr_label}</p>
+          ) : null}
+          {qrError ? (
+            <p className="form-error" role="alert">
+              {qrError}
+            </p>
+          ) : null}
+          {qrNotice ? (
+            <p className="form-notice" role="status">
+              {qrNotice}
+            </p>
+          ) : null}
+
+          <label className="field">
+            <span>Label</span>
+            <input
+              type="text"
+              value={qrLabel}
+              onChange={(event) => setQrLabel(event.target.value)}
+              placeholder="GCash"
+              maxLength={40}
+            />
+          </label>
+          <label className="field">
+            <span>Image</span>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/png,image/jpeg"
+              onChange={(event) => void handleQrFile(event.target.files?.[0] ?? null)}
+            />
+          </label>
+          <p className="form-notice">PNG or JPEG, up to 2 MB.</p>
+
+          <div className="export-actions">
+            <button
+              className="secondary-action"
+              type="button"
+              onClick={() => void handleQrUpload()}
+              disabled={!qrFile || qrBusy}
+            >
+              {qrBusy
+                ? "Saving…"
+                : myAdult.payment_qr_path
+                  ? "Replace QR"
+                  : "Upload QR"}
+            </button>
+            {myAdult.payment_qr_path ? (
+              qrConfirmRemove ? (
+                <div className="form-actions">
+                  <button
+                    className="secondary-action"
+                    type="button"
+                    onClick={() => setQrConfirmRemove(false)}
+                  >
+                    Keep
+                  </button>
+                  <button
+                    className="primary-action"
+                    type="button"
+                    onClick={() => void handleQrRemove()}
+                    disabled={qrBusy}
+                  >
+                    Remove QR
+                  </button>
+                </div>
+              ) : (
+                <button
+                  className="text-action is-danger"
+                  type="button"
+                  onClick={() => setQrConfirmRemove(true)}
+                >
+                  Remove QR
+                </button>
+              )
+            ) : null}
+          </div>
         </section>
       ) : null}
 

@@ -4,9 +4,33 @@ import type { Outing } from "@/features/outings/types";
 import { buildRecap } from "./buildRecap";
 
 const adults: Adult[] = [
-  { id: "a1", profile_id: "p1", display_name: "Christian", status: "active", color: "#1F5C45" },
-  { id: "a2", profile_id: "p2", display_name: "Mai", status: "active", color: "#A83232" },
-  { id: "a3", profile_id: "p3", display_name: "Kent", status: "active", color: "#8A5A12" }
+  {
+    id: "a1",
+    profile_id: "p1",
+    display_name: "Christian",
+    status: "active",
+    color: "#1F5C45",
+    payment_qr_path: null,
+    payment_qr_label: null
+  },
+  {
+    id: "a2",
+    profile_id: "p2",
+    display_name: "Mai",
+    status: "active",
+    color: "#A83232",
+    payment_qr_path: null,
+    payment_qr_label: null
+  },
+  {
+    id: "a3",
+    profile_id: "p3",
+    display_name: "Kent",
+    status: "active",
+    color: "#8A5A12",
+    payment_qr_path: null,
+    payment_qr_label: null
+  }
 ];
 
 const outing: Outing = {

@@ -18,6 +18,8 @@ export type Adult = {
   display_name: string;
   status: "pending" | "active" | "removed";
   color: string;
+  payment_qr_path: string | null;
+  payment_qr_label: string | null;
 };
 
 export type Student = {

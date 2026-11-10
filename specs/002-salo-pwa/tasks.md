@@ -264,7 +264,7 @@ publish online, and confirm shared data.
 
 - [x] T129 [US5] Build the Activity feed with actor, action, and before/after in `src/pages/ActivityPage.tsx`
 - [ ] T130 [US5] Implement activity pagination and realtime append in `src/features/activity/`
-- [ ] T131 [US5] Build History filters by date, adult, and student in `src/features/outings/HistoryScreen.tsx`
+- [x] T131 [US5] Build History filters by date, adult, and student in `src/pages/HistoryPage.tsx`
 - [x] T132 [US5] Implement owner CSV export in `src/features/export/csv.ts`
 - [x] T133 [US5] Implement owner JSON export in `src/features/export/load.ts`
 - [x] T134 [US5] Implement member scoped export in `src/features/export/load.ts`
@@ -359,13 +359,13 @@ confirm the settlement, and verify the image never appears in a recap or export.
 
 ### Implementation
 
-- [ ] T174 [US8] Create the private `payment-qrs` bucket and storage policies in `supabase/migrations/`
-- [ ] T175 [US8] Add `payment_qr_path`, `payment_qr_label`, and `payment_qr_updated_at` to `group_adults` in `supabase/migrations/`
-- [ ] T176 [US8] Build self-service QR upload, replace, and remove in `src/features/payments/PaymentQrSettings.tsx`
+- [x] T174 [US8] Create the private `payment-qr` bucket and storage policies in `supabase/migrations/0014_payment_qr.sql`
+- [x] T175 [US8] Add `payment_qr_path`, `payment_qr_label`, and `payment_qr_updated_at` to `group_adults` (already in `0001_identity_groups.sql`)
+- [x] T176 [US8] Build self-service QR upload, replace, and remove in `src/features/groups/SettingsPage.tsx`
 - [ ] T177 [US8] Build owner-managed QR upload for pending adults in `src/features/payments/PendingAdultQr.tsx`
-- [ ] T178 [US8] Add PNG/JPEG validation, the 2 MB limit, and metadata stripping in `src/features/payments/uploadQr.ts`
-- [ ] T179 [US8] Implement short-lived signed URL fetching in `src/data/paymentQr/fetchQr.ts`
-- [ ] T180 [US8] Build the "Scan to pay" sheet with payee, label, amount, and QR in `src/features/payments/PayQrSheet.tsx`
+- [x] T178 [US8] Add PNG/JPEG validation, the 2 MB limit, and metadata stripping in `src/features/payments/qr.ts`
+- [x] T179 [US8] Implement short-lived signed URL fetching in `src/features/payments/usePaymentQrUrl.ts`
+- [x] T180 [US8] Build the "Scan to pay" panel with payee, label, amount, and QR in `src/pages/LedgerPage.tsx`
 - [ ] T181 [US8] Wire the pay sheet into the Home balance card and debt rows in `src/features/home/`
 - [ ] T182 [US8] Wire the pay sheet into Ledger debt and settlement rows in `src/features/ledger/` and `src/features/settlements/`
 - [ ] T183 [US8] Wire the pay sheet into the finalized outing detail in `src/features/outings/OutingDetail.tsx`

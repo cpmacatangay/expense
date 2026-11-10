@@ -8,6 +8,7 @@ import { SettingsPage } from "@/features/groups/SettingsPage";
 import { useGroup } from "@/features/groups/groupContext";
 import { OutingEditorPage } from "@/features/outings/OutingEditorPage";
 import { ActivityPage } from "@/pages/ActivityPage";
+import { HistoryPage } from "@/pages/HistoryPage";
 import { HomePage } from "@/pages/HomePage";
 import { LedgerPage } from "@/pages/LedgerPage";
 import { NotFoundPage } from "@/pages/NotFoundPage";
@@ -48,6 +49,7 @@ function GroupGate() {
         <Route index element={<HomePage />} />
         <Route path="ledger" element={<LedgerPage />} />
         <Route path="activity" element={<ActivityPage />} />
+        <Route path="history" element={<HistoryPage />} />
         <Route path="settings" element={<SettingsPage />} />
         <Route path="outings/:outingId" element={<OutingEditorPage />} />
       </Route>

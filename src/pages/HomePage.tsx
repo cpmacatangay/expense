@@ -130,6 +130,9 @@ export function HomePage() {
             </Link>
           ))}
         </div>
+        <Link className="text-action" to="/history">
+          Full history
+        </Link>
       </section>
 
       <section className="panel" aria-label="Your table">
