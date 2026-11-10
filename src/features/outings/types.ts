@@ -46,11 +46,23 @@ export type OutingItem = {
   sort_order: number;
 };
 
+export type OutingShare = {
+  outing_id: string;
+  adult_id: string;
+  own_items_centavos: number;
+  student_items_centavos: number;
+  shared_head_centavos: number;
+  covered_student_shared_centavos: number;
+  total_difference_centavos: number;
+  total_centavos: number;
+};
+
 export type OutingDetail = {
   outing: Outing;
   adults: OutingAdult[];
   students: OutingStudent[];
   items: OutingItem[];
+  shares: OutingShare[];
 };
 
 export type NewItemInput = {

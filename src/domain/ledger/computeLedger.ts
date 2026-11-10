@@ -79,10 +79,17 @@ export function computeLedger(input: {
     add(settlement.toAdultId, -settlement.amountCentavos);
   }
 
+  const netByAdult = Object.fromEntries(net);
+  return { netByAdult, transfers: settleTransfers(netByAdult) };
+}
+
+/** Turn signed net balances into the smallest set of payments that clears them. */
+export function settleTransfers(netByAdult: Record<string, number>): LedgerTransfer[] {
   const creditors: { adultId: string; amount: number }[] = [];
   const debtors: { adultId: string; amount: number }[] = [];
 
-  for (const [adultId, amount] of net) {
+  for (const [adultId, amount] of Object.entries(netByAdult)) {
+    assertCentavos(amount, "Balance amount");
     if (amount > 0) creditors.push({ adultId, amount });
     else if (amount < 0) debtors.push({ adultId, amount: -amount });
   }
@@ -116,5 +123,5 @@ export function computeLedger(input: {
     if (creditor.amount === 0) creditorIndex += 1;
   }
 
-  return { netByAdult: Object.fromEntries(net), transfers };
+  return transfers;
 }

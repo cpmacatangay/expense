@@ -946,6 +946,64 @@ select {
   overflow-wrap: anywhere;
 }
 
+.export-actions {
+  display: grid;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.recap-preview {
+  display: grid;
+  place-items: center;
+  margin-top: 14px;
+  border: 1px solid var(--platform-line);
+  border-radius: 12px;
+  background: var(--platform-surface-muted);
+  overflow: hidden;
+}
+
+.recap-preview img {
+  display: block;
+  width: 100%;
+  max-height: 420px;
+  object-fit: contain;
+}
+
+.recap-placeholder {
+  display: grid;
+  place-items: center;
+  min-height: 240px;
+  padding: 16px;
+  color: var(--platform-muted);
+  font-size: 13px;
+  text-align: center;
+}
+
+.recap-text {
+  max-height: 220px;
+  margin: 12px 0 0;
+  padding: 14px;
+  overflow-y: auto;
+  border-radius: 12px;
+  background: var(--platform-surface-muted);
+  color: var(--platform-ink);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 12px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.recap-actions {
+  display: grid;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.recap-download {
+  justify-self: start;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .primary-action:active,
   .ios-tab:active {

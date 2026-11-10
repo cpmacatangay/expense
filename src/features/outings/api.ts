@@ -5,6 +5,7 @@ import type {
   OutingAdult,
   OutingDetail,
   OutingItem,
+  OutingShare,
   OutingStudent
 } from "./types";
 
@@ -72,13 +73,19 @@ export async function createOuting(input: {
 
 export async function getOuting(id: string): Promise<OutingDetail> {
   const client = requireSupabase();
-  const [{ data: outing, error: outingError }, { data: adults }, { data: students }, { data: items }] =
-    await Promise.all([
-      client.from("outings").select("*").eq("id", id).single(),
-      client.from("outing_adults").select("*").eq("outing_id", id),
-      client.from("outing_students").select("*").eq("outing_id", id),
-      client.from("items").select("*").eq("outing_id", id).order("sort_order", { ascending: true })
-    ]);
+  const [
+    { data: outing, error: outingError },
+    { data: adults },
+    { data: students },
+    { data: items },
+    { data: shares }
+  ] = await Promise.all([
+    client.from("outings").select("*").eq("id", id).single(),
+    client.from("outing_adults").select("*").eq("outing_id", id),
+    client.from("outing_students").select("*").eq("outing_id", id),
+    client.from("items").select("*").eq("outing_id", id).order("sort_order", { ascending: true }),
+    client.from("shares").select("*").eq("outing_id", id)
+  ]);
 
   if (outingError) throw outingError;
 
@@ -86,7 +93,8 @@ export async function getOuting(id: string): Promise<OutingDetail> {
     outing: outing as Outing,
     adults: (adults ?? []) as OutingAdult[],
     students: (students ?? []) as OutingStudent[],
-    items: (items ?? []) as OutingItem[]
+    items: (items ?? []) as OutingItem[],
+    shares: (shares ?? []) as OutingShare[]
   };
 }
 

@@ -16,6 +16,7 @@ import {
 } from "@/features/outings/api";
 import { useLedger } from "@/features/ledger/useLedger";
 import type { AssignmentType } from "@/features/outings/types";
+import { RecapPanel } from "@/features/recap/RecapPanel";
 import { formatDate } from "@/lib/dates";
 import { getErrorMessage } from "@/lib/errors";
 import { initials } from "@/lib/names";
@@ -33,6 +34,14 @@ export function OutingEditorPage() {
   });
 
   const { data: ledgerData } = useLedger(group?.id);
+  const recapShares = useMemo(
+    () =>
+      (data?.shares ?? []).map((share) => ({
+        adultId: share.adult_id,
+        totalCentavos: share.total_centavos
+      })),
+    [data?.shares]
+  );
 
   const [date, setDate] = useState("");
   const [place, setPlace] = useState("");
@@ -699,6 +708,15 @@ export function OutingEditorPage() {
           </p>
         ) : null}
       </section>
+
+      {data.outing.status === "finalized" && data.shares.length > 0 ? (
+        <RecapPanel
+          groupName={group?.name ?? "Salo"}
+          outing={data.outing}
+          shares={recapShares}
+          adults={groupAdults}
+        />
+      ) : null}
 
       <div className="editor-total">
         <div>

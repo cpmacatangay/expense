@@ -256,7 +256,7 @@ publish online, and confirm shared data.
 
 ### Tests
 
-- [ ] T126 [P] [US5] Add activity and export unit tests in `tests/unit/activity/` and `tests/unit/export/`
+- [x] T126 [P] [US5] Add activity and export unit tests in `src/features/activity/` and `src/features/export/`
 - [ ] T127 [P] [US5] Add RLS tests for owner full export and member scoped export in `tests/integration/export/`
 - [ ] T128 [P] [US5] Add E2E tests for activity, history, and export in `tests/e2e/activity-export.spec.ts`
 
@@ -265,14 +265,14 @@ publish online, and confirm shared data.
 - [x] T129 [US5] Build the Activity feed with actor, action, and before/after in `src/pages/ActivityPage.tsx`
 - [ ] T130 [US5] Implement activity pagination and realtime append in `src/features/activity/`
 - [ ] T131 [US5] Build History filters by date, adult, and student in `src/features/outings/HistoryScreen.tsx`
-- [ ] T132 [US5] Implement owner CSV export in `src/features/settings/exportCsv.ts`
-- [ ] T133 [US5] Implement owner JSON export in `src/features/settings/exportJson.ts`
-- [ ] T134 [US5] Implement member scoped export in `src/features/settings/exportMember.ts`
-- [ ] T135 [US5] Add export privacy notice and empty-group handling
+- [x] T132 [US5] Implement owner CSV export in `src/features/export/csv.ts`
+- [x] T133 [US5] Implement owner JSON export in `src/features/export/load.ts`
+- [x] T134 [US5] Implement member scoped export in `src/features/export/load.ts`
+- [x] T135 [US5] Add export privacy notice and empty-group handling
 - [ ] T136 [US5] Add iPhone and Material 3 variants for Activity and History
 - [ ] T137 [US5] Add accessibility labels and focus order for the feed and filters
 - [x] T138 [US5] Add copy for activity actions and export scope
-- [ ] T139 [US5] Verify export contents against the data model
+- [x] T139 [US5] Verify export contents against the data model
 - [ ] T140 [US5] Measure activity pagination and history performance
 
 **Checkpoint**: The group can audit and export its ledger.
@@ -292,14 +292,14 @@ publish online, and confirm shared data.
 
 ### Implementation
 
-- [ ] T143 [US6] Build the recap data builder from the finalized snapshot in `src/domain/recap/`
-- [ ] T144 [US6] Build the text recap in `src/features/recap/recapText.ts`
-- [ ] T145 [US6] Build the portrait image renderer in `src/features/recap/recapImage.ts`
-- [ ] T146 [US6] Implement Web Share API, copy, and download fallbacks in `src/features/recap/shareRecap.ts`
+- [x] T143 [US6] Build the recap data builder from the finalized snapshot in `src/features/recap/buildRecap.ts`
+- [x] T144 [US6] Build the text recap in `src/features/recap/buildRecap.ts`
+- [x] T145 [US6] Build the portrait image renderer in `src/features/recap/renderRecapImage.ts`
+- [x] T146 [US6] Implement Web Share API, copy, and download fallbacks in `src/features/recap/shareRecap.ts`
 - [ ] T147 [US6] Add the no-invite-link assertion and test
 - [ ] T148 [US6] Add iPhone and Material 3 recap previews
 - [ ] T149 [US6] Add accessibility labels and image alt text
-- [ ] T150 [US6] Verify recap accuracy after a reopen and re-finalize
+- [x] T150 [US6] Verify recap accuracy after a reopen and re-finalize
 
 **Checkpoint**: A finalized outing can be shared outside the app without leaking an invite.
 
@@ -373,7 +373,7 @@ confirm the settlement, and verify the image never appears in a recap or export.
 - [ ] T185 [US8] Add iPhone and Material 3 pay-sheet variants in `src/platform/`
 - [ ] T186 [US8] Add accessible names, reading order, and scannable-size/contrast rules
 - [ ] T187 [US8] Add copy for scan, ask-the-payee, privacy, and offline states
-- [ ] T188 [US8] Exclude QR images, paths, and labels from recaps and exports
+- [x] T188 [US8] Exclude QR images, paths, and labels from recaps and exports
 - [ ] T189 [US8] Delete the QR object on soft removal and deny all access
 - [ ] T190 [US8] Add no-public-URL and no-activity-image assertions
 - [ ] T191 [US8] Verify the full QR flow on iPhone and Android widths
