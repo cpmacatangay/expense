@@ -10,6 +10,7 @@ import { listOutings } from "@/features/outings/api";
 import { formatRelativeTime } from "@/lib/dates";
 import { getErrorMessage } from "@/lib/errors";
 import { initials } from "@/lib/names";
+import { Icon } from "@/ui/primitives/Icon";
 
 const filters: { id: ActivityFilter; label: string }[] = [
   { id: "all", label: "All" },
@@ -120,14 +121,18 @@ export function ActivityPage() {
                     {formatRelativeTime(event.created_at)} · {description.tag}
                   </span>
                   {description.link ? (
-                    <Link className="text-action" to={description.link}>
+                    <Link className="text-link" to={description.link}>
                       Open outing
+                      <Icon name="arrow-right" />
                     </Link>
                   ) : null}
                   {description.diff.length > 0 &&
                   shouldShowActivityDiff(event.action) ? (
                     <details className="activity-detail">
-                      <summary>Before and after</summary>
+                      <summary>
+                        <Icon name="chevron-right" className="activity-detail-chevron" />
+                        Before and after
+                      </summary>
                       <div className="activity-diff">
                         {description.diff.map((row, index) => (
                           <div className="activity-diff-row" key={`${row.label}-${index}`}>
@@ -155,6 +160,7 @@ export function ActivityPage() {
             onClick={() => void activity.fetchNextPage()}
             disabled={activity.isFetchingNextPage}
           >
+            <Icon name="chevron-right" />
             {activity.isFetchingNextPage ? "Loading…" : "Load more"}
           </button>
         ) : null}

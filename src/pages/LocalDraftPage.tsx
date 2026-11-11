@@ -11,6 +11,7 @@ import { useOnlineStatus } from "@/features/realtime/useOnlineStatus";
 import { formatDate } from "@/lib/dates";
 import { getErrorMessage } from "@/lib/errors";
 import { initials } from "@/lib/names";
+import { Icon } from "@/ui/primitives/Icon";
 
 type Assignment = LocalDraftItem["assignmentType"];
 
@@ -248,7 +249,8 @@ export function LocalDraftPage() {
           <h1 className="page-title">Draft not found</h1>
           <p className="page-sub">This private draft is no longer on this device.</p>
         </header>
-        <Link className="text-action" to="/">
+        <Link className="text-link" to="/">
+          <Icon name="chevron-left" />
           Back to Home
         </Link>
       </div>
@@ -265,7 +267,8 @@ export function LocalDraftPage() {
   return (
     <div className="page page--editor">
       <div className="editor-head">
-        <button className="text-action" type="button" onClick={() => navigate("/")}>
+        <button className="text-link" type="button" onClick={() => navigate("/")}>
+          <Icon name="chevron-left" />
           Back
         </button>
         <header className="page-head">
@@ -502,6 +505,7 @@ export function LocalDraftPage() {
           ) : null}
           <div className="form-actions">
             <button className="text-action" type="submit">
+              <Icon name="plus" />
               Add item
             </button>
           </div>
@@ -525,11 +529,13 @@ export function LocalDraftPage() {
                 {formatPeso(item.quantity * item.unitAmountCentavos)}
               </span>
               <button
-                className="text-action is-danger"
+                className="icon-action is-danger"
                 type="button"
                 onClick={() => removeItem(item.id)}
+                aria-label={`Remove ${item.name}`}
+                title="Remove item"
               >
-                Remove
+                <Icon name="trash" />
               </button>
             </div>
           ))}
@@ -578,6 +584,7 @@ export function LocalDraftPage() {
             onClick={() => void handlePublish("private_draft")}
             disabled={!canPublish}
           >
+            <Icon name="users" />
             {publishBusy === "private_draft" ? "Sharing…" : "Share with owner"}
           </button>
           {confirmDelete ? (
@@ -587,6 +594,7 @@ export function LocalDraftPage() {
                 type="button"
                 onClick={() => setConfirmDelete(false)}
               >
+                <Icon name="x" />
                 Keep draft
               </button>
               <button
@@ -594,6 +602,7 @@ export function LocalDraftPage() {
                 type="button"
                 onClick={() => void handleDelete()}
               >
+                <Icon name="trash" />
                 Delete draft
               </button>
             </div>
@@ -603,6 +612,7 @@ export function LocalDraftPage() {
               type="button"
               onClick={() => setConfirmDelete(true)}
             >
+              <Icon name="trash" />
               Delete draft
             </button>
           )}
@@ -622,6 +632,7 @@ export function LocalDraftPage() {
           onClick={() => void handlePublish("draft")}
           disabled={!canPublish}
         >
+          <Icon name="upload" />
           {publishBusy === "draft" ? "Publishing…" : "Publish"}
         </button>
       </div>

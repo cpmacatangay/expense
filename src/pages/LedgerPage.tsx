@@ -7,6 +7,7 @@ import { decideSettlement, recordSettlement, voidSettlement } from "@/features/l
 import type { Settlement } from "@/features/ledger/types";
 import { useLedgerView } from "@/features/ledger/useLedger";
 import { PaymentQrImage } from "@/features/payments/PaymentQrImage";
+import { Icon } from "@/ui/primitives/Icon";
 import { todayInManila } from "@/features/outings/api";
 import { formatDate } from "@/lib/dates";
 import { getErrorMessage } from "@/lib/errors";
@@ -239,6 +240,7 @@ export function LedgerPage() {
                     onClick={() => void handleVoid(settlement)}
                     disabled={saving}
                   >
+                    <Icon name="trash" />
                     Void payment
                   </button>
                   <button
@@ -246,16 +248,19 @@ export function LedgerPage() {
                     type="button"
                     onClick={() => setVoidingId(null)}
                   >
+                    <Icon name="x" />
                     Keep
                   </button>
                 </>
               ) : (
                 <button
-                  className="text-action is-danger"
+                  className="icon-action is-danger"
                   type="button"
+                  aria-label={`Void the payment from you to ${nameOf(settlement.to_adult_id)}`}
+                  title="Void payment"
                   onClick={() => setVoidingId(settlement.id)}
                 >
-                  Void
+                  <Icon name="trash" />
                 </button>
               )}
             </div>
@@ -396,23 +401,29 @@ export function LedgerPage() {
                 <span className="amount">{formatPeso(transfer.amountCentavos)}</span>
                 {qrFor(transfer.toAdultId) ? (
                   <button
-                    className="text-action"
+                    className="icon-action"
                     type="button"
+                    aria-label={`Show the payment QR for ${nameOf(transfer.toAdultId)}`}
+                    title="Payment QR"
                     onClick={() => {
                       setQrTarget(transfer);
                       setNotice(null);
                     }}
                   >
-                    QR
+                    <Icon name="qr" />
                   </button>
                 ) : null}
                 {canRecordAs(transfer.fromAdultId) ? (
                   <button
-                    className="text-action"
+                    className="icon-action"
                     type="button"
+                    aria-label={`Record a payment from ${nameOf(
+                      transfer.fromAdultId
+                    )} to ${nameOf(transfer.toAdultId)}`}
+                    title="Record payment"
                     onClick={() => openRecord(transfer)}
                   >
-                    Pay
+                    <Icon name="arrow-right" />
                   </button>
                 ) : null}
               </div>
@@ -441,6 +452,7 @@ export function LedgerPage() {
               type="button"
               onClick={() => setQrTarget(null)}
             >
+              <Icon name="x" />
               Close
             </button>
             <button
@@ -448,6 +460,7 @@ export function LedgerPage() {
               type="button"
               onClick={() => openRecord(qrTarget)}
             >
+              <Icon name="arrow-right" />
               Record payment
             </button>
           </div>
@@ -460,7 +473,7 @@ export function LedgerPage() {
           <h2 className="panel-title">Confirm payments</h2>
           <p className="panel-copy">Only confirmed payments change balances.</p>
           {pendingIncoming.map((settlement) => (
-            <div className="settlement-row" key={settlement.id}>
+            <div className="settlement-row settlement-row--stacked" key={settlement.id}>
               <span
                 className="member-initials"
                 style={{ background: colorOf(settlement.from_adult_id) }}
@@ -468,10 +481,13 @@ export function LedgerPage() {
                 {initials(nameOf(settlement.from_adult_id))}
               </span>
               <div className="row-main">
-                <span className="row-title">
-                  {nameOf(settlement.from_adult_id)} paid you{" "}
-                  {formatPeso(settlement.amount_centavos)}
-                </span>
+                <div className="settlement-head">
+                  <span className="row-title">
+                    {nameOf(settlement.from_adult_id)} paid you
+                  </span>
+                  <span className="amount">{formatPeso(settlement.amount_centavos)}</span>
+                  <span className="status-chip status-chip--pending">Pending</span>
+                </div>
                 <span className="row-sub">
                   {[formatDate(settlement.date), settlement.note || "No note"].join(" · ")}
                 </span>
@@ -482,6 +498,7 @@ export function LedgerPage() {
                     onClick={() => void handleDecision(settlement, "confirmed")}
                     disabled={saving}
                   >
+                    <Icon name="check" />
                     Confirm
                   </button>
                   <button
@@ -492,6 +509,7 @@ export function LedgerPage() {
                       setDeclineNote("");
                     }}
                   >
+                    <Icon name="x" />
                     Decline
                   </button>
                 </div>
@@ -513,12 +531,12 @@ export function LedgerPage() {
                       disabled={!declineNote.trim() || saving}
                       onClick={() => void handleDecision(settlement, "declined", declineNote)}
                     >
+                      <Icon name="x" />
                       Decline payment
                     </button>
                   </div>
                 ) : null}
               </div>
-              <span className="status-chip status-chip--pending">Pending</span>
             </div>
           ))}
         </section>
@@ -542,6 +560,7 @@ export function LedgerPage() {
           {visibleHistory.slice(0, 20).map((settlement) => renderSettlementRow(settlement))}
         </div>
         <button className="secondary-action" type="button" onClick={() => openRecord()}>
+          <Icon name="arrow-right" />
           Record payment
         </button>
       </section>
@@ -628,9 +647,11 @@ export function LedgerPage() {
 
           <div className="form-actions">
             <button className="secondary-action" type="button" onClick={closeRecord}>
+              <Icon name="x" />
               Cancel
             </button>
             <button className="primary-action" type="submit" disabled={saving}>
+              <Icon name="arrow-right" />
               {saving ? "Recording…" : "Record payment"}
             </button>
           </div>

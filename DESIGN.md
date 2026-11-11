@@ -274,6 +274,41 @@ Material 3 rules:
 - Red for "you owe," green for "you are owed," neutral for zero.
 - Tap opens Ledger.
 
+### Actions and icons
+
+Three action classes, chosen by what the control does — never by how the old screen happened to style it:
+
+- **Primary action** (`.primary-action`): the one consequential commit on a surface (Finalize,
+  Record payment, Save). Filled, pill, leading icon, one per screen where possible.
+- **Secondary action** (`.secondary-action`): supporting commands (Cancel, Download, Share with
+  owner, Confirm). Quiet outline or muted fill, pill, leading icon.
+- **Text action** (`.text-action`): an in-place command inside a card or row (Invite, Rename,
+  Add item, Sign out). Quiet pill with muted surface, 44px tall, 13px, leading icon. It must read
+  as a button: no underline, no bare accent text. Destructive variants add `.is-danger`.
+- **Text link** (`.text-link`): navigation only — moving to another screen. Accent color, no fill,
+  no pill, trailing `arrow-right` or leading `chevron-left`. Never use it for a command, and never
+  style a command as a link.
+- **Icon-only action** (`.icon-action`): dense row controls where a label will not fit (QR, void,
+  delete item). 44×44, circular, muted surface, `aria-label` and `title` required. Use it only when
+  the icon is unambiguous and the row already carries a text label.
+
+Icon rules:
+- One family: the `Icon` primitive, 24px grid, 1.7px stroke, rounded caps, currentColor.
+- 16px inside text and 44px controls, 18px in primary and secondary actions, 20px in body rows,
+  24px in the tab bar. Never mix filled and stroked icons.
+- Every command button carries an icon. A button without one is a bug, not a style choice.
+- Icons are decorative (`aria-hidden`); the accessible name comes from the label or `aria-label`.
+
+### File uploads
+
+- Use the `FileField` primitive, never a bare `<input type="file">`.
+- Structure: field label, a 52px bordered control showing the upload icon, the chosen file name
+  (or "No file chosen"), and a Browse/Replace affordance, then a 12px hint line.
+- The native input is visually hidden but focusable; the whole control is the label, and focus
+  shows a 2px accent ring on the wrapper.
+- Upload, replace, and remove are commands with icons, not links. Errors and limits sit in the
+  hint line, not in placeholder copy.
+
 ### Total field
 
 - Label "Total"; prefix ₱.

@@ -2,6 +2,7 @@ import { useState, type FormEvent } from "react";
 import { useAuth } from "@/features/auth/authContext";
 import { env } from "@/lib/env";
 import { getErrorMessage } from "@/lib/errors";
+import { Icon } from "@/ui/primitives/Icon";
 
 export function SignInPage() {
   const { configured, signInWithGoogle, sendEmailCode, verifyEmailCode } = useAuth();
@@ -80,6 +81,7 @@ export function SignInPage() {
       {notice ? <p className="form-notice">{notice}</p> : null}
 
       <button className="primary-action" type="button" onClick={handleGoogle} disabled={busy}>
+        <Icon name="log-in" />
         Continue with Google
       </button>
 
@@ -101,6 +103,7 @@ export function SignInPage() {
                 />
               </label>
               <button className="secondary-action" type="submit" disabled={busy || !email.trim()}>
+                <Icon name="mail" />
                 Email me a code
               </button>
             </form>
@@ -124,6 +127,7 @@ export function SignInPage() {
                 type="submit"
                 disabled={busy || code.trim().length < 6}
               >
+                <Icon name="check" />
                 Verify code
               </button>
               <button
@@ -135,6 +139,7 @@ export function SignInPage() {
                   setNotice(null);
                 }}
               >
+                <Icon name="chevron-left" />
                 Use a different email
               </button>
             </form>

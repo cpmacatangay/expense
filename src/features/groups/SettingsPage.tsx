@@ -19,6 +19,8 @@ import { PaymentQrImage } from "@/features/payments/PaymentQrImage";
 import { clearPaymentQr, uploadPaymentQr, validatePaymentQrFile } from "@/features/payments/qr";
 import { listAllStudents, renameStudent, setStudentStatus } from "@/features/students/api";
 import { downloadBlob } from "@/lib/download";
+import { FileField } from "@/ui/primitives/FileField";
+import { Icon } from "@/ui/primitives/Icon";
 import { InstallHint } from "@/ui/primitives/InstallHint";
 import { useGroup } from "./groupContext";
 import { getErrorMessage } from "@/lib/errors";
@@ -479,6 +481,7 @@ export function SettingsPage() {
                             onClick={() => void handleRevokeInvite(adult.id)}
                             disabled={inviteBusyId === adult.id}
                           >
+                            <Icon name="x" />
                             {inviteBusyId === adult.id ? "Revoking…" : "Revoke"}
                           </button>
                         ) : (
@@ -488,6 +491,7 @@ export function SettingsPage() {
                             onClick={() => void handleInvitePending(adult.id)}
                             disabled={inviteBusyId === adult.id}
                           >
+                            <Icon name="user-plus" />
                             {inviteBusyId === adult.id ? "Inviting…" : "Invite"}
                           </button>
                         )
@@ -500,6 +504,7 @@ export function SettingsPage() {
                             onClick={() => void handleRemoveAdult(adult.id)}
                             disabled={memberBusyId === adult.id}
                           >
+                            <Icon name="trash" />
                             {memberBusyId === adult.id ? "Removing…" : "Remove"}
                           </button>
                           <button
@@ -507,6 +512,7 @@ export function SettingsPage() {
                             type="button"
                             onClick={() => setConfirmRemoveId(null)}
                           >
+                            <Icon name="x" />
                             Keep
                           </button>
                         </>
@@ -516,6 +522,7 @@ export function SettingsPage() {
                           type="button"
                           onClick={() => setConfirmRemoveId(adult.id)}
                         >
+                          <Icon name="trash" />
                           Remove
                         </button>
                       )}
@@ -540,6 +547,7 @@ export function SettingsPage() {
                   onClick={() => void handleRestoreAdult(adult.id)}
                   disabled={memberBusyId === adult.id}
                 >
+                  <Icon name="restore" />
                   {memberBusyId === adult.id ? "Restoring…" : "Restore"}
                 </button>
               </div>
@@ -566,10 +574,12 @@ export function SettingsPage() {
               . Share it with the adult.
             </p>
             <button className="secondary-action" type="button" onClick={() => void copyCode()}>
+              <Icon name="copy" />
               {copied ? "Copied" : "Copy code"}
             </button>
           </div>
           <button className="text-action" type="button" onClick={() => setInvitation(null)}>
+            <Icon name="check" />
             Done
           </button>
         </section>
@@ -598,6 +608,7 @@ export function SettingsPage() {
               />
             </label>
             <button className="secondary-action" type="submit" disabled={busy || name.trim().length < 1}>
+              <Icon name="user-plus" />
               {busy ? "Creating…" : "Create invite"}
             </button>
           </form>
@@ -640,6 +651,7 @@ export function SettingsPage() {
                           type="button"
                           onClick={() => setEditingStudentId(null)}
                         >
+                          <Icon name="x" />
                           Cancel
                         </button>
                         <button
@@ -648,6 +660,7 @@ export function SettingsPage() {
                           onClick={() => void handleRenameStudent(student.id)}
                           disabled={rosterBusyId === student.id || !studentEditName.trim()}
                         >
+                          <Icon name="check" />
                           {rosterBusyId === student.id ? "Saving…" : "Save"}
                         </button>
                       </div>
@@ -670,6 +683,7 @@ export function SettingsPage() {
                             setRosterNotice(null);
                           }}
                         >
+                          <Icon name="pencil" />
                           Rename
                         </button>
                         <button
@@ -685,6 +699,9 @@ export function SettingsPage() {
                             )
                           }
                         >
+                          <Icon
+                            name={student.status === "active" ? "archive" : "restore"}
+                          />
                           {rosterBusyId === student.id
                             ? "Saving…"
                             : student.status === "active"
@@ -722,6 +739,7 @@ export function SettingsPage() {
               type="submit"
               disabled={studentBusy || studentName.trim().length < 1}
             >
+              <Icon name="plus" />
               {studentBusy ? "Adding…" : "Add student"}
             </button>
           </form>
@@ -772,6 +790,7 @@ export function SettingsPage() {
                     type="button"
                     onClick={() => setTransferConfirm(false)}
                   >
+                    <Icon name="x" />
                     Keep ownership
                   </button>
                   <button
@@ -780,6 +799,7 @@ export function SettingsPage() {
                     onClick={() => void handleTransferOwnership()}
                     disabled={transferBusy}
                   >
+                    <Icon name="users" />
                     {transferBusy ? "Transferring…" : "Transfer ownership"}
                   </button>
                 </div>
@@ -791,6 +811,7 @@ export function SettingsPage() {
                     onClick={() => setTransferConfirm(true)}
                     disabled={!transferTo}
                   >
+                    <Icon name="users" />
                     Transfer ownership
                   </button>
                 </div>
@@ -847,16 +868,14 @@ export function SettingsPage() {
                 maxLength={40}
               />
             </label>
-            <label className="field">
-              <span>Image</span>
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/png,image/jpeg"
-                onChange={(event) => void handleQrFile(event.target.files?.[0] ?? null)}
-              />
-            </label>
-            <p className="form-notice">PNG or JPEG, up to 2 MB.</p>
+            <FileField
+              label="Image"
+              accept="image/png,image/jpeg"
+              file={qrFile}
+              onSelect={handleQrFile}
+              hint="PNG or JPEG, up to 2 MB."
+              inputRef={fileInputRef}
+            />
           </div>
 
           <div className="export-actions">
@@ -866,6 +885,7 @@ export function SettingsPage() {
               onClick={() => void handleQrUpload()}
               disabled={!qrFile || qrBusy}
             >
+              <Icon name="upload" />
               {qrBusy
                 ? "Saving…"
                 : myAdult.payment_qr_path
@@ -880,6 +900,7 @@ export function SettingsPage() {
                     type="button"
                     onClick={() => setQrConfirmRemove(false)}
                   >
+                    <Icon name="x" />
                     Keep
                   </button>
                   <button
@@ -888,6 +909,7 @@ export function SettingsPage() {
                     onClick={() => void handleQrRemove()}
                     disabled={qrBusy}
                   >
+                    <Icon name="trash" />
                     Remove QR
                   </button>
                 </div>
@@ -897,6 +919,7 @@ export function SettingsPage() {
                   type="button"
                   onClick={() => setQrConfirmRemove(true)}
                 >
+                  <Icon name="trash" />
                   Remove QR
                 </button>
               )
@@ -930,6 +953,7 @@ export function SettingsPage() {
             onClick={() => void handleExport("json")}
             disabled={exporting !== null}
           >
+            <Icon name="download" />
             {exporting === "json" ? "Preparing…" : "Download JSON"}
           </button>
           <button
@@ -938,6 +962,7 @@ export function SettingsPage() {
             onClick={() => void handleExport("csv")}
             disabled={exporting !== null}
           >
+            <Icon name="download" />
             {exporting === "csv" ? "Preparing…" : "Download CSV (ZIP)"}
           </button>
         </div>
@@ -968,6 +993,7 @@ export function SettingsPage() {
                   type="button"
                   onClick={() => setLifecycleConfirm(null)}
                 >
+                  <Icon name="x" />
                   Keep active
                 </button>
                 <button
@@ -976,6 +1002,7 @@ export function SettingsPage() {
                   onClick={() => void handleArchiveGroup()}
                   disabled={lifecycleBusy !== null}
                 >
+                  <Icon name="archive" />
                   {lifecycleBusy === "archive" ? "Archiving…" : "Archive group"}
                 </button>
               </div>
@@ -991,6 +1018,7 @@ export function SettingsPage() {
                   type="button"
                   onClick={() => setLifecycleConfirm(null)}
                 >
+                  <Icon name="x" />
                   Keep group
                 </button>
                 <button
@@ -999,6 +1027,7 @@ export function SettingsPage() {
                   onClick={() => void handleDeleteGroup()}
                   disabled={lifecycleBusy !== null}
                 >
+                  <Icon name="trash" />
                   {lifecycleBusy === "delete" ? "Deleting…" : "Delete group"}
                 </button>
               </div>
@@ -1010,6 +1039,7 @@ export function SettingsPage() {
                 type="button"
                 onClick={() => setLifecycleConfirm("archive")}
               >
+                <Icon name="archive" />
                 Archive group
               </button>
               <button
@@ -1017,6 +1047,7 @@ export function SettingsPage() {
                 type="button"
                 onClick={() => setLifecycleConfirm("delete")}
               >
+                <Icon name="trash" />
                 Delete group
               </button>
             </div>
@@ -1031,6 +1062,7 @@ export function SettingsPage() {
         <h2 className="panel-title">{profile?.display_name}</h2>
         <p className="panel-copy">{profile?.email}</p>
         <button className="text-action" type="button" onClick={() => void signOut()}>
+          <Icon name="log-out" />
           Sign out
         </button>
       </section>

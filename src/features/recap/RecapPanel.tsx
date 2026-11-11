@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import type { Adult } from "@/features/groups/types";
 import type { Outing } from "@/features/outings/types";
 import { getErrorMessage } from "@/lib/errors";
+import { Icon } from "@/ui/primitives/Icon";
 import { buildRecap, type RecapShare } from "./buildRecap";
 import { renderRecapImage } from "./renderRecapImage";
 import { copyRecapText, downloadRecapImage, shareRecap } from "./shareRecap";
@@ -132,6 +133,7 @@ export function RecapPanel({ groupName, outing, shares, adults }: Props) {
           onClick={() => void handleShare()}
           disabled={busy !== null}
         >
+          <Icon name="share" />
           {busy === "share" ? "Preparing…" : "Share recap"}
         </button>
         <div className="recap-secondary-actions">
@@ -141,6 +143,7 @@ export function RecapPanel({ groupName, outing, shares, adults }: Props) {
             onClick={() => void handleCopy()}
             disabled={busy !== null}
           >
+            <Icon name="copy" />
             {busy === "copy" ? "Copying…" : "Copy text"}
           </button>
           <button
@@ -149,6 +152,7 @@ export function RecapPanel({ groupName, outing, shares, adults }: Props) {
             onClick={() => void handleDownload()}
             disabled={busy !== null}
           >
+            <Icon name="download" />
             {busy === "image" ? "Preparing…" : "Download image"}
           </button>
         </div>

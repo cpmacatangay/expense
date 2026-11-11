@@ -1,7 +1,7 @@
 import { NavLink, Outlet, useLocation } from "react-router-dom";
 import { useGroup } from "@/features/groups/groupContext";
 import { useOnlineStatus } from "@/features/realtime/useOnlineStatus";
-import { TabIcon } from "@/ui/primitives/TabIcon";
+import { Icon } from "@/ui/primitives/Icon";
 import { tabItems } from "@/ui/primitives/tabs";
 import "./iOSTokens.css";
 
@@ -45,7 +45,7 @@ export function IOSShell() {
             end={item.to === "/"}
             className={({ isActive }) => `ios-tab${isActive ? " is-active" : ""}`}
           >
-            <TabIcon name={item.icon} />
+            <Icon name={item.icon} size={24} />
             <span>{item.label}</span>
           </NavLink>
         ))}

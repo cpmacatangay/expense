@@ -21,6 +21,7 @@ import { RecapPanel } from "@/features/recap/RecapPanel";
 import { formatDate } from "@/lib/dates";
 import { getErrorMessage } from "@/lib/errors";
 import { initials } from "@/lib/names";
+import { Icon } from "@/ui/primitives/Icon";
 
 export function OutingEditorPage() {
   const { outingId } = useParams();
@@ -347,6 +348,7 @@ export function OutingEditorPage() {
         <h2 className="panel-title">Outing not found</h2>
         <p className="panel-copy">{error instanceof Error ? error.message : "Try again."}</p>
         <Link className="primary-action" to="/">
+          <Icon name="chevron-left" />
           Back to Home
         </Link>
       </section>
@@ -373,7 +375,8 @@ export function OutingEditorPage() {
   return (
     <div className="page page--editor">
       <div className="editor-head">
-        <button className="text-action" type="button" onClick={() => navigate("/")}>
+        <button className="text-link" type="button" onClick={() => navigate("/")}>
+          <Icon name="chevron-left" />
           Back
         </button>
         <header className="page-head">
@@ -389,6 +392,7 @@ export function OutingEditorPage() {
             type="button"
             onClick={() => setShowReopen(true)}
           >
+            <Icon name="restore" />
             Reopen this outing
           </button>
         ) : null}
@@ -415,6 +419,7 @@ export function OutingEditorPage() {
               type="button"
               onClick={() => setShowReopen(false)}
             >
+              <Icon name="x" />
               Keep finalized
             </button>
             <button
@@ -423,6 +428,7 @@ export function OutingEditorPage() {
               onClick={() => void handleReopen()}
               disabled={reopenState === "saving"}
             >
+              <Icon name="restore" />
               {reopenState === "saving" ? "Reopening…" : "Reopen outing"}
             </button>
           </div>
@@ -489,6 +495,7 @@ export function OutingEditorPage() {
         {isEditable ? (
           <div className="form-actions">
             <button className="text-action" type="submit" disabled={saveState === "saving"}>
+              <Icon name="check" />
               {saveState === "saving" ? "Saving…" : saveState === "saved" ? "Saved" : "Save details"}
             </button>
           </div>
@@ -571,6 +578,7 @@ export function OutingEditorPage() {
           </div>
           {isEditable && data.items.length > 0 && !showItemForm ? (
             <button className="text-action" type="button" onClick={() => setShowItemForm(true)}>
+              <Icon name="plus" />
               Add item
             </button>
           ) : null}
@@ -588,6 +596,7 @@ export function OutingEditorPage() {
                   type="button"
                   onClick={() => void handleUseItemsTotal()}
                 >
+                  <Icon name="restore" />
                   Use items total
                 </button>
               ) : null}
@@ -614,12 +623,13 @@ export function OutingEditorPage() {
               <span className="amount">{formatPeso(item.amount_centavos)}</span>
               {isEditable ? (
                 <button
-                  className="text-action"
+                  className="icon-action is-danger"
                   type="button"
                   onClick={() => void handleDeleteItem(item.id)}
                   aria-label={`Delete ${item.name}`}
+                  title="Remove item"
                 >
-                  Remove
+                  <Icon name="trash" />
                 </button>
               ) : null}
             </div>
@@ -713,9 +723,11 @@ export function OutingEditorPage() {
                 type="button"
                 onClick={() => setShowItemForm(false)}
               >
+                <Icon name="x" />
                 Cancel
               </button>
               <button className="secondary-action" type="submit">
+                <Icon name="plus" />
                 Add item
               </button>
             </div>
@@ -790,6 +802,7 @@ export function OutingEditorPage() {
             onClick={() => void handlePublishDraft()}
             disabled={!canPublishDraft || publishState === "saving"}
           >
+            <Icon name="upload" />
             {publishState === "saving" ? "Publishing…" : "Publish draft"}
           </button>
         ) : data.outing.status === "finalized" ? (
@@ -802,6 +815,7 @@ export function OutingEditorPage() {
             disabled={!canFinalize}
             title={!isOwner ? "Only the owner can finalize" : undefined}
           >
+            <Icon name="check" />
             {finalizeState === "saving" ? "Finalizing…" : "Finalize"}
           </button>
         )}

@@ -12,6 +12,7 @@ import { useOnlineStatus } from "@/features/realtime/useOnlineStatus";
 import { formatDate } from "@/lib/dates";
 import { getErrorMessage } from "@/lib/errors";
 import { greetingName, initials } from "@/lib/names";
+import { Icon } from "@/ui/primitives/Icon";
 
 export function HomePage() {
   const { user } = useAuth();
@@ -132,8 +133,9 @@ export function HomePage() {
               confirmation.
             </p>
           ) : null}
-          <Link className="text-action" to="/ledger">
+          <Link className="text-link" to="/ledger">
             Open ledger
+            <Icon name="arrow-right" />
           </Link>
         </section>
         <button
@@ -143,6 +145,7 @@ export function HomePage() {
           disabled={creating || !online}
           title={!online ? "Connect to start a shared outing" : undefined}
         >
+          <Icon name="plus" />
           {creating ? "Starting…" : "New outing"}
         </button>
         <button
@@ -151,6 +154,7 @@ export function HomePage() {
           onClick={() => void handleNewLocalDraft()}
           disabled={creating}
         >
+          <Icon name="plus" />
           Start a private draft
         </button>
       </div>
@@ -192,8 +196,9 @@ export function HomePage() {
             );
           })}
         </div>
-        <Link className="text-action" to="/history">
+        <Link className="text-link" to="/history">
           Full history
+          <Icon name="arrow-right" />
         </Link>
       </section>
 
@@ -248,8 +253,9 @@ export function HomePage() {
             pending.
           </p>
         ) : null}
-        <Link className="text-action" to="/settings">
+        <Link className="text-link" to="/settings">
           Invite adults and add students
+          <Icon name="arrow-right" />
         </Link>
       </section>
     </div>

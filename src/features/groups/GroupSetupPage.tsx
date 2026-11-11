@@ -5,6 +5,7 @@ import { listInactiveOwnedGroups, restoreGroup } from "./lifecycle";
 import { useGroup } from "./groupContext";
 import { formatDate } from "@/lib/dates";
 import { getErrorMessage } from "@/lib/errors";
+import { Icon } from "@/ui/primitives/Icon";
 
 export function GroupSetupPage() {
   const { profile, createGroup, joinGroup, refresh } = useGroup();
@@ -92,6 +93,7 @@ export function GroupSetupPage() {
             />
           </label>
           <button className="primary-action" type="submit" disabled={busy !== null || name.trim().length < 2}>
+            <Icon name="plus" />
             Create group
           </button>
         </form>
@@ -115,6 +117,7 @@ export function GroupSetupPage() {
             />
           </label>
           <button className="secondary-action" type="submit" disabled={busy !== null || code.trim().length !== 6}>
+            <Icon name="log-in" />
             Join group
           </button>
         </form>
@@ -151,6 +154,7 @@ export function GroupSetupPage() {
                   onClick={() => void handleRestoreGroup(inactive.id)}
                   disabled={restoreBusy === inactive.id}
                 >
+                  <Icon name="restore" />
                   {restoreBusy === inactive.id ? "Restoring…" : "Restore"}
                 </button>
               </div>
@@ -160,6 +164,7 @@ export function GroupSetupPage() {
       ) : null}
 
       <button className="text-action" type="button" onClick={() => void signOut()}>
+        <Icon name="log-out" />
         Sign out
       </button>
     </main>

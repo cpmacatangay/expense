@@ -8,6 +8,7 @@ import { filterHistory } from "@/features/history/filterHistory";
 import type { HistoryFilters } from "@/features/history/types";
 import { formatDate } from "@/lib/dates";
 import { getErrorMessage } from "@/lib/errors";
+import { Icon } from "@/ui/primitives/Icon";
 
 const emptyFilters: HistoryFilters = {
   from: "",
@@ -47,7 +48,8 @@ export function HistoryPage() {
   return (
     <div className="page">
       <div className="editor-head">
-        <Link className="text-action" to="/">
+        <Link className="text-link" to="/">
+          <Icon name="chevron-left" />
           Back
         </Link>
         <header className="page-head">
@@ -118,6 +120,7 @@ export function HistoryPage() {
               type="button"
               onClick={() => setFilters(emptyFilters)}
             >
+              <Icon name="x" />
               Clear filters
             </button>
           ) : null}
