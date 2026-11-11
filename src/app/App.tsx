@@ -7,6 +7,7 @@ import { GroupSetupPage } from "@/features/groups/GroupSetupPage";
 import { SettingsPage } from "@/features/groups/SettingsPage";
 import { useGroup } from "@/features/groups/groupContext";
 import { OutingEditorPage } from "@/features/outings/OutingEditorPage";
+import { useGroupRealtime } from "@/features/realtime/useGroupRealtime";
 import { ActivityPage } from "@/pages/ActivityPage";
 import { HistoryPage } from "@/pages/HistoryPage";
 import { HomePage } from "@/pages/HomePage";
@@ -37,7 +38,8 @@ function AuthGate() {
 }
 
 function GroupGate() {
-  const { loading, group } = useGroup();
+  const { loading, group, refresh } = useGroup();
+  useGroupRealtime(group?.id, refresh);
 
   if (loading) return <SplashScreen />;
   if (!group) return <GroupSetupPage />;

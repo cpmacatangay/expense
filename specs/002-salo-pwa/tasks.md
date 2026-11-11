@@ -77,7 +77,7 @@ can ship without these.
 - [x] T031 Create the profile bootstrap on first sign-in in `src/features/auth/`
 - [ ] T032 [P] Create the Dexie schema for cached reads and private drafts in `src/data/cache/` and `src/data/drafts/`
 - [x] T033 [P] Create the query client and cache invalidation policy in `src/app/providers.tsx`
-- [ ] T034 [P] Create the realtime subscription base in `src/data/realtime/`
+- [x] T034 [P] Create the realtime subscription base in `src/features/realtime/useGroupRealtime.ts`
 - [x] T035 Create the platform provider and detection in `src/platform/PlatformProvider.tsx` and `src/platform/detectPlatform.ts`
 - [ ] T036 [P] Create shared primitives for buttons, fields, lists, sheets, and empty states in `src/ui/primitives/`
 - [x] T037 [P] Create the iPhone shell skeleton in `src/platform/ios/IOSShell.tsx`
@@ -164,7 +164,7 @@ Manual, have the owner finalize, and verify exact shares.
 - [ ] T080 [US2] Add iPhone and Material 3 variants for the outing flow in `src/platform/`
 - [ ] T081 [US2] Add accessibility labels and focus order for the item sheet and total field
 - [ ] T082 [US2] Add copy for Auto, Manual, Fixed, stale, blocked, and draft states
-- [ ] T083 [US2] Add realtime refresh for outings and items in `src/data/realtime/`
+- [x] T083 [US2] Add realtime refresh for outings and items in `src/features/realtime/useGroupRealtime.ts`
 - [ ] T084 [US2] Verify the full US2 flow on iPhone and Android widths
 - [ ] T085 [US2] Measure the 10-item outing flow against the 3-minute target
 
@@ -202,7 +202,7 @@ confirmed settlements change balances.
 - [ ] T100 [US3] Add iPhone and Material 3 variants for Ledger and settlement sheets
 - [ ] T101 [US3] Add accessibility labels and state announcements for settlement states
 - [x] T102 [US3] Add copy for pending, confirmed, declined, void, overpayment, and duplicate
-- [ ] T103 [US3] Add realtime updates for settlements and balances
+- [x] T103 [US3] Add realtime updates for settlements and balances
 - [ ] T104 [US3] Verify the full US3 flow on iPhone and Android widths
 - [ ] T105 [US3] Measure record/confirm/decline against the 30-second target
 
@@ -263,7 +263,7 @@ publish online, and confirm shared data.
 ### Implementation
 
 - [x] T129 [US5] Build the Activity feed with actor, action, and before/after in `src/pages/ActivityPage.tsx`
-- [ ] T130 [US5] Implement activity pagination and realtime append in `src/features/activity/`
+- [x] T130 [US5] Implement activity pagination and realtime append in `src/features/activity/`
 - [x] T131 [US5] Build History filters by date, adult, and student in `src/pages/HistoryPage.tsx`
 - [x] T132 [US5] Implement owner CSV export in `src/features/export/csv.ts`
 - [x] T133 [US5] Implement owner JSON export in `src/features/export/load.ts`
@@ -320,22 +320,22 @@ while preserving history.
 
 ### Implementation
 
-- [ ] T153 [US7] Build the Members and Invites screen in `src/features/members/MembersScreen.tsx`
+- [x] T153 [US7] Build the Members and Invites panels in `src/features/groups/SettingsPage.tsx`
 - [ ] T154 [US7] Build pending-adult management in `src/features/members/PendingAdultSheet.tsx`
-- [ ] T155 [US7] Implement soft removal with history retention in `src/features/members/removeMember.ts`
-- [ ] T156 [US7] Implement ownership transfer with confirmation and audit in `src/features/groups/transferOwnership.ts`
-- [ ] T157 [US7] Implement group archive and restore in `src/features/groups/archiveGroup.ts`
-- [ ] T158 [US7] Implement soft delete and restore with confirmation in `src/features/groups/deleteGroup.ts`
+- [x] T155 [US7] Implement soft removal with history retention in `src/features/groups/lifecycle.ts`
+- [x] T156 [US7] Implement ownership transfer with confirmation and audit in `src/features/groups/lifecycle.ts`
+- [x] T157 [US7] Implement group archive and restore in `src/features/groups/lifecycle.ts`
+- [x] T158 [US7] Implement soft delete and restore with confirmation in `src/features/groups/lifecycle.ts`
 - [ ] T159 [US7] Build the student roster UI in `src/features/students/StudentsScreen.tsx`
 - [ ] T160 [US7] Implement student add/edit/archive/reactivate in `src/features/students/`
-- [ ] T161 [US7] Add member and student permission checks to the UI
-- [ ] T162 [US7] Add confirmation dialogs for destructive actions
+- [x] T161 [US7] Add member and student permission checks to the UI
+- [x] T162 [US7] Add confirmation dialogs for destructive actions
 - [ ] T163 [US7] Add iPhone and Material 3 variants for Settings and Members
 - [ ] T164 [US7] Add accessibility labels and focus order
-- [ ] T165 [US7] Add copy for removal, transfer, archive, delete, and student states
-- [ ] T166 [US7] Add activity events for every lifecycle action
+- [x] T165 [US7] Add copy for removal, transfer, archive, delete, and student states
+- [x] T166 [US7] Add activity events for every lifecycle action
 - [ ] T167 [US7] Add empty states for no members, no students, and no outings
-- [ ] T168 [US7] Verify history retention after removal and archiving
+- [x] T168 [US7] Verify history retention after removal and archiving
 - [ ] T169 [US7] Measure the group management flows
 - [ ] T170 [US7] Verify the full US7 flow on iPhone and Android widths
 
@@ -369,10 +369,10 @@ confirm the settlement, and verify the image never appears in a recap or export.
 - [ ] T181 [US8] Wire the pay sheet into the Home balance card and debt rows in `src/features/home/`
 - [ ] T182 [US8] Wire the pay sheet into Ledger debt and settlement rows in `src/features/ledger/` and `src/features/settlements/`
 - [ ] T183 [US8] Wire the pay sheet into the finalized outing detail in `src/features/outings/OutingDetail.tsx`
-- [ ] T184 [US8] Add missing-QR, replaced-QR, offline, removed-adult, and expired-URL states
+- [x] T184 [US8] Add missing-QR, replaced-QR, offline, removed-adult, and expired-URL states
 - [ ] T185 [US8] Add iPhone and Material 3 pay-sheet variants in `src/platform/`
 - [ ] T186 [US8] Add accessible names, reading order, and scannable-size/contrast rules
-- [ ] T187 [US8] Add copy for scan, ask-the-payee, privacy, and offline states
+- [x] T187 [US8] Add copy for scan, ask-the-payee, privacy, and offline states
 - [x] T188 [US8] Exclude QR images, paths, and labels from recaps and exports
 - [ ] T189 [US8] Delete the QR object on soft removal and deny all access
 - [ ] T190 [US8] Add no-public-URL and no-activity-image assertions

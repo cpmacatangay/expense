@@ -2,6 +2,13 @@ import { useEffect, useRef, useState, type FormEvent } from "react";
 import { useAuth } from "@/features/auth/authContext";
 import { buildCsvFiles, exportBaseName, zipCsvFiles } from "@/features/export/csv";
 import { loadGroupExport, loadMemberExport } from "@/features/export/load";
+import {
+  archiveGroup,
+  removeAdult,
+  restoreAdult,
+  softDeleteGroup,
+  transferOwnership
+} from "@/features/groups/lifecycle";
 import { PaymentQrImage } from "@/features/payments/PaymentQrImage";
 import { clearPaymentQr, uploadPaymentQr, validatePaymentQrFile } from "@/features/payments/qr";
 import { downloadBlob } from "@/lib/download";
@@ -31,12 +38,28 @@ export function SettingsPage() {
   const [qrError, setQrError] = useState<string | null>(null);
   const [qrNotice, setQrNotice] = useState<string | null>(null);
   const [qrConfirmRemove, setQrConfirmRemove] = useState(false);
+  const [memberBusyId, setMemberBusyId] = useState<string | null>(null);
+  const [memberError, setMemberError] = useState<string | null>(null);
+  const [memberNotice, setMemberNotice] = useState<string | null>(null);
+  const [confirmRemoveId, setConfirmRemoveId] = useState<string | null>(null);
+  const [transferTo, setTransferTo] = useState("");
+  const [transferConfirm, setTransferConfirm] = useState(false);
+  const [transferBusy, setTransferBusy] = useState(false);
+  const [transferError, setTransferError] = useState<string | null>(null);
+  const [lifecycleConfirm, setLifecycleConfirm] = useState<"archive" | "delete" | null>(null);
+  const [lifecycleBusy, setLifecycleBusy] = useState<"archive" | "delete" | null>(null);
+  const [lifecycleError, setLifecycleError] = useState<string | null>(null);
 
   const activeAdults = adults.filter((adult) => adult.status === "active");
   const pendingAdults = adults.filter((adult) => adult.status === "pending");
   const isOwner = group?.owner_id === profile?.id;
   const myAdult =
     activeAdults.find((adult) => adult.profile_id === profile?.id) ?? null;
+  const activeAndPending = adults.filter((adult) => adult.status !== "removed");
+  const removedAdults = adults.filter((adult) => adult.status === "removed");
+  const eligibleOwners = activeAdults.filter(
+    (adult) => adult.profile_id && adult.profile_id !== profile?.id
+  );
 
   useEffect(() => {
     setQrLabel(myAdult?.payment_qr_label ?? "");
@@ -167,6 +190,81 @@ export function SettingsPage() {
     }
   }
 
+  async function handleRemoveAdult(adultId: string) {
+    setMemberBusyId(adultId);
+    setMemberError(null);
+    setMemberNotice(null);
+    try {
+      await removeAdult(adultId);
+      await refresh();
+      setConfirmRemoveId(null);
+      setMemberNotice("Adult removed. Their shares, settlements, and activity stay.");
+    } catch (caught) {
+      setMemberError(getErrorMessage(caught, "Could not remove the adult"));
+    } finally {
+      setMemberBusyId(null);
+    }
+  }
+
+  async function handleRestoreAdult(adultId: string) {
+    setMemberBusyId(adultId);
+    setMemberError(null);
+    setMemberNotice(null);
+    try {
+      await restoreAdult(adultId);
+      await refresh();
+      setMemberNotice("Adult restored.");
+    } catch (caught) {
+      setMemberError(getErrorMessage(caught, "Could not restore the adult"));
+    } finally {
+      setMemberBusyId(null);
+    }
+  }
+
+  async function handleTransferOwnership() {
+    if (!group || !transferTo) return;
+    setTransferBusy(true);
+    setTransferError(null);
+    try {
+      await transferOwnership(group.id, transferTo);
+      await refresh();
+      setTransferConfirm(false);
+      setTransferTo("");
+    } catch (caught) {
+      setTransferError(getErrorMessage(caught, "Could not transfer ownership"));
+    } finally {
+      setTransferBusy(false);
+    }
+  }
+
+  async function handleArchiveGroup() {
+    if (!group) return;
+    setLifecycleBusy("archive");
+    setLifecycleError(null);
+    try {
+      await archiveGroup(group.id);
+      await refresh();
+    } catch (caught) {
+      setLifecycleError(getErrorMessage(caught, "Could not archive the group"));
+    } finally {
+      setLifecycleBusy(null);
+    }
+  }
+
+  async function handleDeleteGroup() {
+    if (!group) return;
+    setLifecycleBusy("delete");
+    setLifecycleError(null);
+    try {
+      await softDeleteGroup(group.id);
+      await refresh();
+    } catch (caught) {
+      setLifecycleError(getErrorMessage(caught, "Could not delete the group"));
+    } finally {
+      setLifecycleBusy(null);
+    }
+  }
+
   return (
     <div className="page">
       <header className="page-head">
@@ -180,7 +278,7 @@ export function SettingsPage() {
         <p className="panel-copy">
           {activeAdults.length} active {activeAdults.length === 1 ? "adult" : "adults"}
           {pendingAdults.length > 0
-            ? ` · ${pendingAdults.length} pending ${pendingAdults.length === 1 ? "invite" : "invites"}`
+            ? ` · ${pendingAdults.length} pending ${pendingAdults.length === 1 ? "adult" : "adults"}`
             : ""}
         </p>
         <div className="member-strip" aria-label="Group adults">
@@ -197,6 +295,95 @@ export function SettingsPage() {
             ))}
         </div>
       </section>
+
+      {isOwner ? (
+        <section className="panel">
+          <span className="panel-label">Members</span>
+          <h2 className="panel-title">Remove or restore adults</h2>
+          <p className="panel-copy">
+            Removed adults lose access. Their shares, settlements, and activity stay.
+          </p>
+          {memberError ? (
+            <p className="form-error" role="alert">
+              {memberError}
+            </p>
+          ) : null}
+          {memberNotice ? (
+            <p className="form-notice" role="status">
+              {memberNotice}
+            </p>
+          ) : null}
+
+          <div className="ledger-rows">
+            {activeAndPending.map((adult) => {
+              const isGroupOwner = adult.profile_id === group?.owner_id;
+              return (
+                <div className="ledger-row" key={adult.id}>
+                  <span className="member-initials" style={{ background: adult.color }}>
+                    {initials(adult.display_name)}
+                  </span>
+                  <span className="ledger-name">
+                    {adult.display_name}
+                    {isGroupOwner ? <span className="ledger-you">Owner</span> : null}
+                    {adult.status === "pending" ? (
+                      <span className="member-status">Pending</span>
+                    ) : null}
+                  </span>
+                  {!isGroupOwner ? (
+                    confirmRemoveId === adult.id ? (
+                      <div className="ledger-actions">
+                        <button
+                          className="secondary-action"
+                          type="button"
+                          onClick={() => void handleRemoveAdult(adult.id)}
+                          disabled={memberBusyId === adult.id}
+                        >
+                          {memberBusyId === adult.id ? "Removing…" : "Remove"}
+                        </button>
+                        <button
+                          className="text-action"
+                          type="button"
+                          onClick={() => setConfirmRemoveId(null)}
+                        >
+                          Keep
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        className="text-action is-danger"
+                        type="button"
+                        onClick={() => setConfirmRemoveId(adult.id)}
+                      >
+                        Remove
+                      </button>
+                    )
+                  ) : null}
+                </div>
+              );
+            })}
+
+            {removedAdults.map((adult) => (
+              <div className="ledger-row" key={adult.id}>
+                <span className="member-initials" style={{ background: adult.color }}>
+                  {initials(adult.display_name)}
+                </span>
+                <span className="ledger-name">
+                  {adult.display_name}
+                  <span className="member-status">Removed</span>
+                </span>
+                <button
+                  className="text-action"
+                  type="button"
+                  onClick={() => void handleRestoreAdult(adult.id)}
+                  disabled={memberBusyId === adult.id}
+                >
+                  {memberBusyId === adult.id ? "Restoring…" : "Restore"}
+                </button>
+              </div>
+            ))}
+          </div>
+        </section>
+      ) : null}
 
       {isOwner ? (
         <section className="panel">
@@ -286,6 +473,76 @@ export function SettingsPage() {
               {studentBusy ? "Adding…" : "Add student"}
             </button>
           </form>
+        </section>
+      ) : null}
+
+      {isOwner ? (
+        <section className="panel">
+          <span className="panel-label">Ownership</span>
+          <h2 className="panel-title">Transfer ownership</h2>
+          <p className="panel-copy">
+            The new owner finalizes, reopens, invites, and manages members. You stay a member.
+          </p>
+          {transferError ? (
+            <p className="form-error" role="alert">
+              {transferError}
+            </p>
+          ) : null}
+          {eligibleOwners.length === 0 ? (
+            <p className="panel-copy">
+              Invite another adult first. Pending adults cannot own the group.
+            </p>
+          ) : (
+            <>
+              <label className="field">
+                <span>New owner</span>
+                <select
+                  value={transferTo}
+                  onChange={(event) => {
+                    setTransferTo(event.target.value);
+                    setTransferConfirm(false);
+                  }}
+                >
+                  <option value="">Choose an adult</option>
+                  {eligibleOwners.map((adult) => (
+                    <option key={adult.id} value={adult.id}>
+                      {adult.display_name}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              {transferConfirm ? (
+                <div className="export-actions">
+                  <button
+                    className="secondary-action"
+                    type="button"
+                    onClick={() => setTransferConfirm(false)}
+                  >
+                    Keep ownership
+                  </button>
+                  <button
+                    className="primary-action"
+                    type="button"
+                    onClick={() => void handleTransferOwnership()}
+                    disabled={transferBusy}
+                  >
+                    {transferBusy ? "Transferring…" : "Transfer ownership"}
+                  </button>
+                </div>
+              ) : (
+                <div className="export-actions">
+                  <button
+                    className="secondary-action"
+                    type="button"
+                    onClick={() => setTransferConfirm(true)}
+                    disabled={!transferTo}
+                  >
+                    Transfer ownership
+                  </button>
+                </div>
+              )}
+            </>
+          )}
         </section>
       ) : null}
 
@@ -429,6 +686,87 @@ export function SettingsPage() {
           </button>
         </div>
       </section>
+
+      {isOwner ? (
+        <section className="panel">
+          <span className="panel-label">Group lifecycle</span>
+          <h2 className="panel-title">Archive or delete</h2>
+          <p className="panel-copy">
+            Archiving hides the group from every member. Deleting keeps the data restorable for 30
+            days.
+          </p>
+          {lifecycleError ? (
+            <p className="form-error" role="alert">
+              {lifecycleError}
+            </p>
+          ) : null}
+
+          {lifecycleConfirm === "archive" ? (
+            <>
+              <p className="panel-copy">
+                Archive {group?.name}? Members lose access until you restore it.
+              </p>
+              <div className="export-actions">
+                <button
+                  className="secondary-action"
+                  type="button"
+                  onClick={() => setLifecycleConfirm(null)}
+                >
+                  Keep active
+                </button>
+                <button
+                  className="primary-action"
+                  type="button"
+                  onClick={() => void handleArchiveGroup()}
+                  disabled={lifecycleBusy !== null}
+                >
+                  {lifecycleBusy === "archive" ? "Archiving…" : "Archive group"}
+                </button>
+              </div>
+            </>
+          ) : lifecycleConfirm === "delete" ? (
+            <>
+              <p className="panel-copy">
+                Delete {group?.name}? It hides for everyone and can be restored for 30 days.
+              </p>
+              <div className="export-actions">
+                <button
+                  className="secondary-action"
+                  type="button"
+                  onClick={() => setLifecycleConfirm(null)}
+                >
+                  Keep group
+                </button>
+                <button
+                  className="primary-action"
+                  type="button"
+                  onClick={() => void handleDeleteGroup()}
+                  disabled={lifecycleBusy !== null}
+                >
+                  {lifecycleBusy === "delete" ? "Deleting…" : "Delete group"}
+                </button>
+              </div>
+            </>
+          ) : (
+            <div className="export-actions">
+              <button
+                className="secondary-action"
+                type="button"
+                onClick={() => setLifecycleConfirm("archive")}
+              >
+                Archive group
+              </button>
+              <button
+                className="text-action is-danger"
+                type="button"
+                onClick={() => setLifecycleConfirm("delete")}
+              >
+                Delete group
+              </button>
+            </div>
+          )}
+        </section>
+      ) : null}
 
       <section className="panel panel--account">
         <span className="panel-label">Account</span>

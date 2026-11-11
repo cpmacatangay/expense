@@ -29,6 +29,7 @@ const fieldLabels: Record<string, string> = {
   name: "Name",
   displayName: "Name",
   adultName: "Adult",
+  ownerName: "Owner",
   status: "Status",
   date: "Date",
   place: "Place",
@@ -142,6 +143,9 @@ export function describeActivity(
       break;
     case "group.restored":
       description = "restored the group";
+      break;
+    case "group.ownership_transferred":
+      description = `transferred ownership to ${text(after.ownerName, "another adult")}`;
       break;
     case "adult.invited":
       description = `invited ${text(after.displayName, "an adult")}`;

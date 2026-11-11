@@ -1,5 +1,6 @@
 import { NavLink, Outlet, useLocation } from "react-router-dom";
 import { useGroup } from "@/features/groups/groupContext";
+import { useOnlineStatus } from "@/features/realtime/useOnlineStatus";
 import { TabIcon } from "@/ui/primitives/TabIcon";
 import { tabItems } from "@/ui/primitives/tabs";
 import "./iOSTokens.css";
@@ -7,6 +8,7 @@ import "./iOSTokens.css";
 export function IOSShell() {
   const { group } = useGroup();
   const location = useLocation();
+  const online = useOnlineStatus();
   const isDetail = location.pathname.startsWith("/outings/");
 
   return (
@@ -21,6 +23,12 @@ export function IOSShell() {
           <span className="ios-group">{group?.name ?? "Salo"}</span>
         </div>
       </header>
+
+      {!online ? (
+        <div className="offline-banner" role="status">
+          Offline. Reads stay; shared changes need a connection.
+        </div>
+      ) : null}
 
       <main className="ios-main">
         <Outlet />

@@ -5,14 +5,16 @@
 This is a validation guide, not an implementation dump. It proves the PWA works end to end on iPhone
 and Android.
 
-> **Current status (history and payment QR):** the shared shell, auth, groups, students, outing
+> **Current status (lifecycle and live updates):** the shared shell, auth, groups, students, outing
 > drafts, attendance, items, live share preview, owner-only server-side finalization, the shared
 > ledger with balances and two-sided settlements, owner-only reopening, the full activity feed,
-> owner/member exports, text-plus-image recaps, history filters, and private payment QR images are
+> owner/member exports, text-plus-image recaps, history filters, private payment QRs, member
+> removal/restore, ownership transfer, group archive/delete/restore, and live cross-device refresh are
 > implemented. Email sign-in is hidden in production until a verified sending domain exists; Google
-> sign-in is live. Offline/realtime, group lifecycle controls, and the accessibility/install pass are
-> next. The old Kotlin app and its Supabase migrations are archived under `archive/android/`; the new
-> tables are isolated from the legacy `ledger_snapshots` backup table.
+> sign-in is live. Offline reads/private drafts, the student roster editor, re-inviting restored
+> pending adults, and the accessibility/install pass are next. The old Kotlin app and its Supabase
+> migrations are archived under `archive/android/`; the new tables are isolated from the legacy
+> `ledger_snapshots` backup table.
 
 ## Prerequisites
 
