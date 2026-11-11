@@ -9,6 +9,7 @@ import {
   deleteItem,
   finalizeOuting,
   getOuting,
+  publishPrivateDraft,
   reopenOuting,
   setAdultPresent,
   setStudentPresent,
@@ -56,6 +57,7 @@ export function OutingEditorPage() {
   } | null>(null);
   const [showReopen, setShowReopen] = useState(false);
   const [reopenState, setReopenState] = useState<"idle" | "saving">("idle");
+  const [publishState, setPublishState] = useState<"idle" | "saving">("idle");
   const [showItemForm, setShowItemForm] = useState(true);
 
   const [itemName, setItemName] = useState("");
@@ -217,6 +219,30 @@ export function OutingEditorPage() {
     }
   }
 
+  async function handlePublishDraft() {
+    if (!data) return;
+    setPublishState("saving");
+    setActionError(null);
+    setFinalizeMessage(null);
+    try {
+      await publishPrivateDraft(data.outing.id, data.outing.version);
+      await refresh();
+      if (group) {
+        await queryClient.invalidateQueries({ queryKey: ["outings", group.id] });
+        await queryClient.invalidateQueries({ queryKey: ["ledger", group.id] });
+        await queryClient.invalidateQueries({ queryKey: ["activity", group.id] });
+      }
+      setFinalizeMessage({
+        kind: "notice",
+        text: "Published. The whole table can see this outing now."
+      });
+    } catch (caught) {
+      setActionError(getErrorMessage(caught, "Could not publish the draft"));
+    } finally {
+      setPublishState("idle");
+    }
+  }
+
   async function toggleAdult(adultId: string, present: boolean) {
     if (!data) return;
     setActionError(null);
@@ -322,6 +348,9 @@ export function OutingEditorPage() {
     presentAdultIds.includes(payerAdultId) &&
     presentAdultIds.length >= 2 &&
     finalizeState !== "saving";
+  const canPublishDraft =
+    data.outing.status === "private_draft" &&
+    (isOwner || data.outing.author_profile_id === profile?.id);
 
   return (
     <div className="page page--editor">
@@ -332,7 +361,8 @@ export function OutingEditorPage() {
         <header className="page-head">
           <h1 className="page-title">{data.outing.place || "New outing"}</h1>
           <p className="page-sub">
-            {formatDate(data.outing.date)} · {data.outing.status}
+            {formatDate(data.outing.date)} ·{" "}
+            {data.outing.status === "private_draft" ? "private draft" : data.outing.status}
           </p>
         </header>
         {isOwner && data.outing.status === "finalized" ? (
@@ -342,6 +372,16 @@ export function OutingEditorPage() {
             onClick={() => setShowReopen(true)}
           >
             Reopen this outing
+          </button>
+        ) : null}
+        {canPublishDraft ? (
+          <button
+            className="text-action"
+            type="button"
+            onClick={() => void handlePublishDraft()}
+            disabled={publishState === "saving"}
+          >
+            {publishState === "saving" ? "Publishing…" : "Publish draft"}
           </button>
         ) : null}
       </div>

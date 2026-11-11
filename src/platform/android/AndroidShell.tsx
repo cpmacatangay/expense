@@ -13,6 +13,9 @@ export function AndroidShell() {
 
   return (
     <div className={`android-app${isDetail ? " is-detail" : ""}`}>
+      <a className="skip-link" href="#main-content">
+        Skip to content
+      </a>
       <header className="android-head">
         <div className="android-brand">
           <img
@@ -30,7 +33,7 @@ export function AndroidShell() {
         </div>
       ) : null}
 
-      <main className="android-main">
+      <main className="android-main" id="main-content">
         <Outlet />
       </main>
 

@@ -3,9 +3,12 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useNavigate } from "react-router-dom";
 import { formatPeso } from "@/domain/money/format";
 import { useAuth } from "@/features/auth/authContext";
+import { listLocalDrafts, saveLocalDraft } from "@/features/drafts/api";
+import { createLocalDraft } from "@/features/drafts/types";
 import { useGroup } from "@/features/groups/groupContext";
 import { useLedgerView } from "@/features/ledger/useLedger";
 import { createOuting, listOutings, todayInManila } from "@/features/outings/api";
+import { useOnlineStatus } from "@/features/realtime/useOnlineStatus";
 import { formatDate } from "@/lib/dates";
 import { getErrorMessage } from "@/lib/errors";
 import { greetingName, initials } from "@/lib/names";
@@ -15,6 +18,7 @@ export function HomePage() {
   const { profile, group, adults } = useGroup();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const online = useOnlineStatus();
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -22,6 +26,14 @@ export function HomePage() {
     queryKey: ["outings", group?.id],
     queryFn: () => listOutings(group?.id as string),
     enabled: Boolean(group?.id)
+  });
+
+  const { data: localDrafts } = useQuery({
+    queryKey: ["local-drafts", group?.id],
+    queryFn: () => listLocalDrafts(group?.id as string),
+    enabled: Boolean(group?.id),
+    staleTime: 0,
+    networkMode: "always"
   });
 
   const greeting = greetingName(profile, user?.email);
@@ -40,6 +52,10 @@ export function HomePage() {
 
   async function handleNewOuting() {
     if (!group || !profile) return;
+    if (!online) {
+      setError("Connect to start a shared outing. You can still start a private draft.");
+      return;
+    }
     setCreating(true);
     setError(null);
     try {
@@ -53,6 +69,26 @@ export function HomePage() {
       navigate(`/outings/${outing.id}`);
     } catch (caught) {
       setError(getErrorMessage(caught, "Could not start the outing"));
+      setCreating(false);
+    }
+  }
+
+  async function handleNewLocalDraft() {
+    if (!group || !profile) return;
+    setCreating(true);
+    setError(null);
+    try {
+      const draft = createLocalDraft({
+        groupId: group.id,
+        authorProfileId: profile.id,
+        date: todayInManila(),
+        presentAdultIds: activeAdults.map((adult) => adult.id)
+      });
+      await saveLocalDraft(draft);
+      await queryClient.invalidateQueries({ queryKey: ["local-drafts", group.id] });
+      navigate(`/drafts/${draft.id}`);
+    } catch (caught) {
+      setError(getErrorMessage(caught, "Could not start the private draft"));
       setCreating(false);
     }
   }
@@ -104,9 +140,18 @@ export function HomePage() {
           className="primary-action"
           type="button"
           onClick={() => void handleNewOuting()}
-          disabled={creating}
+          disabled={creating || !online}
+          title={!online ? "Connect to start a shared outing" : undefined}
         >
           {creating ? "Starting…" : "New outing"}
+        </button>
+        <button
+          className="secondary-action"
+          type="button"
+          onClick={() => void handleNewLocalDraft()}
+          disabled={creating}
+        >
+          Private draft
         </button>
       </div>
 
@@ -123,7 +168,8 @@ export function HomePage() {
               <span>
                 <strong>{outing.place || "Untitled outing"}</strong>
                 <span className="row-sub">
-                  {formatDate(outing.date)} · {outing.status}
+                  {formatDate(outing.date)} ·{" "}
+                  {outing.status === "private_draft" ? "private draft" : outing.status}
                 </span>
               </span>
               <span className="amount">{formatPeso(outing.total_centavos)}</span>
@@ -134,6 +180,36 @@ export function HomePage() {
           Full history
         </Link>
       </section>
+
+      {localDrafts && localDrafts.length > 0 ? (
+        <section className="panel">
+          <span className="panel-label">Private drafts</span>
+          <h2 className="panel-title">On this device</h2>
+          <p className="panel-copy">
+            Saved locally. Publish or share them when you are connected.
+          </p>
+          <div className="outing-list">
+            {localDrafts.map((draft) => {
+              const total = draft.items.reduce(
+                (sum, item) => sum + item.quantity * item.unitAmountCentavos,
+                0
+              );
+              return (
+                <Link className="outing-link" key={draft.id} to={`/drafts/${draft.id}`}>
+                  <span>
+                    <strong>{draft.place || "Untitled draft"}</strong>
+                    <span className="row-sub">
+                      {formatDate(draft.date)} · {draft.items.length}{" "}
+                      {draft.items.length === 1 ? "item" : "items"} · saved locally
+                    </span>
+                  </span>
+                  <span className="amount">{formatPeso(total)}</span>
+                </Link>
+              );
+            })}
+          </div>
+        </section>
+      ) : null}
 
       <section className="panel" aria-label="Your table">
         <span className="panel-label">Your table</span>

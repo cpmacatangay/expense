@@ -1,4 +1,9 @@
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
+import {
+  clearGroupSnapshot,
+  loadGroupSnapshot,
+  saveGroupSnapshot
+} from "@/data/cache/groupSnapshot";
 import { requireSupabase } from "@/data/supabase/client";
 import { useAuth } from "@/features/auth/authContext";
 import { GroupContext, type GroupContextValue } from "./groupContext";
@@ -22,6 +27,7 @@ export function GroupProvider({ children }: { children: ReactNode }) {
         setAdults([]);
         setStudents([]);
         setLoading(false);
+        void clearGroupSnapshot();
         return;
       }
 
@@ -78,8 +84,36 @@ export function GroupProvider({ children }: { children: ReactNode }) {
         setGroup(nextGroup);
         setAdults(nextAdults);
         setStudents(nextStudents);
+
+        if (nextGroup) {
+          await saveGroupSnapshot({
+            profile: nextProfile,
+            group: nextGroup,
+            adults: nextAdults,
+            students: nextStudents
+          });
+        } else {
+          await clearGroupSnapshot();
+        }
       } catch (caught) {
-        setError(getErrorMessage(caught, "Could not load your group"));
+        const message = getErrorMessage(caught, "Could not load your group");
+        const networkFailure =
+          (typeof navigator !== "undefined" && !navigator.onLine) ||
+          /fetch|network|load failed|timeout/i.test(message);
+
+        if (networkFailure) {
+          const snapshot = await loadGroupSnapshot();
+          if (snapshot) {
+            setProfile(snapshot.profile);
+            setGroup(snapshot.group);
+            setAdults(snapshot.adults);
+            setStudents(snapshot.students);
+            setError(null);
+            return;
+          }
+        }
+
+        setError(message);
       } finally {
         setLoading(false);
       }

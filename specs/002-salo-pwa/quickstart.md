@@ -10,9 +10,10 @@ and Android.
 > ledger with balances and two-sided settlements, owner-only reopening, the full activity feed,
 > owner/member exports, text-plus-image recaps, history filters, private payment QRs, member
 > removal/restore, ownership transfer, group archive/delete/restore, live cross-device refresh,
-> pending-adult re-invites and revokes, and the student roster editor are implemented. Email sign-in is
-> hidden in production until a verified sending domain exists; Google sign-in is live. Offline
-> reads/private drafts and the accessibility/install pass are next. The old Kotlin app and its
+> pending-adult re-invites and revokes, the student roster editor, offline reads, local private drafts,
+> idempotent draft publishing, install guidance, and the accessibility pass are implemented. Email
+> sign-in is hidden in production until a verified sending domain exists; Google sign-in is live.
+> Device matrices, Lighthouse, and the remaining QA passes are next. The old Kotlin app and its
 > Supabase migrations are archived under `archive/android/`; the new tables are isolated from the
 > legacy `ledger_snapshots` backup table.
 

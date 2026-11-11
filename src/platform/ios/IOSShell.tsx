@@ -13,6 +13,9 @@ export function IOSShell() {
 
   return (
     <div className={`ios-app${isDetail ? " is-detail" : ""}`}>
+      <a className="skip-link" href="#main-content">
+        Skip to content
+      </a>
       <header className="ios-head">
         <div className="ios-brand">
           <img
@@ -30,7 +33,7 @@ export function IOSShell() {
         </div>
       ) : null}
 
-      <main className="ios-main">
+      <main className="ios-main" id="main-content">
         <Outlet />
       </main>
 

@@ -194,6 +194,19 @@ export async function reopenOuting(outingId: string, expectedVersion: number): P
   return data as Outing;
 }
 
+export async function publishPrivateDraft(
+  outingId: string,
+  expectedVersion: number
+): Promise<Outing> {
+  const { data, error } = await requireSupabase().rpc("publish_private_draft", {
+    p_outing_id: outingId,
+    p_expected_version: expectedVersion
+  });
+
+  if (error) throw error;
+  return data as Outing;
+}
+
 export async function finalizeOuting(
   outingId: string,
   expectedVersion: number

@@ -26,9 +26,11 @@ activity feed with actor and before/after details, owner and member exports as J
 text plus portrait-image recaps, date/adult/student history filters, private per-adult payment QR
 images with short-lived signed links, member removal/restore, ownership transfer, group
 archive/delete/restore, live cross-device refresh, an offline state banner, pending-adult re-invites
-and revokes, and a student roster with rename/archive/reactivate. Next: offline reads and private
-drafts, then the final accessibility and install pass. The old local database is kept as an unlisted
-backup; there is no migration into the shared product.
+and revokes, a student roster with rename/archive/reactivate, offline reads from a local cache, local
+private drafts that publish or share with the owner idempotently, install guidance, a skip link, 44px
+touch targets, and visible focus states. Next: device matrices and Lighthouse, then the remaining QA
+passes. The old local database is kept as an unlisted backup; there is no migration into the shared
+product.
 
 ## Product decisions
 

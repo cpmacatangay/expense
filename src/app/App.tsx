@@ -12,6 +12,7 @@ import { ActivityPage } from "@/pages/ActivityPage";
 import { HistoryPage } from "@/pages/HistoryPage";
 import { HomePage } from "@/pages/HomePage";
 import { LedgerPage } from "@/pages/LedgerPage";
+import { LocalDraftPage } from "@/pages/LocalDraftPage";
 import { NotFoundPage } from "@/pages/NotFoundPage";
 import { PlatformShell } from "@/platform/PlatformShell";
 import { SplashScreen } from "@/ui/primitives/SplashScreen";
@@ -54,6 +55,7 @@ function GroupGate() {
         <Route path="history" element={<HistoryPage />} />
         <Route path="settings" element={<SettingsPage />} />
         <Route path="outings/:outingId" element={<OutingEditorPage />} />
+        <Route path="drafts/:draftId" element={<LocalDraftPage />} />
       </Route>
       <Route path="*" element={<NotFoundPage />} />
     </Routes>

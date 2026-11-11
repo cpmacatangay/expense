@@ -19,6 +19,7 @@ import { PaymentQrImage } from "@/features/payments/PaymentQrImage";
 import { clearPaymentQr, uploadPaymentQr, validatePaymentQrFile } from "@/features/payments/qr";
 import { listAllStudents, renameStudent, setStudentStatus } from "@/features/students/api";
 import { downloadBlob } from "@/lib/download";
+import { InstallHint } from "@/ui/primitives/InstallHint";
 import { useGroup } from "./groupContext";
 import { getErrorMessage } from "@/lib/errors";
 import { initials } from "@/lib/names";
@@ -1018,6 +1019,8 @@ export function SettingsPage() {
           )}
         </section>
       ) : null}
+
+      <InstallHint />
 
       <section className="panel panel--account">
         <span className="panel-label">Account</span>

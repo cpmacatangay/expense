@@ -157,9 +157,9 @@ Manual, have the owner finalize, and verify exact shares.
 - [x] T073 [US2] Implement reopen as the `reopen_outing` RPC in `supabase/migrations/0012_reopen_outing.sql`
 - [ ] T074 [US2] Implement version checks and stale-write errors in `src/data/supabase/outings.ts`
 - [ ] T075 [US2] Implement shared-draft editing and member visibility in `src/features/outings/`
-- [ ] T076 [US2] Implement local private drafts in `src/data/drafts/`
-- [ ] T077 [US2] Implement private-draft mirroring and publish in `src/data/drafts/publish.ts`
-- [ ] T078 [US2] Implement publish idempotency and retry in `src/data/drafts/publish.ts`
+- [x] T076 [US2] Implement local private drafts in `src/features/drafts/`
+- [x] T077 [US2] Implement private-draft mirroring and publish in `src/features/drafts/publish.ts`
+- [x] T078 [US2] Implement publish idempotency and retry in `supabase/migrations/0017_drafts.sql`
 - [ ] T079 [US2] Add blocked-finalization states for unassigned items, coverage, payer, and present adults
 - [ ] T080 [US2] Add iPhone and Material 3 variants for the outing flow in `src/platform/`
 - [ ] T081 [US2] Add accessibility labels and focus order for the item sheet and total field
@@ -229,9 +229,9 @@ publish online, and confirm shared data.
 - [ ] T109 [US4] Implement the full iPhone shell components in `src/platform/ios/components/`
 - [ ] T110 [US4] Implement the full Material 3 shell components in `src/platform/android/components/`
 - [ ] T111 [US4] Implement the Appearance setting in `src/features/settings/AppearanceSettings.tsx`
-- [ ] T112 [US4] Implement the iOS Add to Home Screen guidance in `src/features/onboarding/InstallGuide.tsx`
+- [x] T112 [US4] Implement the iOS Add to Home Screen guidance in `src/ui/primitives/InstallHint.tsx`
 - [ ] T113 [US4] Implement the Android install prompt and fallback in `src/features/onboarding/InstallGuide.tsx`
-- [ ] T114 [US4] Configure the service worker and offline shell in `vite.config.ts` and `src/app/`
+- [x] T114 [US4] Configure the service worker and offline shell in `vite.config.ts` and `src/app/`
 - [ ] T115 [US4] Implement cached reads and last-sync labels in `src/data/cache/`
 - [ ] T116 [US4] Implement the online/offline/connecting/syncing state bar in `src/ui/primitives/SyncState.tsx`
 - [ ] T117 [US4] Apply safe-area insets and keyboard avoidance in `src/platform/ios/`
@@ -331,7 +331,7 @@ while preserving history.
 - [x] T161 [US7] Add member and student permission checks to the UI
 - [x] T162 [US7] Add confirmation dialogs for destructive actions
 - [ ] T163 [US7] Add iPhone and Material 3 variants for Settings and Members
-- [ ] T164 [US7] Add accessibility labels and focus order
+- [x] T164 [US7] Add accessibility labels and focus order
 - [x] T165 [US7] Add copy for removal, transfer, archive, delete, and student states
 - [x] T166 [US7] Add activity events for every lifecycle action
 - [ ] T167 [US7] Add empty states for no members, no students, and no outings
