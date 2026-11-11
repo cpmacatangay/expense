@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import type { Adult } from "@/features/groups/types";
 import type { Settlement } from "@/features/ledger/types";
 import type { Outing } from "@/features/outings/types";
-import { describeActivity, type ActivityContext } from "./describe";
+import { describeActivity, shouldShowActivityDiff, type ActivityContext } from "./describe";
 import type { ActivityEvent } from "./types";
 
 const adults: Adult[] = [
@@ -150,5 +150,16 @@ describe("describeActivity", () => {
   it("falls back for unknown actions", () => {
     const result = describeActivity(event({ action: "something.new" }), context);
     expect(result.text).toBe("something new");
+  });
+
+  it("only reveals details for sensitive changes", () => {
+    expect(shouldShowActivityDiff("outing.updated")).toBe(true);
+    expect(shouldShowActivityDiff("outing.finalized")).toBe(true);
+    expect(shouldShowActivityDiff("settlement.confirmed")).toBe(true);
+    expect(shouldShowActivityDiff("adult.renamed")).toBe(true);
+    expect(shouldShowActivityDiff("group.created")).toBe(false);
+    expect(shouldShowActivityDiff("adult.joined")).toBe(false);
+    expect(shouldShowActivityDiff("item.created")).toBe(false);
+    expect(shouldShowActivityDiff("invitation.claimed")).toBe(false);
   });
 });

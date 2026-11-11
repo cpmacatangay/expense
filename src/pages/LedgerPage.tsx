@@ -330,15 +330,19 @@ export function LedgerPage() {
                 <span className="member-initials" style={{ background: adult.color }}>
                   {initials(adult.display_name)}
                 </span>
-                <span className="ledger-name">
-                  {adult.display_name}
-                  {adult.id === myAdult?.id ? <span className="ledger-you">You</span> : null}
-                  {adult.status === "removed" ? (
-                    <span className="member-status">Removed</span>
-                  ) : null}
-                </span>
-                <span className={`ledger-state ${net < 0 ? "owes" : net > 0 ? "is-owed" : ""}`}>
-                  {net < 0 ? "owes" : net > 0 ? "is owed" : "even"}
+                <span className="ledger-name ledger-name--stacked">
+                  <span className="ledger-name-line">
+                    {adult.display_name}
+                    {adult.id === myAdult?.id ? <span className="ledger-you">You</span> : null}
+                    {adult.status === "removed" ? (
+                      <span className="member-status">Removed</span>
+                    ) : null}
+                  </span>
+                  <span
+                    className={`ledger-sub ${net < 0 ? "owes" : net > 0 ? "is-owed" : ""}`}
+                  >
+                    {net < 0 ? "owes" : net > 0 ? "is owed" : "even"}
+                  </span>
                 </span>
                 <span className={`ledger-net ${net < 0 ? "owes" : net > 0 ? "is-owed" : ""}`}>
                   {formatPeso(Math.abs(net))}

@@ -146,12 +146,12 @@ export function HomePage() {
           {creating ? "Starting…" : "New outing"}
         </button>
         <button
-          className="secondary-action"
+          className="text-action home-private-draft"
           type="button"
           onClick={() => void handleNewLocalDraft()}
           disabled={creating}
         >
-          Private draft
+          Start a private draft
         </button>
       </div>
 
@@ -163,18 +163,34 @@ export function HomePage() {
           <p className="panel-copy">No outings yet. Start the first shared meal.</p>
         ) : null}
         <div className="outing-list">
-          {outings?.map((outing) => (
-            <Link className="outing-link" key={outing.id} to={`/outings/${outing.id}`}>
-              <span>
-                <strong>{outing.place || "Untitled outing"}</strong>
-                <span className="row-sub">
-                  {formatDate(outing.date)} ·{" "}
-                  {outing.status === "private_draft" ? "private draft" : outing.status}
+          {outings?.map((outing) => {
+            const payer = outing.payer_adult_id
+              ? adults.find((adult) => adult.id === outing.payer_adult_id)
+              : null;
+            const draftLabel =
+              outing.status === "private_draft"
+                ? "Private"
+                : outing.status === "reopened"
+                  ? "Reopened"
+                  : "Draft";
+
+            return (
+              <Link className="outing-link" key={outing.id} to={`/outings/${outing.id}`}>
+                <span>
+                  <strong>{outing.place || "Untitled outing"}</strong>
+                  <span className="row-sub">
+                    {formatDate(outing.date)}
+                    {payer ? ` · Paid by ${payer.display_name}` : ""}
+                  </span>
                 </span>
-              </span>
-              <span className="amount">{formatPeso(outing.total_centavos)}</span>
-            </Link>
-          ))}
+                {outing.status === "finalized" ? (
+                  <span className="amount">{formatPeso(outing.total_centavos)}</span>
+                ) : (
+                  <span className="status-chip status-chip--pending">{draftLabel}</span>
+                )}
+              </Link>
+            );
+          })}
         </div>
         <Link className="text-action" to="/history">
           Full history

@@ -35,14 +35,19 @@ export function OutingEditorPage() {
   });
 
   const { data: ledgerData } = useLedger(group?.id);
-  const recapShares = useMemo(
-    () =>
-      (data?.shares ?? []).map((share) => ({
+  const recapShares = useMemo(() => {
+    const order = new Map(groupAdults.map((adult, index) => [adult.id, index]));
+    return (data?.shares ?? [])
+      .map((share) => ({
         adultId: share.adult_id,
         totalCentavos: share.total_centavos
-      })),
-    [data?.shares]
-  );
+      }))
+      .sort(
+        (a, b) =>
+          (order.get(a.adultId) ?? Number.MAX_SAFE_INTEGER) -
+          (order.get(b.adultId) ?? Number.MAX_SAFE_INTEGER)
+      );
+  }, [data?.shares, groupAdults]);
 
   const [date, setDate] = useState("");
   const [place, setPlace] = useState("");
@@ -115,6 +120,19 @@ export function OutingEditorPage() {
       return null;
     }
   }, [data, presentAdultIds, presentStudents]);
+
+  const adultOrder = useMemo(
+    () => new Map(groupAdults.map((adult, index) => [adult.id, index])),
+    [groupAdults]
+  );
+  const displayShares = useMemo(() => {
+    if (!preview) return [];
+    return [...preview.shares].sort(
+      (a, b) =>
+        (adultOrder.get(a.adultId) ?? Number.MAX_SAFE_INTEGER) -
+        (adultOrder.get(b.adultId) ?? Number.MAX_SAFE_INTEGER)
+    );
+  }, [preview, adultOrder]);
 
   const adultName = (id: string | null) =>
     groupAdults.find((adult) => adult.id === id)?.display_name ?? "Unknown";
@@ -374,16 +392,6 @@ export function OutingEditorPage() {
             Reopen this outing
           </button>
         ) : null}
-        {canPublishDraft ? (
-          <button
-            className="text-action"
-            type="button"
-            onClick={() => void handlePublishDraft()}
-            disabled={publishState === "saving"}
-          >
-            {publishState === "saving" ? "Publishing…" : "Publish draft"}
-          </button>
-        ) : null}
       </div>
 
       {showReopen ? (
@@ -561,7 +569,7 @@ export function OutingEditorPage() {
             <span className="panel-label">Items</span>
             <h2 className="panel-title">The bill</h2>
           </div>
-          {data.items.length > 0 && !showItemForm ? (
+          {isEditable && data.items.length > 0 && !showItemForm ? (
             <button className="text-action" type="button" onClick={() => setShowItemForm(true)}>
               Add item
             </button>
@@ -720,7 +728,7 @@ export function OutingEditorPage() {
         <h2 className="panel-title">Who pays what</h2>
         {preview ? (
           <div className="share-preview">
-            {preview.shares.map((share) => (
+            {displayShares.map((share) => (
               <div className="share-row" key={share.adultId}>
                 <span>{adultName(share.adultId)}</span>
                 <span className="amount">{formatPeso(share.totalCentavos)}</span>
@@ -731,14 +739,22 @@ export function OutingEditorPage() {
           <p className="panel-copy">Add items and mark who was present to see the split.</p>
         )}
         <p className="panel-copy">
-          Item sum is authoritative. Shared items split across present adults and students.
+          {isEditable
+            ? "Item sum is authoritative. Shared items split across present adults and students."
+            : "Finalized shares are fixed. Reopen to edit."}
         </p>
         {isEditable && isOwner && (presentAdultIds.length < 2 || !payerAdultId) ? (
           <p className="panel-copy">
             {presentAdultIds.length < 2 ? "Mark at least two adults present." : "Choose who paid."}
           </p>
         ) : null}
-        {!isOwner ? <p className="panel-copy">Only the owner can finalize.</p> : null}
+        {!isOwner ? (
+          <p className="panel-copy">
+            {data.outing.status === "private_draft"
+              ? "Publish this draft when it is ready. The owner finalizes."
+              : "Only the owner can finalize."}
+          </p>
+        ) : null}
         {finalizeMessage ? (
           <p
             className={finalizeMessage.kind === "error" ? "form-error" : "form-notice"}
@@ -767,19 +783,28 @@ export function OutingEditorPage() {
           </div>
           <div className="total-amount">{preview ? formatPeso(preview.totalCentavos) : "—"}</div>
         </div>
-        <button
-          className="primary-action"
-          type="button"
-          onClick={() => void handleFinalize()}
-          disabled={!canFinalize}
-          title={!isOwner ? "Only the owner can finalize" : undefined}
-        >
-          {data.outing.status === "finalized"
-            ? "Finalized"
-            : finalizeState === "saving"
-              ? "Finalizing…"
-              : "Finalize"}
-        </button>
+        {data.outing.status === "private_draft" ? (
+          <button
+            className="primary-action"
+            type="button"
+            onClick={() => void handlePublishDraft()}
+            disabled={!canPublishDraft || publishState === "saving"}
+          >
+            {publishState === "saving" ? "Publishing…" : "Publish draft"}
+          </button>
+        ) : data.outing.status === "finalized" ? (
+          <span className="status-chip status-chip--confirmed">Finalized</span>
+        ) : (
+          <button
+            className="primary-action"
+            type="button"
+            onClick={() => void handleFinalize()}
+            disabled={!canFinalize}
+            title={!isOwner ? "Only the owner can finalize" : undefined}
+          >
+            {finalizeState === "saving" ? "Finalizing…" : "Finalize"}
+          </button>
+        )}
       </div>
     </div>
   );

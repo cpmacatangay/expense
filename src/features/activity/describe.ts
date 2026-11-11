@@ -63,6 +63,14 @@ const entityTags: Record<ActivityEvent["entity_type"], string> = {
   settlement: "Settlement"
 };
 
+const sensitiveActionPattern =
+  /(\.updated$|\.renamed$|\.removed$|\.restored$|\.archived$|\.soft_deleted$|\.deleted$|\.finalized$|\.reopened$|\.published$|\.revoked$|ownership_transferred|status_changed|^settlement\.)/;
+
+/** Only changes with a meaningful before/after deserve a disclosure. */
+export function shouldShowActivityDiff(action: string): boolean {
+  return sensitiveActionPattern.test(action);
+}
+
 function text(value: unknown, fallback = ""): string {
   return typeof value === "string" && value.trim().length > 0 ? value.trim() : fallback;
 }

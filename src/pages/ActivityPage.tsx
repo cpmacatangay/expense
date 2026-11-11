@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { listActivity } from "@/features/activity/api";
-import { describeActivity } from "@/features/activity/describe";
+import { describeActivity, shouldShowActivityDiff } from "@/features/activity/describe";
 import type { ActivityFilter } from "@/features/activity/types";
 import { useGroup } from "@/features/groups/groupContext";
 import { listSettlements } from "@/features/ledger/api";
@@ -74,10 +74,7 @@ export function ActivityPage() {
         ))}
       </div>
 
-      <section className="panel">
-        <span className="panel-label">Feed</span>
-        <h2 className="panel-title">Latest</h2>
-
+      <section className="panel" aria-label="Activity feed">
         {activity.isLoading ? <p className="panel-copy">Loading activity…</p> : null}
 
         {activity.error ? (
@@ -127,7 +124,8 @@ export function ActivityPage() {
                       Open outing
                     </Link>
                   ) : null}
-                  {description.diff.length > 0 ? (
+                  {description.diff.length > 0 &&
+                  shouldShowActivityDiff(event.action) ? (
                     <details className="activity-detail">
                       <summary>Before and after</summary>
                       <div className="activity-diff">

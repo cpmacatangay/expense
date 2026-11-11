@@ -134,22 +134,24 @@ export function RecapPanel({ groupName, outing, shares, adults }: Props) {
         >
           {busy === "share" ? "Preparing…" : "Share recap"}
         </button>
-        <button
-          className="secondary-action"
-          type="button"
-          onClick={() => void handleCopy()}
-          disabled={busy !== null}
-        >
-          {busy === "copy" ? "Copying…" : "Copy text"}
-        </button>
-        <button
-          className="text-action recap-download"
-          type="button"
-          onClick={() => void handleDownload()}
-          disabled={busy !== null}
-        >
-          {busy === "image" ? "Preparing…" : "Download image"}
-        </button>
+        <div className="recap-secondary-actions">
+          <button
+            className="text-action"
+            type="button"
+            onClick={() => void handleCopy()}
+            disabled={busy !== null}
+          >
+            {busy === "copy" ? "Copying…" : "Copy text"}
+          </button>
+          <button
+            className="text-action"
+            type="button"
+            onClick={() => void handleDownload()}
+            disabled={busy !== null}
+          >
+            {busy === "image" ? "Preparing…" : "Download image"}
+          </button>
+        </div>
       </div>
     </section>
   );

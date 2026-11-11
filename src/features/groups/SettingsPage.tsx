@@ -429,7 +429,7 @@ export function SettingsPage() {
       {isOwner ? (
         <section className="panel">
           <span className="panel-label">Members</span>
-          <h2 className="panel-title">Remove or restore adults</h2>
+          <h2 className="panel-title">Manage adults</h2>
           <p className="panel-copy">
             Removed adults lose access. Their shares, settlements, and activity stay.
           </p>
@@ -606,7 +606,7 @@ export function SettingsPage() {
 
       {isOwner ? (
         <section className="panel">
-          <span className="panel-label">Students</span>
+          <span className="panel-label">Roster</span>
           <h2 className="panel-title">Students</h2>
           <p className="panel-copy">Students never sign in. An adult covers their share.</p>
           {rosterError ? (
@@ -746,23 +746,25 @@ export function SettingsPage() {
             </p>
           ) : (
             <>
-              <label className="field">
-                <span>New owner</span>
-                <select
-                  value={transferTo}
-                  onChange={(event) => {
-                    setTransferTo(event.target.value);
-                    setTransferConfirm(false);
-                  }}
-                >
-                  <option value="">Choose an adult</option>
-                  {eligibleOwners.map((adult) => (
-                    <option key={adult.id} value={adult.id}>
-                      {adult.display_name}
-                    </option>
-                  ))}
-                </select>
-              </label>
+              <div className="auth-form">
+                <label className="field">
+                  <span>New owner</span>
+                  <select
+                    value={transferTo}
+                    onChange={(event) => {
+                      setTransferTo(event.target.value);
+                      setTransferConfirm(false);
+                    }}
+                  >
+                    <option value="">Choose an adult</option>
+                    {eligibleOwners.map((adult) => (
+                      <option key={adult.id} value={adult.id}>
+                        {adult.display_name}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              </div>
               {transferConfirm ? (
                 <div className="export-actions">
                   <button
@@ -834,26 +836,28 @@ export function SettingsPage() {
             </p>
           ) : null}
 
-          <label className="field">
-            <span>Label</span>
-            <input
-              type="text"
-              value={qrLabel}
-              onChange={(event) => setQrLabel(event.target.value)}
-              placeholder="GCash"
-              maxLength={40}
-            />
-          </label>
-          <label className="field">
-            <span>Image</span>
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/png,image/jpeg"
-              onChange={(event) => void handleQrFile(event.target.files?.[0] ?? null)}
-            />
-          </label>
-          <p className="form-notice">PNG or JPEG, up to 2 MB.</p>
+          <div className="auth-form">
+            <label className="field">
+              <span>Label</span>
+              <input
+                type="text"
+                value={qrLabel}
+                onChange={(event) => setQrLabel(event.target.value)}
+                placeholder="GCash"
+                maxLength={40}
+              />
+            </label>
+            <label className="field">
+              <span>Image</span>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/png,image/jpeg"
+                onChange={(event) => void handleQrFile(event.target.files?.[0] ?? null)}
+              />
+            </label>
+            <p className="form-notice">PNG or JPEG, up to 2 MB.</p>
+          </div>
 
           <div className="export-actions">
             <button
