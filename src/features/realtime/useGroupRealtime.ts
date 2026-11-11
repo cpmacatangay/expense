@@ -100,7 +100,8 @@ export function useGroupRealtime(
           invalidate([
             ["activity", groupId],
             ["ledger", groupId],
-            ["history", groupId]
+            ["history", groupId],
+            ["open-invitations", groupId]
           ]);
           void refresh();
         }
@@ -116,7 +117,8 @@ export function useGroupRealtime(
         () => {
           invalidate([
             ["activity", groupId],
-            ["history", groupId]
+            ["history", groupId],
+            ["students", groupId]
           ]);
           void refresh();
         }
@@ -129,7 +131,11 @@ export function useGroupRealtime(
           table: "invitations",
           filter: `group_id=eq.${groupId}`
         },
-        () => invalidate([["activity", groupId]])
+        () =>
+          invalidate([
+            ["activity", groupId],
+            ["open-invitations", groupId]
+          ])
       )
       .on(
         "postgres_changes",

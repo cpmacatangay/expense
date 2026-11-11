@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/features/auth/authContext";
 import { buildCsvFiles, exportBaseName, zipCsvFiles } from "@/features/export/csv";
 import { loadGroupExport, loadMemberExport } from "@/features/export/load";
@@ -9,8 +10,14 @@ import {
   softDeleteGroup,
   transferOwnership
 } from "@/features/groups/lifecycle";
+import {
+  invitePendingAdult,
+  listOpenInvitations,
+  revokePendingInvite
+} from "@/features/groups/invitations";
 import { PaymentQrImage } from "@/features/payments/PaymentQrImage";
 import { clearPaymentQr, uploadPaymentQr, validatePaymentQrFile } from "@/features/payments/qr";
+import { listAllStudents, renameStudent, setStudentStatus } from "@/features/students/api";
 import { downloadBlob } from "@/lib/download";
 import { useGroup } from "./groupContext";
 import { getErrorMessage } from "@/lib/errors";
@@ -49,6 +56,16 @@ export function SettingsPage() {
   const [lifecycleConfirm, setLifecycleConfirm] = useState<"archive" | "delete" | null>(null);
   const [lifecycleBusy, setLifecycleBusy] = useState<"archive" | "delete" | null>(null);
   const [lifecycleError, setLifecycleError] = useState<string | null>(null);
+  const queryClient = useQueryClient();
+  const inviteCardRef = useRef<HTMLElement | null>(null);
+  const [inviteBusyId, setInviteBusyId] = useState<string | null>(null);
+  const [inviteError, setInviteError] = useState<string | null>(null);
+  const [inviteNotice, setInviteNotice] = useState<string | null>(null);
+  const [editingStudentId, setEditingStudentId] = useState<string | null>(null);
+  const [studentEditName, setStudentEditName] = useState("");
+  const [rosterBusyId, setRosterBusyId] = useState<string | null>(null);
+  const [rosterError, setRosterError] = useState<string | null>(null);
+  const [rosterNotice, setRosterNotice] = useState<string | null>(null);
 
   const activeAdults = adults.filter((adult) => adult.status === "active");
   const pendingAdults = adults.filter((adult) => adult.status === "pending");
@@ -60,6 +77,35 @@ export function SettingsPage() {
   const eligibleOwners = activeAdults.filter(
     (adult) => adult.profile_id && adult.profile_id !== profile?.id
   );
+
+  const { data: openInvitations } = useQuery({
+    queryKey: ["open-invitations", group?.id],
+    queryFn: () => listOpenInvitations(group?.id as string),
+    enabled: isOwner && Boolean(group?.id)
+  });
+
+  const openInviteIds = new Set((openInvitations ?? []).map((invite) => invite.adult_id));
+
+  const { data: roster } = useQuery({
+    queryKey: ["students", group?.id],
+    queryFn: () => listAllStudents(group?.id as string),
+    enabled: Boolean(group?.id)
+  });
+
+  useEffect(() => {
+    if (invitation) {
+      inviteCardRef.current?.scrollIntoView({ block: "center" });
+    }
+  }, [invitation]);
+
+  useEffect(() => {
+    if (!invitation) return;
+    const invitedAdult = adults.find((adult) => adult.id === invitation.adult_id);
+    if (invitedAdult?.status === "active") {
+      setInvitation(null);
+      setInviteNotice(null);
+    }
+  }, [adults, invitation]);
 
   useEffect(() => {
     setQrLabel(myAdult?.payment_qr_label ?? "");
@@ -75,6 +121,9 @@ export function SettingsPage() {
       const next = await inviteAdult(name.trim());
       setInvitation(next);
       setName("");
+      if (group) {
+        await queryClient.invalidateQueries({ queryKey: ["open-invitations", group.id] });
+      }
     } catch (caught) {
       setError(getErrorMessage(caught, "Could not create the invitation"));
     } finally {
@@ -95,6 +144,9 @@ export function SettingsPage() {
     try {
       await createStudent(studentName.trim());
       setStudentName("");
+      if (group) {
+        await queryClient.invalidateQueries({ queryKey: ["students", group.id] });
+      }
     } catch (caught) {
       setStudentError(getErrorMessage(caught, "Could not add the student"));
     } finally {
@@ -187,6 +239,83 @@ export function SettingsPage() {
       setQrError(getErrorMessage(caught, "Could not remove the payment QR"));
     } finally {
       setQrBusy(false);
+    }
+  }
+
+  async function handleInvitePending(adultId: string) {
+    if (!group) return;
+    setInviteBusyId(adultId);
+    setInviteError(null);
+    setInviteNotice(null);
+    try {
+      const next = await invitePendingAdult(adultId);
+      setInvitation(next);
+      setCopied(false);
+      setInviteNotice("Invite ready. Share the code with the adult.");
+      await queryClient.invalidateQueries({ queryKey: ["open-invitations", group.id] });
+    } catch (caught) {
+      setInviteError(getErrorMessage(caught, "Could not invite the adult"));
+    } finally {
+      setInviteBusyId(null);
+    }
+  }
+
+  async function handleRevokeInvite(adultId: string) {
+    if (!group) return;
+    setInviteBusyId(adultId);
+    setInviteError(null);
+    setInviteNotice(null);
+    try {
+      await revokePendingInvite(adultId);
+      if (invitation?.adult_id === adultId) setInvitation(null);
+      await queryClient.invalidateQueries({ queryKey: ["open-invitations", group.id] });
+      setInviteNotice("Invitation revoked.");
+    } catch (caught) {
+      setInviteError(getErrorMessage(caught, "Could not revoke the invitation"));
+    } finally {
+      setInviteBusyId(null);
+    }
+  }
+
+  async function handleRenameStudent(studentId: string) {
+    if (!group) return;
+    const nextName = studentEditName.trim();
+    if (!nextName) return;
+
+    setRosterBusyId(studentId);
+    setRosterError(null);
+    setRosterNotice(null);
+    try {
+      await renameStudent(studentId, nextName);
+      await refresh();
+      await queryClient.invalidateQueries({ queryKey: ["students", group.id] });
+      await queryClient.invalidateQueries({ queryKey: ["activity", group.id] });
+      await queryClient.invalidateQueries({ queryKey: ["history", group.id] });
+      setEditingStudentId(null);
+      setRosterNotice("Student renamed.");
+    } catch (caught) {
+      setRosterError(getErrorMessage(caught, "Could not rename the student"));
+    } finally {
+      setRosterBusyId(null);
+    }
+  }
+
+  async function handleStudentStatus(studentId: string, status: "active" | "archived") {
+    if (!group) return;
+    setRosterBusyId(studentId);
+    setRosterError(null);
+    setRosterNotice(null);
+    try {
+      await setStudentStatus(studentId, status);
+      await refresh();
+      await queryClient.invalidateQueries({ queryKey: ["students", group.id] });
+      await queryClient.invalidateQueries({ queryKey: ["activity", group.id] });
+      await queryClient.invalidateQueries({ queryKey: ["history", group.id] });
+      setRosterNotice(status === "active" ? "Student reactivated." : "Student archived.");
+    } catch (caught) {
+      setRosterError(getErrorMessage(caught, "Could not update the student"));
+    } finally {
+      setRosterBusyId(null);
     }
   }
 
@@ -313,6 +442,16 @@ export function SettingsPage() {
               {memberNotice}
             </p>
           ) : null}
+          {inviteError ? (
+            <p className="form-error" role="alert">
+              {inviteError}
+            </p>
+          ) : null}
+          {inviteNotice ? (
+            <p className="form-notice" role="status">
+              {inviteNotice}
+            </p>
+          ) : null}
 
           <div className="ledger-rows">
             {activeAndPending.map((adult) => {
@@ -330,33 +469,56 @@ export function SettingsPage() {
                     ) : null}
                   </span>
                   {!isGroupOwner ? (
-                    confirmRemoveId === adult.id ? (
-                      <div className="ledger-actions">
+                    <div className="member-actions">
+                      {adult.status === "pending" ? (
+                        openInviteIds.has(adult.id) ? (
+                          <button
+                            className="text-action"
+                            type="button"
+                            onClick={() => void handleRevokeInvite(adult.id)}
+                            disabled={inviteBusyId === adult.id}
+                          >
+                            {inviteBusyId === adult.id ? "Revoking…" : "Revoke"}
+                          </button>
+                        ) : (
+                          <button
+                            className="text-action"
+                            type="button"
+                            onClick={() => void handleInvitePending(adult.id)}
+                            disabled={inviteBusyId === adult.id}
+                          >
+                            {inviteBusyId === adult.id ? "Inviting…" : "Invite"}
+                          </button>
+                        )
+                      ) : null}
+                      {confirmRemoveId === adult.id ? (
+                        <>
+                          <button
+                            className="secondary-action"
+                            type="button"
+                            onClick={() => void handleRemoveAdult(adult.id)}
+                            disabled={memberBusyId === adult.id}
+                          >
+                            {memberBusyId === adult.id ? "Removing…" : "Remove"}
+                          </button>
+                          <button
+                            className="text-action"
+                            type="button"
+                            onClick={() => setConfirmRemoveId(null)}
+                          >
+                            Keep
+                          </button>
+                        </>
+                      ) : (
                         <button
-                          className="secondary-action"
+                          className="text-action is-danger"
                           type="button"
-                          onClick={() => void handleRemoveAdult(adult.id)}
-                          disabled={memberBusyId === adult.id}
+                          onClick={() => setConfirmRemoveId(adult.id)}
                         >
-                          {memberBusyId === adult.id ? "Removing…" : "Remove"}
+                          Remove
                         </button>
-                        <button
-                          className="text-action"
-                          type="button"
-                          onClick={() => setConfirmRemoveId(null)}
-                        >
-                          Keep
-                        </button>
-                      </div>
-                    ) : (
-                      <button
-                        className="text-action is-danger"
-                        type="button"
-                        onClick={() => setConfirmRemoveId(adult.id)}
-                      >
-                        Remove
-                      </button>
-                    )
+                      )}
+                    </div>
                   ) : null}
                 </div>
               );
@@ -385,6 +547,33 @@ export function SettingsPage() {
         </section>
       ) : null}
 
+      {invitation ? (
+        <section className="panel" ref={inviteCardRef}>
+          <span className="panel-label">Invite ready</span>
+          <h2 className="panel-title">
+            {adults.find((adult) => adult.id === invitation.adult_id)?.display_name ??
+              "New adult"}
+          </h2>
+          <div className="invite-result">
+            <p className="invite-code">{invitation.code}</p>
+            <p className="panel-copy">
+              Expires{" "}
+              {new Date(invitation.expires_at).toLocaleDateString("en-PH", {
+                month: "short",
+                day: "numeric"
+              })}
+              . Share it with the adult.
+            </p>
+            <button className="secondary-action" type="button" onClick={() => void copyCode()}>
+              {copied ? "Copied" : "Copy code"}
+            </button>
+          </div>
+          <button className="text-action" type="button" onClick={() => setInvitation(null)}>
+            Done
+          </button>
+        </section>
+      ) : null}
+
       {isOwner ? (
         <section className="panel">
           <span className="panel-label">Invite</span>
@@ -394,21 +583,6 @@ export function SettingsPage() {
             <p className="form-error" role="alert">
               {error}
             </p>
-          ) : null}
-          {invitation ? (
-            <div className="invite-result">
-              <p className="invite-code">{invitation.code}</p>
-              <p className="panel-copy">
-                Expires {new Date(invitation.expires_at).toLocaleDateString("en-PH", {
-                  month: "short",
-                  day: "numeric"
-                })}
-                . Share it with the adult.
-              </p>
-              <button className="secondary-action" type="button" onClick={() => void copyCode()}>
-                {copied ? "Copied" : "Copy code"}
-              </button>
-            </div>
           ) : null}
           <form className="auth-form" onSubmit={handleInvite}>
             <label className="field">
@@ -434,14 +608,91 @@ export function SettingsPage() {
           <span className="panel-label">Students</span>
           <h2 className="panel-title">Students</h2>
           <p className="panel-copy">Students never sign in. An adult covers their share.</p>
-          {students.length > 0 ? (
+          {rosterError ? (
+            <p className="form-error" role="alert">
+              {rosterError}
+            </p>
+          ) : null}
+          {rosterNotice ? (
+            <p className="form-notice" role="status">
+              {rosterNotice}
+            </p>
+          ) : null}
+          {(roster ?? students).length > 0 ? (
             <div className="item-list">
-              {students.map((student) => (
+              {(roster ?? students).map((student) => (
                 <div className="item-row" key={student.id}>
-                  <span className="row-main">
-                    <span className="row-title">{student.name}</span>
-                    <span className="row-sub">Active</span>
-                  </span>
+                  {editingStudentId === student.id ? (
+                    <div className="student-edit">
+                      <label className="field">
+                        <span>Student name</span>
+                        <input
+                          type="text"
+                          value={studentEditName}
+                          onChange={(event) => setStudentEditName(event.target.value)}
+                          maxLength={50}
+                        />
+                      </label>
+                      <div className="form-actions">
+                        <button
+                          className="secondary-action"
+                          type="button"
+                          onClick={() => setEditingStudentId(null)}
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          className="primary-action"
+                          type="button"
+                          onClick={() => void handleRenameStudent(student.id)}
+                          disabled={rosterBusyId === student.id || !studentEditName.trim()}
+                        >
+                          {rosterBusyId === student.id ? "Saving…" : "Save"}
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <>
+                      <span className="row-main">
+                        <span className="row-title">{student.name}</span>
+                        <span className="row-sub">
+                          {student.status === "active" ? "Active" : "Archived"}
+                        </span>
+                      </span>
+                      <div className="student-actions">
+                        <button
+                          className="text-action"
+                          type="button"
+                          onClick={() => {
+                            setEditingStudentId(student.id);
+                            setStudentEditName(student.name);
+                            setRosterNotice(null);
+                          }}
+                        >
+                          Rename
+                        </button>
+                        <button
+                          className={`text-action${
+                            student.status === "active" ? " is-danger" : ""
+                          }`}
+                          type="button"
+                          disabled={rosterBusyId === student.id}
+                          onClick={() =>
+                            void handleStudentStatus(
+                              student.id,
+                              student.status === "active" ? "archived" : "active"
+                            )
+                          }
+                        >
+                          {rosterBusyId === student.id
+                            ? "Saving…"
+                            : student.status === "active"
+                              ? "Archive"
+                              : "Reactivate"}
+                        </button>
+                      </div>
+                    </>
+                  )}
                 </div>
               ))}
             </div>

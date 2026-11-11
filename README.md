@@ -25,10 +25,10 @@ two-sided settlement record/confirm/decline/void, owner-only reopening with a fi
 activity feed with actor and before/after details, owner and member exports as JSON or zipped CSV,
 text plus portrait-image recaps, date/adult/student history filters, private per-adult payment QR
 images with short-lived signed links, member removal/restore, ownership transfer, group
-archive/delete/restore, live cross-device refresh, and an offline state banner. Next: offline reads and
-private drafts, the student roster editor, re-inviting restored pending adults, and the final
-accessibility and install pass. The old local database is kept as an unlisted backup; there is no
-migration into the shared product.
+archive/delete/restore, live cross-device refresh, an offline state banner, pending-adult re-invites
+and revokes, and a student roster with rename/archive/reactivate. Next: offline reads and private
+drafts, then the final accessibility and install pass. The old local database is kept as an unlisted
+backup; there is no migration into the shared product.
 
 ## Product decisions
 

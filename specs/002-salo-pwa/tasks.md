@@ -321,13 +321,13 @@ while preserving history.
 ### Implementation
 
 - [x] T153 [US7] Build the Members and Invites panels in `src/features/groups/SettingsPage.tsx`
-- [ ] T154 [US7] Build pending-adult management in `src/features/members/PendingAdultSheet.tsx`
+- [x] T154 [US7] Build pending-adult management in `src/features/groups/SettingsPage.tsx`
 - [x] T155 [US7] Implement soft removal with history retention in `src/features/groups/lifecycle.ts`
 - [x] T156 [US7] Implement ownership transfer with confirmation and audit in `src/features/groups/lifecycle.ts`
 - [x] T157 [US7] Implement group archive and restore in `src/features/groups/lifecycle.ts`
 - [x] T158 [US7] Implement soft delete and restore with confirmation in `src/features/groups/lifecycle.ts`
-- [ ] T159 [US7] Build the student roster UI in `src/features/students/StudentsScreen.tsx`
-- [ ] T160 [US7] Implement student add/edit/archive/reactivate in `src/features/students/`
+- [x] T159 [US7] Build the student roster UI in `src/features/groups/SettingsPage.tsx`
+- [x] T160 [US7] Implement student add/edit/archive/reactivate in `src/features/students/api.ts`
 - [x] T161 [US7] Add member and student permission checks to the UI
 - [x] T162 [US7] Add confirmation dialogs for destructive actions
 - [ ] T163 [US7] Add iPhone and Material 3 variants for Settings and Members

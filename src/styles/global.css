@@ -958,6 +958,48 @@ select {
   margin-top: 12px;
 }
 
+.member-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 8px;
+  flex: 0 0 auto;
+}
+
+.member-actions .text-action,
+.student-actions .text-action {
+  min-height: 34px;
+  font-size: 12px;
+}
+
+.member-actions .secondary-action {
+  width: auto;
+  min-height: 34px;
+  padding: 0 12px;
+  font-size: 12px;
+}
+
+.student-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 0 0 auto;
+}
+
+.student-edit {
+  display: grid;
+  gap: 10px;
+  width: 100%;
+}
+
+.student-edit .primary-action,
+.student-edit .secondary-action {
+  width: auto;
+  min-height: 40px;
+  padding: 0 16px;
+}
+
 .offline-banner {
   flex: 0 0 auto;
   padding: 8px 16px;
