@@ -22,6 +22,7 @@ import { formatDate } from "@/lib/dates";
 import { getErrorMessage } from "@/lib/errors";
 import { initials } from "@/lib/names";
 import { Icon } from "@/ui/primitives/Icon";
+import { ShareBand } from "@/ui/primitives/ShareBand";
 
 export function OutingEditorPage() {
   const { outingId } = useParams();
@@ -139,6 +140,17 @@ export function OutingEditorPage() {
     groupAdults.find((adult) => adult.id === id)?.display_name ?? "Unknown";
   const studentName = (id: string | null) =>
     groupStudents.find((student) => student.id === id)?.name ?? "Unknown";
+
+  const splitSlices = useMemo(() => {
+    const byId = new Map(groupAdults.map((adult) => [adult.id, adult.display_name]));
+    return displayShares
+      .filter((share) => share.totalCentavos > 0)
+      .map((share) => ({
+        id: share.adultId,
+        name: byId.get(share.adultId) ?? "Adult",
+        amountCentavos: share.totalCentavos
+      }));
+  }, [displayShares, groupAdults]);
 
   async function refresh() {
     await queryClient.invalidateQueries({ queryKey: ["outing", outingId] });
@@ -387,11 +399,7 @@ export function OutingEditorPage() {
           </p>
         </header>
         {isOwner && data.outing.status === "finalized" ? (
-          <button
-            className="text-action"
-            type="button"
-            onClick={() => setShowReopen(true)}
-          >
+          <button className="text-action" type="button" onClick={() => setShowReopen(true)}>
             <Icon name="restore" />
             Reopen this outing
           </button>
@@ -400,7 +408,6 @@ export function OutingEditorPage() {
 
       {showReopen ? (
         <section className="panel editor-confirm" aria-label="Reopen outing">
-          <span className="panel-label">Reopen</span>
           <h2 className="panel-title">Clear the finalized shares?</h2>
           <p className="panel-copy">
             This outing becomes editable again. Its share snapshot is cleared, so it leaves the
@@ -414,11 +421,7 @@ export function OutingEditorPage() {
             </p>
           ) : null}
           <div className="form-actions">
-            <button
-              className="secondary-action"
-              type="button"
-              onClick={() => setShowReopen(false)}
-            >
+            <button className="secondary-action" type="button" onClick={() => setShowReopen(false)}>
               <Icon name="x" />
               Keep finalized
             </button>
@@ -496,14 +499,17 @@ export function OutingEditorPage() {
           <div className="form-actions">
             <button className="text-action" type="submit" disabled={saveState === "saving"}>
               <Icon name="check" />
-              {saveState === "saving" ? "Saving…" : saveState === "saved" ? "Saved" : "Save details"}
+              {saveState === "saving"
+                ? "Saving…"
+                : saveState === "saved"
+                  ? "Saved"
+                  : "Save details"}
             </button>
           </div>
         ) : null}
       </form>
 
       <section className="panel">
-        <span className="panel-label">Attendance</span>
         <h2 className="panel-title">At the table</h2>
         <div className="attendance-grid">
           {groupAdults
@@ -573,7 +579,6 @@ export function OutingEditorPage() {
       <section className="panel">
         <div className="section-head">
           <div>
-            <span className="panel-label">Items</span>
             <h2 className="panel-title">The bill</h2>
           </div>
           {isEditable && data.items.length > 0 && !showItemForm ? (
@@ -718,11 +723,7 @@ export function OutingEditorPage() {
               </label>
             ) : null}
             <div className="form-actions">
-              <button
-                className="text-action"
-                type="button"
-                onClick={() => setShowItemForm(false)}
-              >
+              <button className="text-action" type="button" onClick={() => setShowItemForm(false)}>
                 <Icon name="x" />
                 Cancel
               </button>
@@ -736,17 +737,9 @@ export function OutingEditorPage() {
       </section>
 
       <section className="panel">
-        <span className="panel-label">Shares</span>
         <h2 className="panel-title">Who pays what</h2>
         {preview ? (
-          <div className="share-preview">
-            {displayShares.map((share) => (
-              <div className="share-row" key={share.adultId}>
-                <span>{adultName(share.adultId)}</span>
-                <span className="amount">{formatPeso(share.totalCentavos)}</span>
-              </div>
-            ))}
-          </div>
+          <ShareBand slices={splitSlices} youId={myAdultId} label="The split" />
         ) : (
           <p className="panel-copy">Add items and mark who was present to see the split.</p>
         )}
@@ -806,7 +799,7 @@ export function OutingEditorPage() {
             {publishState === "saving" ? "Publishing…" : "Publish draft"}
           </button>
         ) : data.outing.status === "finalized" ? (
-          <span className="status-chip status-chip--confirmed">Finalized</span>
+          <span className="stamp">Finalized</span>
         ) : (
           <button
             className="primary-action"

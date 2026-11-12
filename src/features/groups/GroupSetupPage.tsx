@@ -80,7 +80,6 @@ export function GroupSetupPage() {
       ) : null}
 
       <section className="panel">
-        <span className="panel-label">Create</span>
         <h2 className="panel-title">Start a group</h2>
         <form className="auth-form" onSubmit={handleCreate}>
           <label className="field">
@@ -94,7 +93,11 @@ export function GroupSetupPage() {
               required
             />
           </label>
-          <button className="primary-action" type="submit" disabled={busy !== null || name.trim().length < 2}>
+          <button
+            className="primary-action"
+            type="submit"
+            disabled={busy !== null || name.trim().length < 2}
+          >
             <Icon name="plus" />
             Create group
           </button>
@@ -102,7 +105,6 @@ export function GroupSetupPage() {
       </section>
 
       <section className="panel">
-        <span className="panel-label">Join</span>
         <h2 className="panel-title">I have an invite</h2>
         <form className="auth-form" onSubmit={handleJoin}>
           <label className="field">
@@ -118,7 +120,11 @@ export function GroupSetupPage() {
               required
             />
           </label>
-          <button className="secondary-action" type="submit" disabled={busy !== null || code.trim().length !== 6}>
+          <button
+            className="secondary-action"
+            type="submit"
+            disabled={busy !== null || code.trim().length !== 6}
+          >
             <Icon name="log-in" />
             Join group
           </button>
@@ -127,7 +133,6 @@ export function GroupSetupPage() {
 
       {inactiveGroups && inactiveGroups.length > 0 ? (
         <section className="panel">
-          <span className="panel-label">Owned groups</span>
           <h2 className="panel-title">Archived and deleted</h2>
           <p className="panel-copy">Restore a group to bring it back for every member.</p>
           {restoreError ? (

@@ -1,126 +1,144 @@
 :root {
   color-scheme: light dark;
 
-  /* Brand */
-  --color-ledger-green: #1f5c45;
-  --color-accent: #1f5c45;
-  --color-green-soft: #d9efe2;
-  --color-mint: #b4f0ce;
-  --color-ink: #15221c;
-  --color-muted: #5d6b63;
-  --color-red: #a83232;
-  --color-red-soft: #f7e2e0;
-  --color-amber: #8a5a12;
-  --color-amber-soft: #f3e7d2;
+  /* Ground, ink, surfaces */
+  --ground: #f2f1ed;
+  --surface: #fbfaf7;
+  --raised: #e9e7e0;
+  --active: #e2dfd6;
+  --border: #d9d5cc;
+  --rule: #e9e6df;
+  --control: #c7c2b8;
+  --text: #171512;
+  --muted: #625e55;
+  --faint: #6c675e;
 
-  /* On-color roles */
-  --color-on-accent: #ffffff;
-  --color-initials-ink: #123526;
-  --color-qr-surface: #ffffff;
-  --color-qr-ink: #5d6b63;
-  --color-scrim: rgba(9, 20, 14, 0.45);
+  /* The one hue: data, and at most one control */
+  --accent: #1f5c45;
+  --accent-soft: #dcebe1;
+  --brand-green: #1f5c45;
 
-  /* Neutrals */
-  --color-ground: #f2f4f0;
-  --color-surface: #fcfdfb;
-  --color-surface-muted: #eaede7;
-  --color-line: #d8ddd4;
-  --color-line-soft: #e6eae3;
-  --color-canvas: #e6e9e2;
+  /* Actions */
+  --primary: #171512;
+  --on-primary: #fcfaf4;
+
+  /* Status */
+  --positive: #1f5c45;
+  --negative: #8e2f22;
+  --warning: #7a4e12;
+  --pill-positive-bg: #e3eee6;
+  --pill-positive-ink: #123a27;
+  --pill-negative-bg: #f6e2dc;
+  --pill-negative-ink: #5c1a12;
+  --pill-warning-bg: #f5e8ce;
+  --pill-warning-ink: #4a2e08;
+  --pill-neutral-bg: #e9e3d8;
+  --pill-neutral-ink: #3a342c;
+
+  /* Utility */
+  --grid: #dcd4c4;
+  --qr-surface: #ffffff;
+  --qr-ink: #5d554a;
+  --initials-ink: #123526;
+  --scrim: rgba(23, 21, 18, 0.42);
 
   /* Shape */
-  --radius-card: 16px;
-  --radius-control: 12px;
-  --radius-tab: 22px;
-  --tab-height: 64px;
+  --radius-card: 8px;
+  --radius-control: 6px;
+  --radius-chip: 4px;
+  --radius-sheet: 12px;
+
+  /* Spacing */
+  --gap: 12px;
+  --card-pad: 16px;
+  --pad: 16px;
+  --section-gap: 24px;
+  --row-height: 44px;
+  --control-height: 44px;
+  --nav-row: 44px;
 
   /* Type */
-  --font-ios:
-    -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Segoe UI", system-ui,
-    sans-serif;
-  --font-android: "Roboto", "Segoe UI", system-ui, sans-serif;
+  --font-sans: "Geist", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "Geist Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  --fs-title: 24px;
+  --fs-section: 16px;
+  --fs-kpi: 34px;
+  --fs-body: 14px;
+  --fs-small: 13px;
+  --fs-micro: 12px;
 
   /* Motion */
-  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
-  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
-  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
-  --duration-press: 160ms;
-  --duration-ui: 180ms;
+  --ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --duration: 180ms;
   --duration-sheet: 240ms;
+
+  /* Aliases kept for the screens that still reference the old roles */
+  --platform-ground: var(--ground);
+  --platform-surface: var(--surface);
+  --platform-surface-muted: var(--raised);
+  --platform-ink: var(--text);
+  --platform-muted: var(--muted);
+  --platform-accent: var(--accent);
+  --platform-accent-soft: var(--accent-soft);
+  --platform-on-accent: var(--on-primary);
+  --platform-initials-ink: var(--initials-ink);
+  --platform-qr-surface: var(--qr-surface);
+  --platform-qr-ink: var(--qr-ink);
+  --platform-scrim: var(--scrim);
+  --platform-line: var(--border);
+  --platform-line-soft: var(--rule);
+  --platform-danger: var(--negative);
+  --platform-font: var(--font-sans);
+  --platform-radius-card: var(--radius-card);
+  --platform-radius-control: var(--radius-control);
+  --platform-card-padding: var(--card-pad);
+  --platform-section-gap: var(--section-gap);
+  --platform-ease: var(--ease);
+  --platform-duration: var(--duration);
 }
 
-/* Material 3 platform roles */
-:root[data-platform="android"] {
-  --m3-surface: #f7faf5;
-  --m3-surface-container-lowest: #ffffff;
-  --m3-surface-container-low: #f0f5ee;
-  --m3-surface-container: #e8efe5;
-  --m3-surface-container-high: #dfe8dc;
-  --m3-on-surface: #1a1c19;
-  --m3-on-surface-variant: #5d6b63;
-  --m3-primary: #1f5c45;
-  --m3-on-primary: #ffffff;
-  --m3-primary-container: #b4f0ce;
-  --m3-on-primary-container: #0b2e1f;
-  --m3-secondary-container: #d9efe2;
-  --m3-on-secondary-container: #123526;
-  --m3-error: #8c1d18;
-  --m3-error-container: #f9dedc;
-  --m3-on-error-container: #410e0b;
-  --m3-outline: #c9d2c6;
-  --m3-outline-variant: #e1e8de;
-  --m3-amber-container: #f3e7d2;
-  --m3-on-amber-container: #6b4610;
-  --m3-radius-card: 12px;
-  --m3-radius-large: 16px;
-  --m3-radius-button: 20px;
-  --m3-ease-standard: cubic-bezier(0.2, 0, 0, 1);
-  --m3-ease-emphasized: cubic-bezier(0.05, 0.7, 0.1, 1);
-  --m3-duration-short: 150ms;
-  --m3-duration-medium: 250ms;
+@media (min-width: 760px) {
+  :root {
+    --card-pad: 20px;
+    --pad: 24px;
+    --section-gap: 28px;
+  }
 }
 
-/* Dark theme: a deep green-black ground with mint accents, not pure black. */
 @media (prefers-color-scheme: dark) {
   :root {
-    --color-accent: #b4f0ce;
-    --color-green-soft: #1e3a2c;
-    --color-ink: #e8f0ea;
-    --color-muted: #9fb0a6;
-    --color-red: #f0a8a2;
-    --color-red-soft: #3a1f1d;
-    --color-amber: #e8c68a;
-    --color-amber-soft: #3a2e1c;
-    --color-ground: #0e1512;
-    --color-surface: #141d18;
-    --color-surface-muted: #1f2a24;
-    --color-line: #2b3a32;
-    --color-line-soft: #223028;
-    --color-canvas: #0a100d;
-    --color-on-accent: #0b2e1f;
-    --color-scrim: rgba(0, 0, 0, 0.6);
-  }
+    --ground: #12100d;
+    --surface: #191713;
+    --raised: #211f1a;
+    --active: #2a2721;
+    --border: #302d27;
+    --rule: #24211c;
+    --control: #4a463d;
+    --text: #f2f2f2;
+    --muted: #b4b2ac;
+    --faint: #a5a29a;
 
-  :root[data-platform="android"] {
-    --m3-surface: #0e1512;
-    --m3-surface-container-lowest: #141d18;
-    --m3-surface-container-low: #18231d;
-    --m3-surface-container: #1f2a24;
-    --m3-surface-container-high: #27352d;
-    --m3-on-surface: #e8f0ea;
-    --m3-on-surface-variant: #9fb0a6;
-    --m3-primary: #b4f0ce;
-    --m3-on-primary: #0b2e1f;
-    --m3-primary-container: #1e3a2c;
-    --m3-on-primary-container: #c8f5dc;
-    --m3-secondary-container: #24382d;
-    --m3-on-secondary-container: #d9efe2;
-    --m3-error: #f0a8a2;
-    --m3-error-container: #3a1f1d;
-    --m3-on-error-container: #f9dedc;
-    --m3-outline: #3a4a40;
-    --m3-outline-variant: #2b3a32;
-    --m3-amber-container: #3a2e1c;
-    --m3-on-amber-container: #f1d9ae;
+    --accent: #8fd6b4;
+    --accent-soft: #1b3326;
+    --brand-green: #1f5c45;
+
+    --primary: #efeeea;
+    --on-primary: #171512;
+
+    --positive: #8fd6b4;
+    --negative: #f0a79a;
+    --warning: #e8c68a;
+    --pill-positive-bg: #172a20;
+    --pill-positive-ink: #9fe0c1;
+    --pill-negative-bg: #2e1815;
+    --pill-negative-ink: #f3b5aa;
+    --pill-warning-bg: #2e2517;
+    --pill-warning-ink: #f1d9ae;
+    --pill-neutral-bg: #2a251e;
+    --pill-neutral-ink: #d9d0c2;
+
+    --grid: #332d24;
+    --qr-ink: #5d554a;
+    --scrim: rgba(0, 0, 0, 0.62);
   }
 }

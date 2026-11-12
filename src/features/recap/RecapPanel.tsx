@@ -97,11 +97,8 @@ export function RecapPanel({ groupName, outing, shares, adults }: Props) {
 
   return (
     <section className="panel">
-      <span className="panel-label">Recap</span>
       <h2 className="panel-title">Share the table</h2>
-      <p className="panel-copy">
-        Text and a portrait image. No invite link and no payment QR.
-      </p>
+      <p className="panel-copy">Text and a portrait image. No invite link and no payment QR.</p>
 
       {error ? (
         <p className="form-error" role="alert">
@@ -118,9 +115,7 @@ export function RecapPanel({ groupName, outing, shares, adults }: Props) {
         {preview ? (
           <img src={preview} alt={`Recap for ${recap.title}`} />
         ) : (
-          <div className="recap-placeholder">
-            {previewError ?? "Drawing the recap…"}
-          </div>
+          <div className="recap-placeholder">{previewError ?? "Drawing the recap…"}</div>
         )}
       </div>
 

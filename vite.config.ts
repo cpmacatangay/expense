@@ -29,7 +29,7 @@ export default defineConfig({
         name: "Salo · shared group ledger",
         short_name: "Salo",
         description: "One shared meal ledger for the table.",
-        theme_color: "#F2F4F0",
+        theme_color: "#F2F1ED",
         background_color: "#1F5C45",
         display: "standalone",
         orientation: "portrait",
@@ -48,7 +48,7 @@ export default defineConfig({
       },
       workbox: {
         navigateFallback: "/index.html",
-        globPatterns: ["**/*.{js,css,html,svg,png,webmanifest}"],
+        globPatterns: ["**/*.{js,css,html,svg,png,woff2,webmanifest}"],
         skipWaiting: true,
         clientsClaim: true,
         cleanupOutdatedCaches: true

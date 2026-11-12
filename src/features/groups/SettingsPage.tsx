@@ -73,8 +73,7 @@ export function SettingsPage() {
   const activeAdults = adults.filter((adult) => adult.status === "active");
   const pendingAdults = adults.filter((adult) => adult.status === "pending");
   const isOwner = group?.owner_id === profile?.id;
-  const myAdult =
-    activeAdults.find((adult) => adult.profile_id === profile?.id) ?? null;
+  const myAdult = activeAdults.find((adult) => adult.profile_id === profile?.id) ?? null;
   const activeAndPending = adults.filter((adult) => adult.status !== "removed");
   const removedAdults = adults.filter((adult) => adult.status === "removed");
   const eligibleOwners = activeAdults.filter(
@@ -398,14 +397,13 @@ export function SettingsPage() {
   }
 
   return (
-    <div className="page">
+    <div className="page page--settings">
       <header className="page-head">
         <h1 className="page-title">Settings</h1>
         <p className="page-sub">Members, students, and account.</p>
       </header>
 
       <section className="panel">
-        <span className="panel-label">Group</span>
         <h2 className="panel-title">{group?.name}</h2>
         <p className="panel-copy">
           {activeAdults.length} active {activeAdults.length === 1 ? "adult" : "adults"}
@@ -413,25 +411,11 @@ export function SettingsPage() {
             ? ` · ${pendingAdults.length} pending ${pendingAdults.length === 1 ? "adult" : "adults"}`
             : ""}
         </p>
-        <div className="member-strip" aria-label="Group adults">
-          {adults
-            .filter((adult) => adult.status !== "removed")
-            .map((adult) => (
-              <span className="member" key={adult.id}>
-                <span className="member-initials" style={{ background: adult.color }}>
-                  {initials(adult.display_name)}
-                </span>
-                <span className="member-name">{adult.display_name}</span>
-                {adult.status === "pending" ? <span className="member-status">Pending</span> : null}
-              </span>
-            ))}
-        </div>
       </section>
 
       {isOwner ? (
         <section className="panel">
-          <span className="panel-label">Members</span>
-          <h2 className="panel-title">Manage adults</h2>
+          <h2 className="panel-title">Members</h2>
           <p className="panel-copy">
             Removed adults lose access. Their shares, settlements, and activity stay.
           </p>
@@ -558,10 +542,9 @@ export function SettingsPage() {
 
       {invitation ? (
         <section className="panel" ref={inviteCardRef}>
-          <span className="panel-label">Invite ready</span>
           <h2 className="panel-title">
-            {adults.find((adult) => adult.id === invitation.adult_id)?.display_name ??
-              "New adult"}
+            Invite for{" "}
+            {adults.find((adult) => adult.id === invitation.adult_id)?.display_name ?? "new adult"}
           </h2>
           <div className="invite-result">
             <p className="invite-code">{invitation.code}</p>
@@ -587,9 +570,10 @@ export function SettingsPage() {
 
       {isOwner ? (
         <section className="panel">
-          <span className="panel-label">Invite</span>
           <h2 className="panel-title">Invite an adult</h2>
-          <p className="panel-copy">Create a pending adult identity, then share the six-character code.</p>
+          <p className="panel-copy">
+            Create a pending adult identity, then share the six-character code.
+          </p>
           {error ? (
             <p className="form-error" role="alert">
               {error}
@@ -607,7 +591,11 @@ export function SettingsPage() {
                 required
               />
             </label>
-            <button className="secondary-action" type="submit" disabled={busy || name.trim().length < 1}>
+            <button
+              className="secondary-action"
+              type="submit"
+              disabled={busy || name.trim().length < 1}
+            >
               <Icon name="user-plus" />
               {busy ? "Creating…" : "Create invite"}
             </button>
@@ -617,7 +605,6 @@ export function SettingsPage() {
 
       {isOwner ? (
         <section className="panel">
-          <span className="panel-label">Roster</span>
           <h2 className="panel-title">Students</h2>
           <p className="panel-copy">Students never sign in. An adult covers their share.</p>
           {rosterError ? (
@@ -699,9 +686,7 @@ export function SettingsPage() {
                             )
                           }
                         >
-                          <Icon
-                            name={student.status === "active" ? "archive" : "restore"}
-                          />
+                          <Icon name={student.status === "active" ? "archive" : "restore"} />
                           {rosterBusyId === student.id
                             ? "Saving…"
                             : student.status === "active"
@@ -748,7 +733,6 @@ export function SettingsPage() {
 
       {isOwner ? (
         <section className="panel">
-          <span className="panel-label">Ownership</span>
           <h2 className="panel-title">Transfer ownership</h2>
           <p className="panel-copy">
             The new owner finalizes, reopens, invites, and manages members. You stay a member.
@@ -823,8 +807,7 @@ export function SettingsPage() {
 
       {myAdult ? (
         <section className="panel">
-          <span className="panel-label">Payment QR</span>
-          <h2 className="panel-title">Your payment QR</h2>
+          <h2 className="panel-title">Payment QR</h2>
           <p className="panel-copy">
             Private to this group. Members scan it with their banking app. It never appears in
             recaps or exports.
@@ -832,14 +815,9 @@ export function SettingsPage() {
 
           <div className="qr-preview">
             {myAdult.payment_qr_path ? (
-              <PaymentQrImage
-                path={myAdult.payment_qr_path}
-                name={myAdult.display_name}
-              />
+              <PaymentQrImage path={myAdult.payment_qr_path} name={myAdult.display_name} />
             ) : (
-              <div className="qr-placeholder">
-                No QR yet. Upload a PNG or JPEG under 2 MB.
-              </div>
+              <div className="qr-placeholder">No QR yet. Upload a PNG or JPEG under 2 MB.</div>
             )}
           </div>
 
@@ -886,11 +864,7 @@ export function SettingsPage() {
               disabled={!qrFile || qrBusy}
             >
               <Icon name="upload" />
-              {qrBusy
-                ? "Saving…"
-                : myAdult.payment_qr_path
-                  ? "Replace QR"
-                  : "Upload QR"}
+              {qrBusy ? "Saving…" : myAdult.payment_qr_path ? "Replace QR" : "Upload QR"}
             </button>
             {myAdult.payment_qr_path ? (
               qrConfirmRemove ? (
@@ -929,7 +903,6 @@ export function SettingsPage() {
       ) : null}
 
       <section className="panel">
-        <span className="panel-label">Export</span>
         <h2 className="panel-title">{isOwner ? "Export the group" : "Export your data"}</h2>
         <p className="panel-copy">
           {isOwner
@@ -970,7 +943,6 @@ export function SettingsPage() {
 
       {isOwner ? (
         <section className="panel">
-          <span className="panel-label">Group lifecycle</span>
           <h2 className="panel-title">Archive or delete</h2>
           <p className="panel-copy">
             Archiving hides the group from every member. Deleting keeps the data restorable for 30
@@ -1058,7 +1030,6 @@ export function SettingsPage() {
       <InstallHint />
 
       <section className="panel panel--account">
-        <span className="panel-label">Account</span>
         <h2 className="panel-title">{profile?.display_name}</h2>
         <p className="panel-copy">{profile?.email}</p>
         <button className="text-action" type="button" onClick={() => void signOut()}>

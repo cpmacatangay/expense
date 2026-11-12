@@ -75,7 +75,7 @@ export function buildRecap(input: RecapInput): Recap {
     `Total ${formatPeso(totalCentavos)}`,
     "",
     "Shares",
-    ...shares.map((share) => `${share.name} — ${share.totalLabel}`),
+    ...shares.map((share) => `${share.name} · ${share.totalLabel}`),
     "",
     payerName ? `Paid by ${payerName}` : "No payer recorded",
     "",

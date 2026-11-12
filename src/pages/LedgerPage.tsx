@@ -82,9 +82,7 @@ export function LedgerPage() {
     return (
       <div className="qr-inline">
         <PaymentQrImage path={qr.path} name={qr.name} compact />
-        <p className="panel-copy">
-          Scan with your banking app{qr.label ? ` · ${qr.label}` : ""}.
-        </p>
+        <p className="panel-copy">Scan with your banking app{qr.label ? ` · ${qr.label}` : ""}.</p>
       </div>
     );
   }
@@ -102,8 +100,7 @@ export function LedgerPage() {
     (settlement) => settlement.status === "pending" && settlement.from_adult_id === myAdult?.id
   );
   const visibleHistory = settlements.filter(
-    (settlement) =>
-      !(settlement.status === "pending" && settlement.to_adult_id === myAdult?.id)
+    (settlement) => !(settlement.status === "pending" && settlement.to_adult_id === myAdult?.id)
   );
   const balanceRows = adults.filter((adult) => {
     const net = ledger?.netByAdult[adult.id] ?? 0;
@@ -158,9 +155,7 @@ export function LedgerPage() {
       });
       await refresh();
       setShowForm(false);
-      setNotice(
-        `Recorded ${formatPeso(centavos)}. Waiting for ${nameOf(toId)} to confirm.`
-      );
+      setNotice(`Recorded ${formatPeso(centavos)}. Waiting for ${nameOf(toId)} to confirm.`);
     } catch (caught) {
       setFormError(getErrorMessage(caught, "Could not record the payment"));
     } finally {
@@ -245,11 +240,7 @@ export function LedgerPage() {
                     <Icon name="trash" />
                     Void payment
                   </button>
-                  <button
-                    className="text-action"
-                    type="button"
-                    onClick={() => setVoidingId(null)}
-                  >
+                  <button className="text-action" type="button" onClick={() => setVoidingId(null)}>
                     <Icon name="x" />
                     Keep
                   </button>
@@ -277,7 +268,7 @@ export function LedgerPage() {
   }
 
   return (
-    <div className="page">
+    <div className="page page--list">
       <header className="page-head">
         <h1 className="page-title">Ledger</h1>
         <p className="page-sub">Balances carry over until you settle.</p>
@@ -302,132 +293,142 @@ export function LedgerPage() {
       ) : null}
 
       <section
-        className={`panel balance-anchor ${myNet < 0 ? "is-negative" : ""}`}
+        className={`panel balance-strip ${!isLoading && myNet < 0 ? "is-negative" : ""}`}
         aria-label="Your position"
       >
-        <span className="panel-label">
-          {myNet < 0 ? "You owe" : myNet > 0 ? "You are owed" : "Your position"}
-        </span>
-        <div className="balance-amount">{formatPeso(Math.abs(myNet))}</div>
-        <p className="panel-copy">
-          {isLoading
-            ? "Loading the shared ledger…"
-            : myNet < 0
-              ? `Settle ${formatPeso(Math.abs(myNet))} with the table when you are ready.`
-              : myNet > 0
-                ? "Waiting for the table to settle."
-                : "All square. Nothing to settle."}
-        </p>
-        {pendingIncoming.length > 0 ? (
+        <div>
+          <span className="ticket-label">
+            {isLoading
+              ? "Your position"
+              : myNet < 0
+                ? "You owe"
+                : myNet > 0
+                  ? "You are owed"
+                  : "Your position"}
+          </span>
+          <div className="balance-strip-figure">
+            {isLoading ? "—" : formatPeso(Math.abs(myNet))}
+          </div>
+        </div>
+        <div className="balance-strip-copy">
           <p className="panel-copy">
-            {pendingIncoming.length}{" "}
-            {pendingIncoming.length === 1 ? "payment needs" : "payments need"} your confirmation.
+            {isLoading
+              ? "Loading the shared ledger…"
+              : myNet < 0
+                ? `Settle ${formatPeso(Math.abs(myNet))} with the table when you are ready.`
+                : myNet > 0
+                  ? "Waiting for the table to settle."
+                  : "All square. Nothing to settle."}
           </p>
-        ) : null}
+          {pendingIncoming.length > 0 ? (
+            <p className="panel-copy">
+              {pendingIncoming.length}{" "}
+              {pendingIncoming.length === 1 ? "payment needs" : "payments need"} your confirmation.
+            </p>
+          ) : null}
+        </div>
       </section>
 
-      <section className="panel">
-        <span className="panel-label">Balances</span>
-        <h2 className="panel-title">Who is where</h2>
-        {isLoading ? <p className="panel-copy">Loading balances…</p> : null}
-        {!isLoading && balanceRows.every((adult) => (ledger?.netByAdult[adult.id] ?? 0) === 0) ? (
-          <p className="panel-copy">Nothing outstanding. The table is even.</p>
-        ) : null}
-        <div className="ledger-rows">
-          {balanceRows.map((adult) => {
-            const net = ledger?.netByAdult[adult.id] ?? 0;
-            return (
-              <div className="ledger-row" key={adult.id}>
-                <span className="member-initials" style={{ background: adult.color }}>
-                  {initials(adult.display_name)}
-                </span>
-                <span className="ledger-name ledger-name--stacked">
-                  <span className="ledger-name-line">
-                    {adult.display_name}
-                    {adult.id === myAdult?.id ? <span className="ledger-you">You</span> : null}
-                    {adult.status === "removed" ? (
-                      <span className="member-status">Removed</span>
-                    ) : null}
+      <div className="ledger-grid">
+        <section className="panel">
+          <h2 className="panel-title">Balances</h2>
+          {isLoading ? <p className="panel-copy">Loading balances…</p> : null}
+          {!isLoading && balanceRows.every((adult) => (ledger?.netByAdult[adult.id] ?? 0) === 0) ? (
+            <p className="panel-copy">Nothing outstanding. The table is even.</p>
+          ) : null}
+          <div className="ledger-rows">
+            {balanceRows.map((adult) => {
+              const net = ledger?.netByAdult[adult.id] ?? 0;
+              return (
+                <div className="ledger-row" key={adult.id}>
+                  <span className="member-initials" style={{ background: adult.color }}>
+                    {initials(adult.display_name)}
                   </span>
+                  <span className="ledger-name ledger-name--stacked">
+                    <span className="ledger-name-line">
+                      {adult.display_name}
+                      {adult.id === myAdult?.id ? <span className="ledger-you">You</span> : null}
+                      {adult.status === "removed" ? (
+                        <span className="member-status">Removed</span>
+                      ) : null}
+                    </span>
+                    <span className={`ledger-sub ${net < 0 ? "owes" : net > 0 ? "is-owed" : ""}`}>
+                      {net < 0 ? "owes" : net > 0 ? "is owed" : "even"}
+                    </span>
+                  </span>
+                  <span className={`ledger-net ${net < 0 ? "owes" : net > 0 ? "is-owed" : ""}`}>
+                    {formatPeso(Math.abs(net))}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        </section>
+
+        <section className="panel">
+          <h2 className="panel-title">Who owes whom</h2>
+          {isLoading ? <p className="panel-copy">Loading payments…</p> : null}
+          {!isLoading && (ledger?.transfers.length ?? 0) === 0 ? (
+            <p className="panel-copy">Everyone is square.</p>
+          ) : null}
+          <div className="ledger-rows">
+            {ledger?.transfers.map((transfer) => {
+              const mine = transfer.fromAdultId === myAdult?.id;
+              return (
+                <div className="ledger-row" key={`${transfer.fromAdultId}-${transfer.toAdultId}`}>
                   <span
-                    className={`ledger-sub ${net < 0 ? "owes" : net > 0 ? "is-owed" : ""}`}
+                    className="member-initials"
+                    style={{ background: colorOf(transfer.fromAdultId) }}
                   >
-                    {net < 0 ? "owes" : net > 0 ? "is owed" : "even"}
+                    {initials(nameOf(transfer.fromAdultId))}
                   </span>
-                </span>
-                <span className={`ledger-net ${net < 0 ? "owes" : net > 0 ? "is-owed" : ""}`}>
-                  {formatPeso(Math.abs(net))}
-                </span>
-              </div>
-            );
-          })}
-        </div>
-      </section>
-
-      <section className="panel">
-        <span className="panel-label">Who owes whom</span>
-        <h2 className="panel-title">Clear the table</h2>
-        {isLoading ? <p className="panel-copy">Loading payments…</p> : null}
-        {!isLoading && (ledger?.transfers.length ?? 0) === 0 ? (
-          <p className="panel-copy">Everyone is square.</p>
-        ) : null}
-        <div className="ledger-rows">
-          {ledger?.transfers.map((transfer) => {
-            const mine = transfer.fromAdultId === myAdult?.id;
-            return (
-              <div className="ledger-row" key={`${transfer.fromAdultId}-${transfer.toAdultId}`}>
-                <span
-                  className="member-initials"
-                  style={{ background: colorOf(transfer.fromAdultId) }}
-                >
-                  {initials(nameOf(transfer.fromAdultId))}
-                </span>
-                <Icon name="arrow-right" size={16} className="ledger-arrow" />
-                <span
-                  className="member-initials"
-                  style={{ background: colorOf(transfer.toAdultId) }}
-                >
-                  {initials(nameOf(transfer.toAdultId))}
-                </span>
-                <span className="row-main">
-                  <span className="row-title">{nameOf(transfer.toAdultId)}</span>
-                  <span className="row-sub">
-                    {mine ? "Your payment" : `From ${nameOf(transfer.fromAdultId)}`}
+                  <Icon name="arrow-right" size={16} className="ledger-arrow" />
+                  <span
+                    className="member-initials"
+                    style={{ background: colorOf(transfer.toAdultId) }}
+                  >
+                    {initials(nameOf(transfer.toAdultId))}
                   </span>
-                </span>
-                <span className="amount">{formatPeso(transfer.amountCentavos)}</span>
-                {qrFor(transfer.toAdultId) ? (
-                  <button
-                    className="icon-action"
-                    type="button"
-                    aria-label={`Show the payment QR for ${nameOf(transfer.toAdultId)}`}
-                    title="Payment QR"
-                    onClick={() => {
-                      setQrTarget(transfer);
-                      setNotice(null);
-                    }}
-                  >
-                    <Icon name="qr" />
-                  </button>
-                ) : null}
-                {canRecordAs(transfer.fromAdultId) ? (
-                  <button
-                    className="icon-action"
-                    type="button"
-                    aria-label={`Record a payment from ${nameOf(
-                      transfer.fromAdultId
-                    )} to ${nameOf(transfer.toAdultId)}`}
-                    title="Record payment"
-                    onClick={() => openRecord(transfer)}
-                  >
-                    <Icon name="arrow-right" />
-                  </button>
-                ) : null}
-              </div>
-            );
-          })}
-        </div>
-      </section>
+                  <span className="row-main">
+                    <span className="row-title">{nameOf(transfer.toAdultId)}</span>
+                    <span className="row-sub">
+                      {mine ? "Your payment" : `From ${nameOf(transfer.fromAdultId)}`}
+                    </span>
+                  </span>
+                  <span className="amount">{formatPeso(transfer.amountCentavos)}</span>
+                  {qrFor(transfer.toAdultId) ? (
+                    <button
+                      className="icon-action"
+                      type="button"
+                      aria-label={`Show the payment QR for ${nameOf(transfer.toAdultId)}`}
+                      title="Payment QR"
+                      onClick={() => {
+                        setQrTarget(transfer);
+                        setNotice(null);
+                      }}
+                    >
+                      <Icon name="qr" />
+                    </button>
+                  ) : null}
+                  {canRecordAs(transfer.fromAdultId) ? (
+                    <button
+                      className="icon-action"
+                      type="button"
+                      aria-label={`Record a payment from ${nameOf(
+                        transfer.fromAdultId
+                      )} to ${nameOf(transfer.toAdultId)}`}
+                      title="Record payment"
+                      onClick={() => openRecord(transfer)}
+                    >
+                      <Icon name="plus" />
+                    </button>
+                  ) : null}
+                </div>
+              );
+            })}
+          </div>
+        </section>
+      </div>
 
       <Sheet
         open={Boolean(qrTarget && qrTargetInfo)}
@@ -461,7 +462,7 @@ export function LedgerPage() {
                   openRecord(target);
                 }}
               >
-                <Icon name="arrow-right" />
+                <Icon name="plus" />
                 Record payment
               </button>
             </div>
@@ -471,7 +472,6 @@ export function LedgerPage() {
 
       {pendingIncoming.length > 0 ? (
         <section className="panel">
-          <span className="panel-label">Needs you</span>
           <h2 className="panel-title">Confirm payments</h2>
           <p className="panel-copy">Only confirmed payments change balances.</p>
           {pendingIncoming.map((settlement) => (
@@ -484,9 +484,7 @@ export function LedgerPage() {
               </span>
               <div className="row-main">
                 <div className="settlement-head">
-                  <span className="row-title">
-                    {nameOf(settlement.from_adult_id)} paid you
-                  </span>
+                  <span className="row-title">{nameOf(settlement.from_adult_id)} paid you</span>
                   <span className="amount">{formatPeso(settlement.amount_centavos)}</span>
                   <span className="status-chip status-chip--pending">Pending</span>
                 </div>
@@ -545,7 +543,6 @@ export function LedgerPage() {
       ) : null}
 
       <section className="panel">
-        <span className="panel-label">Settlements</span>
         <h2 className="panel-title">Payment history</h2>
         {isLoading ? <p className="panel-copy">Loading payments…</p> : null}
         {!isLoading && visibleHistory.length === 0 ? (
@@ -553,24 +550,22 @@ export function LedgerPage() {
         ) : null}
         {pendingOutgoing.length > 0 ? (
           <p className="panel-copy">
-            {pendingOutgoing.length}{" "}
-            {pendingOutgoing.length === 1 ? "payment is" : "payments are"} waiting for the
-            recipient to confirm.
+            {pendingOutgoing.length} {pendingOutgoing.length === 1 ? "payment is" : "payments are"}{" "}
+            waiting for the recipient to confirm.
           </p>
         ) : null}
         <div className="ledger-rows">
           {visibleHistory.slice(0, 20).map((settlement) => renderSettlementRow(settlement))}
         </div>
         <button className="secondary-action" type="button" onClick={() => openRecord()}>
-          <Icon name="arrow-right" />
+          <Icon name="plus" />
           Record payment
         </button>
       </section>
 
       {showForm ? (
         <form className="panel auth-form" onSubmit={(event) => void handleRecord(event)}>
-          <span className="panel-label">Record payment</span>
-          <h2 className="panel-title">Only the payer records</h2>
+          <h2 className="panel-title">Record a payment</h2>
           <p className="panel-copy">
             The recipient confirms before anything changes. Partial payments are fine.
           </p>
@@ -653,7 +648,7 @@ export function LedgerPage() {
               Cancel
             </button>
             <button className="primary-action" type="submit" disabled={saving}>
-              <Icon name="arrow-right" />
+              <Icon name="plus" />
               {saving ? "Recording…" : "Record payment"}
             </button>
           </div>

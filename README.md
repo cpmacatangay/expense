@@ -1,9 +1,8 @@
 # Salo
 
-Salo is a shared group meal ledger: a single installable PWA with an iPhone-first shell on iOS and a
-Material 3 shell on Android. A group records an outing, marks which adults and students attended,
-charges every item to the person or people who consumed it, and keeps a running ledger of who owes
-whom until it is settled.
+Salo is a shared group meal ledger: a single installable PWA with one Salo interface on iPhone and
+Android. A group records an outing, marks which adults and students attended, charges every item to the
+person or people who consumed it, and keeps a running ledger of who owes whom until it is settled.
 
 The item sum is the bill. A typed total is an explicit override. Settlements are recorded by the payer
 and confirmed by the recipient. Groups, invitations, present adults, live activity, and private
@@ -16,7 +15,7 @@ offline drafts are part of the shared product.
 Supabase migrations are archived in [`archive/android/`](archive/android/); signing and SDK secrets
 live in the ignored `.secrets/` folder.
 
-Implemented: the PWA scaffold, platform shells, tokens, routing, PWA manifest, tests, CI, Vercel
+Implemented: the PWA scaffold, the Salo shell, tokens, routing, PWA manifest, tests, CI, Vercel
 deployment, Supabase project, M1 migrations/RLS, Google sign-in, group creation, invite codes,
 joining, students, the M2 schema, outing drafts, attendance, items, live share preview,
 owner-only server-side finalization through an Edge Function that writes immutable shares and an
@@ -36,8 +35,8 @@ product.
 
 - **Platform**: one installable PWA. Browser install on iPhone (Safari 16.4+) and Android (Chrome).
   No native app, TWA, or store listing in v1.
-- **UI**: iPhone-first shell on iOS; Material 3 shell on Android. Shared information architecture and
-  domain rules. Manual appearance override.
+- **UI**: one Salo interface on iPhone and Android. Shared information architecture, components, and
+  domain rules; only safe areas and input behavior differ.
 - **Identity**: sign-in required. Google OAuth or email one-time code. No Sign in with Apple in v1.
   Every adult has an account; students do not. Pending adults are allowed until they join.
 - **Homepage nickname**: four predetermined people get a preset nickname shown only in the Home
@@ -66,18 +65,19 @@ product.
 
 ## Design
 
-- **iPhone shell**: Apple-native, warm neutral ground, Ledger Green accent, grouped inset lists, one
-  balance card, SF Pro, light-first, deep green-black/mint dark, a shared-table signature, initials.
-- **Android shell**: Material 3 light-first, system dark, same green identity, Roboto.
-- **Shared idea**: the table — member initials, group presence, and a balance that belongs to the
-  group.
-- **Prototypes**: iPhone at [`design/pwa-prototype/`](design/pwa-prototype/); Android Material 3 at
-  [`design/pwa-prototype-android/`](design/pwa-prototype-android/). Static, same data, demo QR.
-- **Preview states**: `?screen=welcome` for onboarding, `?screen=empty` for the first-outing empty state,
-  and `?offline=1` for the offline banner and blocked shared writes.
-- **Implemented**: S mark header, floating iPhone tab bar, confirm/record settlement split,
-  permission-aware payment QR, item and review sheets, onboarding, offline/stale/declined/empty states,
-  recap/export/QR management, and class-based motion with reduced-motion support.
+- **Interface**: one Salo language — paper ground, ink chrome, Salo green only on data, Geist with Geist
+  Mono for every figure, warm stone light and warm-black dark.
+- **Signature**: the table split — one band showing exactly how a bill divides — and the balance
+  printed as a ticket.
+- **Density**: calm Home, dense Ledger, a focused 760px column on wide screens.
+- **Components**: ticket balance, share band, ledger rows, ink primary actions, outlined secondary,
+  compact text actions, the shared file field, and a focus-trapped payment QR sheet.
+- **Implemented**: S mark header, one responsive shell (bottom tabs on a phone, a text nav on wide
+  screens), confirm/record settlement split, permission-aware payment QR, item and review panels,
+  onboarding, offline/stale/declined/empty states, recap/export/QR management, and class-based motion
+  with reduced-motion support.
+- **Legacy prototypes**: the earlier iPhone and Material 3 experiments remain in `design/` for
+  reference; they are not the current system.
 - Full design system: [`DESIGN.md`](DESIGN.md).
 - Product context: [`PRODUCT.md`](PRODUCT.md).
 
@@ -92,13 +92,11 @@ Copy-Item .env.example .env.local
 npm run dev
 ```
 
-- iPhone shell: http://127.0.0.1:5173/
-- Android shell preview: http://127.0.0.1:5173/?platform=android
-- Onboarding skeleton: http://127.0.0.1:5173/welcome
+- App: http://127.0.0.1:5173/
+- Android detection preview: http://127.0.0.1:5173/?platform=android (same interface)
 - Production: https://salo-pi.vercel.app
 
-**Status**: M0 foundation only. The shell, platform tokens, routing, PWA manifest, tests, and CI exist.
-Auth, groups, the live ledger, and the new Supabase migrations are next.
+**Status**: the shared PWA is implemented; see Status above. The design system is in `DESIGN.md`.
 
 Commands: `npm run typecheck`, `npm run lint`, `npm run test`, `npm run test:e2e`, `npm run build`.
 

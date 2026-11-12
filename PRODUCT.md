@@ -41,9 +41,9 @@ or the table, then charges student lines to the adult covering that student and 
 per head across the people who actually attended. The item sum is the bill. A typed total is an
 explicit override, not a hidden adjustment.
 
-Salo is one installable PWA with two native-feeling shells: an iPhone-first shell on iOS and a
-Material 3 shell on Android. The group is shared, the ledger is live, and settlements are confirmed by
-the person who receives the money.
+Salo is one installable PWA with one Salo interface on both platforms, adapted only for safe areas and
+input. The group is shared, the ledger is live, and settlements are confirmed by the person who
+receives the money.
 
 ## Operating Context
 
@@ -59,8 +59,8 @@ the person who receives the money.
 
 - **Installable PWA only**: iPhone Safari 16.4+ and current Android Chrome. No native app, Trusted Web
   Activity, or store listing in v1.
-- **Two platform shells**: iPhone-first on iOS; Material 3 on Android. Shared information
-  architecture, money rules, permissions, and copy. A manual appearance override exists.
+- **One interface, two platforms**: the same information architecture, money rules, permissions, copy,
+  and components on iPhone and Android; only safe areas and input behavior differ.
 - **Accounts for every adult**: Google OAuth or email one-time code. No Sign in with Apple in v1.
   Students never have accounts. Pending adults are allowed until they join.
 - **Shared groups of 2–12 adults**: one owner per group; the owner is the only admin in v1. A user may
@@ -94,12 +94,11 @@ the person who receives the money.
 - Name: **Salo**. Application label and install name are `Salo`.
 - Voice: plain, compact, quietly confident. Philippine context — pesos, "outing", "students",
   "covered by". No hedging, no exclamation marks, no growth-marketing language.
-- A green identity: Ledger Green `#1F5C45`, warm neutral surfaces, mint in dark mode.
-- iPhone shell: SF Pro, large titles, grouped inset lists, sheets, bottom tabs, safe areas, quiet iOS
-  motion. The "shared table" is the signature: member initials, group presence, and the table around
-  which the split happens.
-- Android shell: Material 3, Roboto, top app bar, navigation bar, cards, filled buttons, system
-  light-first with a true dark theme.
+- A green identity: Ledger Green `#1F5C45` as the one data hue, warm stone surfaces, green-mint in
+  dark mode.
+- Interface: one Salo language — paper ground, ink chrome, ticket surfaces, Geist with Geist Mono for
+  every figure. The shared table's exact split is the signature: the balance is printed as a ticket and
+  the split is one band across the people who paid.
 - Interface language is English. Currency formatting is `₱1,234.56`.
 
 ## Evidence on Hand
@@ -109,7 +108,7 @@ the person who receives the money.
 - `specs/002-salo-pwa/plan.md`, `research.md`, `data-model.md`, `contracts/`, `quickstart.md`, and
   `tasks.md` — the shared-PWA architecture and validation plan.
 - `.specify/memory/constitution.md` (4.0.0) — nine enforceable principles, including money
-  correctness, shared privacy, connected edits, two shells, and zero recurring cost.
+  correctness, shared privacy, connected edits, one interface, and zero recurring cost.
 - `specs/001-salo-expense-sharing/` — the archived Android app spec and its Material 3 design.
 - No testimonials, benchmarks, press, pricing page, or customer logos exist. Future work must not
   invent them.

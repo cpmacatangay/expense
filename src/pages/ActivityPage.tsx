@@ -54,7 +54,7 @@ export function ActivityPage() {
   );
 
   return (
-    <div className="page">
+    <div className="page page--list">
       <header className="page-head">
         <h1 className="page-title">Activity</h1>
         <p className="page-sub">Every change at this table.</p>
@@ -75,6 +75,9 @@ export function ActivityPage() {
       </div>
 
       <section className="panel" aria-label="Activity feed">
+        <div className="section-head">
+          <h2 className="panel-title">Activity log</h2>
+        </div>
         {activity.isLoading ? <p className="panel-copy">Loading activity…</p> : null}
 
         {activity.error ? (
@@ -125,8 +128,7 @@ export function ActivityPage() {
                       <Icon name="arrow-right" />
                     </Link>
                   ) : null}
-                  {description.diff.length > 0 &&
-                  shouldShowActivityDiff(event.action) ? (
+                  {description.diff.length > 0 && shouldShowActivityDiff(event.action) ? (
                     <details className="activity-detail">
                       <summary>
                         <Icon name="chevron-right" className="activity-detail-chevron" />

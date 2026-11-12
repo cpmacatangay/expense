@@ -4,7 +4,7 @@ import type { GroupExport, MemberExport } from "./load";
 
 const baseProfile = {
   id: "p1",
-  email: "a@example.com",
+  email: "a@salo.ph",
   display_name: "Alpha"
 };
 
@@ -94,7 +94,7 @@ describe("buildCsvFiles", () => {
       "settlements.csv",
       "activity.csv"
     ]);
-    expect(files["member.csv"]).toContain("a@example.com");
+    expect(files["member.csv"]).toContain("a@salo.ph");
     expect(files["README.txt"]).toContain("Member export for Alpha");
   });
 

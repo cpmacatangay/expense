@@ -32,21 +32,16 @@ export function HistoryPage() {
 
   const filtered = useMemo(() => filterHistory(entries, filters), [entries, filters]);
 
-  const adultById = useMemo(
-    () => new Map(adults.map((adult) => [adult.id, adult])),
-    [adults]
-  );
+  const adultById = useMemo(() => new Map(adults.map((adult) => [adult.id, adult])), [adults]);
 
-  const hasFilters = Boolean(
-    filters.from || filters.to || filters.adultId || filters.studentId
-  );
+  const hasFilters = Boolean(filters.from || filters.to || filters.adultId || filters.studentId);
 
   function update<K extends keyof HistoryFilters>(key: K, value: HistoryFilters[K]) {
     setFilters((current) => ({ ...current, [key]: value }));
   }
 
   return (
-    <div className="page">
+    <div className="page page--list">
       <div className="editor-head">
         <Link className="text-link" to="/">
           <Icon name="chevron-left" />
@@ -59,7 +54,6 @@ export function HistoryPage() {
       </div>
 
       <section className="panel">
-        <span className="panel-label">Filters</span>
         <h2 className="panel-title">Find an outing</h2>
 
         <div className="history-filters">
@@ -115,11 +109,7 @@ export function HistoryPage() {
           </label>
 
           {hasFilters ? (
-            <button
-              className="text-action"
-              type="button"
-              onClick={() => setFilters(emptyFilters)}
-            >
+            <button className="text-action" type="button" onClick={() => setFilters(emptyFilters)}>
               <Icon name="x" />
               Clear filters
             </button>
@@ -128,7 +118,6 @@ export function HistoryPage() {
       </section>
 
       <section className="panel">
-        <span className="panel-label">Outings</span>
         <h2 className="panel-title">
           {isLoading
             ? "Outings"

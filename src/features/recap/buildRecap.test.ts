@@ -74,7 +74,7 @@ describe("buildRecap", () => {
     expect(recap.text).toContain("Salo · Salo Crew");
     expect(recap.text).toContain("McDo Il Corso");
     expect(recap.text).toContain("Total ₱900.00");
-    expect(recap.text).toContain("Mai — ₱300.00");
+    expect(recap.text).toContain("Mai · ₱300.00");
     expect(recap.text).toContain("Paid by Christian");
     expect(recap.text).toContain("Mai pays Christian ₱300.00");
     expect(recap.text.toLowerCase()).not.toContain("invite");

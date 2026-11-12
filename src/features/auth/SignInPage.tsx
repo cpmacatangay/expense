@@ -57,6 +57,7 @@ export function SignInPage() {
   if (!configured) {
     return (
       <main className="onboarding">
+        <BrandMark className="onboarding-mark" />
         <h1 className="page-title">Salo is not configured.</h1>
         <p className="page-sub">
           Add <strong>VITE_SUPABASE_URL</strong> and <strong>VITE_SUPABASE_ANON_KEY</strong> to the
@@ -102,7 +103,7 @@ export function SignInPage() {
                   type="email"
                   value={email}
                   onChange={(event) => setEmail(event.target.value)}
-                  placeholder="you@example.com"
+                  placeholder="you@email.com"
                   autoComplete="email"
                   required
                 />

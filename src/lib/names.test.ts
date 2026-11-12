@@ -19,7 +19,7 @@ describe("greetingName", () => {
 
   it("falls back to the display name then the email local part", () => {
     expect(greetingName({ display_name: "[redacted-name]" })).toBe("Hannah");
-    expect(greetingName({ display_name: "" }, "backburner@example.com")).toBe("backburner");
+    expect(greetingName({ display_name: "" }, "backburner@salo.ph")).toBe("backburner");
     expect(greetingName(null, null)).toBe("there");
   });
 });

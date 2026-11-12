@@ -12,6 +12,7 @@ import { formatDate } from "@/lib/dates";
 import { getErrorMessage } from "@/lib/errors";
 import { initials } from "@/lib/names";
 import { Icon } from "@/ui/primitives/Icon";
+import { ShareBand } from "@/ui/primitives/ShareBand";
 
 type Assignment = LocalDraftItem["assignmentType"];
 
@@ -57,7 +58,6 @@ export function LocalDraftPage() {
 
   const activeAdults = adults.filter((adult) => adult.status === "active");
   const activeStudents = students.filter((student) => student.status === "active");
-
   const preview = useMemo(() => {
     if (!draft) return null;
     try {
@@ -86,6 +86,24 @@ export function LocalDraftPage() {
     setDraft((current) => (current ? { ...current, ...patch } : current));
   }
 
+  const splitSlices = useMemo(() => {
+    if (!preview) return [];
+    const byId = new Map(adults.map((adult) => [adult.id, adult.display_name]));
+    const order = new Map(adults.map((adult, index) => [adult.id, index]));
+    return [...preview.shares]
+      .filter((share) => share.totalCentavos > 0)
+      .sort(
+        (a, b) =>
+          (order.get(a.adultId) ?? Number.MAX_SAFE_INTEGER) -
+          (order.get(b.adultId) ?? Number.MAX_SAFE_INTEGER)
+      )
+      .map((share) => ({
+        id: share.adultId,
+        name: byId.get(share.adultId) ?? "Adult",
+        amountCentavos: share.totalCentavos
+      }));
+  }, [preview, adults]);
+
   function toggleAdult(adultId: string, present: boolean) {
     setDraft((current) => {
       if (!current) return current;
@@ -113,9 +131,7 @@ export function LocalDraftPage() {
         presentAdultIds,
         presentStudents,
         items,
-        payerAdultId: presentAdultIds.includes(current.payerAdultId)
-          ? current.payerAdultId
-          : ""
+        payerAdultId: presentAdultIds.includes(current.payerAdultId) ? current.payerAdultId : ""
       };
     });
   }
@@ -142,10 +158,7 @@ export function LocalDraftPage() {
 
       return {
         ...current,
-        presentStudents: [
-          ...current.presentStudents,
-          { studentId, coveringAdultId: cover }
-        ]
+        presentStudents: [...current.presentStudents, { studentId, coveringAdultId: cover }]
       };
     });
   }
@@ -156,9 +169,7 @@ export function LocalDraftPage() {
         ? {
             ...current,
             presentStudents: current.presentStudents.map((student) =>
-              student.studentId === studentId
-                ? { ...student, coveringAdultId }
-                : student
+              student.studentId === studentId ? { ...student, coveringAdultId } : student
             )
           }
         : current
@@ -205,9 +216,7 @@ export function LocalDraftPage() {
 
   function removeItem(itemId: string) {
     setDraft((current) =>
-      current
-        ? { ...current, items: current.items.filter((item) => item.id !== itemId) }
-        : current
+      current ? { ...current, items: current.items.filter((item) => item.id !== itemId) } : current
     );
   }
 
@@ -292,7 +301,6 @@ export function LocalDraftPage() {
       ) : null}
 
       <form className="panel auth-form" onSubmit={(event) => event.preventDefault()}>
-        <span className="panel-label">Details</span>
         <h2 className="panel-title">The table</h2>
         <div className="field-pair">
           <label className="field">
@@ -343,7 +351,6 @@ export function LocalDraftPage() {
       </form>
 
       <section className="panel">
-        <span className="panel-label">Attendance</span>
         <h2 className="panel-title">At the table</h2>
         <div className="attendance-grid">
           {activeAdults.map((adult) => {
@@ -368,9 +375,7 @@ export function LocalDraftPage() {
         {activeStudents.length > 0 ? (
           <div className="student-list">
             {activeStudents.map((student) => {
-              const present = draft.presentStudents.find(
-                (row) => row.studentId === student.id
-              );
+              const present = draft.presentStudents.find((row) => row.studentId === student.id);
               return (
                 <div className="student-row" key={student.id}>
                   <label className="student-check">
@@ -385,9 +390,7 @@ export function LocalDraftPage() {
                     <select
                       aria-label={`Cover for ${student.name}`}
                       value={present.coveringAdultId}
-                      onChange={(event) =>
-                        changeCover(student.id, event.target.value)
-                      }
+                      onChange={(event) => changeCover(student.id, event.target.value)}
                     >
                       {activeAdults
                         .filter((adult) => draft.presentAdultIds.includes(adult.id))
@@ -408,7 +411,6 @@ export function LocalDraftPage() {
       </section>
 
       <section className="panel">
-        <span className="panel-label">Items</span>
         <h2 className="panel-title">The bill</h2>
 
         <form
@@ -492,8 +494,7 @@ export function LocalDraftPage() {
                 <option value="">Choose a student</option>
                 {draft.presentStudents.map((student) => {
                   const name =
-                    activeStudents.find((row) => row.id === student.studentId)?.name ??
-                    "Student";
+                    activeStudents.find((row) => row.id === student.studentId)?.name ?? "Student";
                   return (
                     <option key={student.studentId} value={student.studentId}>
                       {name}
@@ -525,9 +526,7 @@ export function LocalDraftPage() {
                       : "One student"}
                 </span>
               </span>
-              <span className="amount">
-                {formatPeso(item.quantity * item.unitAmountCentavos)}
-              </span>
+              <span className="amount">{formatPeso(item.quantity * item.unitAmountCentavos)}</span>
               <button
                 className="icon-action is-danger"
                 type="button"
@@ -546,32 +545,18 @@ export function LocalDraftPage() {
       </section>
 
       <section className="panel">
-        <span className="panel-label">Shares</span>
         <h2 className="panel-title">Who pays what</h2>
         {preview ? (
-          <div className="share-preview">
-            {preview.shares.map((share) => (
-              <div className="share-row" key={share.adultId}>
-                <span>
-                  {activeAdults.find((adult) => adult.id === share.adultId)?.display_name ??
-                    "Adult"}
-                </span>
-                <span className="amount">{formatPeso(share.totalCentavos)}</span>
-              </div>
-            ))}
-          </div>
+          <ShareBand slices={splitSlices} label="The split" />
         ) : (
           <p className="panel-copy">
             Mark at least two adults present and assign every item to see the split.
           </p>
         )}
-        {!online ? (
-          <p className="panel-copy">Connect to publish or share this draft.</p>
-        ) : null}
+        {!online ? <p className="panel-copy">Connect to publish or share this draft.</p> : null}
       </section>
 
       <section className="panel">
-        <span className="panel-label">Visibility</span>
         <h2 className="panel-title">Publish when ready</h2>
         <p className="panel-copy">
           Share with the owner first to keep it private to the two of you, or publish it for the
@@ -597,11 +582,7 @@ export function LocalDraftPage() {
                 <Icon name="x" />
                 Keep draft
               </button>
-              <button
-                className="primary-action"
-                type="button"
-                onClick={() => void handleDelete()}
-              >
+              <button className="primary-action" type="button" onClick={() => void handleDelete()}>
                 <Icon name="trash" />
                 Delete draft
               </button>
@@ -622,9 +603,7 @@ export function LocalDraftPage() {
       <div className="editor-total">
         <div>
           <div className="total-label">Total</div>
-          <div className="total-amount">
-            {preview ? formatPeso(preview.totalCentavos) : "—"}
-          </div>
+          <div className="total-amount">{preview ? formatPeso(preview.totalCentavos) : "—"}</div>
         </div>
         <button
           className="primary-action"
