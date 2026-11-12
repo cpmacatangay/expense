@@ -544,7 +544,9 @@ export function LocalDraftPage() {
               </div>
               {deletingItemId === item.id ? (
                 <div className="item-confirm">
-                  <span className="panel-copy">Remove {item.name}?</span>
+                  <span className="panel-copy" role="status">
+                    Remove {item.name}?
+                  </span>
                   <div className="item-confirm-actions">
                     <button
                       className="text-action"

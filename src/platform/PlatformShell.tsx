@@ -15,7 +15,7 @@ function todayLabel() {
 }
 
 export function PlatformShell() {
-  const { group } = useGroup();
+  const { group, error, refresh } = useGroup();
   const location = useLocation();
   const online = useOnlineStatus();
   const isDetail =
@@ -44,6 +44,15 @@ export function PlatformShell() {
         </div>
       ) : null}
 
+      {error && group && online ? (
+        <div className="refresh-banner" role="status">
+          <span>Could not refresh. Showing the last copy.</span>
+          <button className="text-action" type="button" onClick={() => void refresh()}>
+            Try again
+          </button>
+        </div>
+      ) : null}
+
       <nav className="app-nav" aria-label="Main" hidden={isDetail}>
         {tabItems.map((item) => (
           <NavLink
@@ -59,7 +68,13 @@ export function PlatformShell() {
       </nav>
 
       <main className="app-main" id="main-content" tabIndex={-1}>
-        <Suspense fallback={<p className="panel-copy">Loading the table…</p>}>
+        <Suspense
+          fallback={
+            <p className="panel-copy" role="status">
+              Loading the table…
+            </p>
+          }
+        >
           <Outlet />
         </Suspense>
       </main>

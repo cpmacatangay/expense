@@ -313,7 +313,7 @@ export function HomePage() {
                       }`}
                     >
                       {pending
-                        ? "Invited"
+                        ? "No balance yet"
                         : ledgerLoading
                           ? "—"
                           : net < 0

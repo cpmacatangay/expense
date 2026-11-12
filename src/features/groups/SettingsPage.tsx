@@ -674,9 +674,7 @@ export function SettingsPage() {
                           Rename
                         </button>
                         <button
-                          className={`text-action${
-                            student.status === "active" ? " is-danger" : ""
-                          }`}
+                          className="text-action"
                           type="button"
                           disabled={rosterBusyId === student.id}
                           onClick={() =>
