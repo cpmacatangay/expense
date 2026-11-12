@@ -319,7 +319,7 @@ export function LocalDraftPage() {
             />
           </label>
           <label className="field" htmlFor="draft-place">
-            <span>Place</span>
+            <span>Place (optional)</span>
             <input
               id="draft-place"
               name="place"
@@ -332,7 +332,7 @@ export function LocalDraftPage() {
           </label>
         </div>
         <label className="field" htmlFor="draft-notes">
-          <span>Notes</span>
+          <span>Notes (optional)</span>
           <input
             id="draft-notes"
             name="notes"

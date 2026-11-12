@@ -859,7 +859,7 @@ export function SettingsPage() {
 
           <div className="auth-form">
             <label className="field" htmlFor="payment-qr-label">
-              <span>Label</span>
+              <span>Label (optional)</span>
               <input
                 id="payment-qr-label"
                 name="paymentQrLabel"

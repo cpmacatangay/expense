@@ -463,7 +463,7 @@ export function OutingEditorPage() {
             />
           </label>
           <label className="field" htmlFor="outing-place">
-            <span>Place</span>
+            <span>Place (optional)</span>
             <input
               id="outing-place"
               name="place"
@@ -477,7 +477,7 @@ export function OutingEditorPage() {
           </label>
         </div>
         <label className="field" htmlFor="outing-notes">
-          <span>Notes</span>
+          <span>Notes (optional)</span>
           <input
             id="outing-notes"
             name="notes"
