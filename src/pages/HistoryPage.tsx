@@ -131,9 +131,11 @@ export function HistoryPage() {
         <span className="panel-label">Outings</span>
         <h2 className="panel-title">
           {isLoading
-            ? "Loading…"
+            ? "Outings"
             : `${filtered.length} ${filtered.length === 1 ? "outing" : "outings"}`}
         </h2>
+
+        {isLoading ? <p className="panel-copy">Loading outings…</p> : null}
 
         {error ? (
           <p className="form-error" role="alert">
@@ -160,7 +162,7 @@ export function HistoryPage() {
             return (
               <Link className="outing-link" key={entry.id} to={`/outings/${entry.id}`}>
                 <span>
-                  <strong>{entry.place || "Untitled outing"}</strong>
+                  <span className="row-title">{entry.place || "Untitled outing"}</span>
                   <span className="row-sub">
                     {formatDate(entry.date)}
                     {payer ? ` · Paid by ${payer}` : ""}

@@ -1,6 +1,7 @@
 import { NavLink, Outlet, useLocation } from "react-router-dom";
 import { useGroup } from "@/features/groups/groupContext";
 import { useOnlineStatus } from "@/features/realtime/useOnlineStatus";
+import { BrandMark } from "@/ui/primitives/BrandMark";
 import { Icon } from "@/ui/primitives/Icon";
 import { tabItems } from "@/ui/primitives/tabs";
 import "./androidTokens.css";
@@ -18,11 +19,7 @@ export function AndroidShell() {
       </a>
       <header className="android-head">
         <div className="android-brand">
-          <img
-            className="android-brand-mark"
-            src="/brand/salo-symbol-mono-1f5c45.svg"
-            alt="Salo"
-          />
+          <BrandMark className="android-brand-mark" />
           <span className="android-group">{group?.name ?? "Salo"}</span>
         </div>
       </header>

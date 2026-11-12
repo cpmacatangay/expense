@@ -2,6 +2,7 @@ import { useState, type FormEvent } from "react";
 import { useAuth } from "@/features/auth/authContext";
 import { env } from "@/lib/env";
 import { getErrorMessage } from "@/lib/errors";
+import { BrandMark } from "@/ui/primitives/BrandMark";
 import { Icon } from "@/ui/primitives/Icon";
 
 export function SignInPage() {
@@ -67,7 +68,7 @@ export function SignInPage() {
 
   return (
     <main className="onboarding">
-      <img className="onboarding-mark" src="/brand/salo-symbol-mono-1f5c45.svg" alt="" />
+      <BrandMark className="onboarding-mark" />
       <h1 className="page-title">Eat together. Settle once.</h1>
       <p className="page-sub">
         One shared ledger for the table. Sign in so every adult sees the same balance.
@@ -78,7 +79,11 @@ export function SignInPage() {
           {error}
         </p>
       ) : null}
-      {notice ? <p className="form-notice">{notice}</p> : null}
+      {notice ? (
+        <p className="form-notice" role="status">
+          {notice}
+        </p>
+      ) : null}
 
       <button className="primary-action" type="button" onClick={handleGoogle} disabled={busy}>
         <Icon name="log-in" />

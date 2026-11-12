@@ -4,8 +4,13 @@
   --platform-surface-muted: var(--color-surface-muted);
   --platform-ink: var(--color-ink);
   --platform-muted: var(--color-muted);
-  --platform-accent: var(--color-ledger-green);
+  --platform-accent: var(--color-accent);
   --platform-accent-soft: var(--color-green-soft);
+  --platform-on-accent: var(--color-on-accent);
+  --platform-initials-ink: var(--color-initials-ink);
+  --platform-qr-surface: var(--color-qr-surface);
+  --platform-qr-ink: var(--color-qr-ink);
+  --platform-scrim: var(--color-scrim);
   --platform-line: var(--color-line);
   --platform-line-soft: var(--color-line-soft);
   --platform-danger: var(--color-red);
@@ -48,7 +53,7 @@
 .ios-brand-mark {
   width: 24px;
   height: 24px;
-  display: block;
+  color: var(--platform-accent);
 }
 
 .ios-group {

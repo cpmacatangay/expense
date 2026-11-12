@@ -257,7 +257,9 @@ Material 3 rules:
 - The header uses the bare S symbol, not the Salo wordmark.
 - The S sits at 24px tall in both shells, optically matched to the group switcher.
 - The wordmark is reserved for splash, share cards, README, and external lockups.
-- Install icons and the favicon use the rounded-square app-icon variant.
+- The splash is Ledger Green with the white S, 56px, centered; the "Loading Salo…" line sits 14px below.
+- Install icons use the maskable, full-bleed variant; the OS applies its own mask. `apple-touch-icon` is 180px, also full-bleed.
+- The browser favicon is the green S on transparent, not the installed icon.
 - Keep the accessible name "Salo"; the mark is decorative next to the group context.
 
 ### Initials

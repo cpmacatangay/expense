@@ -5,6 +5,7 @@ import { listInactiveOwnedGroups, restoreGroup } from "./lifecycle";
 import { useGroup } from "./groupContext";
 import { formatDate } from "@/lib/dates";
 import { getErrorMessage } from "@/lib/errors";
+import { BrandMark } from "@/ui/primitives/BrandMark";
 import { Icon } from "@/ui/primitives/Icon";
 
 export function GroupSetupPage() {
@@ -64,6 +65,7 @@ export function GroupSetupPage() {
 
   return (
     <main className="onboarding onboarding--stack">
+      <BrandMark className="onboarding-mark" />
       <header className="page-head">
         <h1 className="page-title">Start or join a table</h1>
         <p className="page-sub">

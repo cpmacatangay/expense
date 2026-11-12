@@ -1,6 +1,9 @@
 :root {
+  color-scheme: light dark;
+
   /* Brand */
   --color-ledger-green: #1f5c45;
+  --color-accent: #1f5c45;
   --color-green-soft: #d9efe2;
   --color-mint: #b4f0ce;
   --color-ink: #15221c;
@@ -9,6 +12,13 @@
   --color-red-soft: #f7e2e0;
   --color-amber: #8a5a12;
   --color-amber-soft: #f3e7d2;
+
+  /* On-color roles */
+  --color-on-accent: #ffffff;
+  --color-initials-ink: #123526;
+  --color-qr-surface: #ffffff;
+  --color-qr-ink: #5d6b63;
+  --color-scrim: rgba(9, 20, 14, 0.45);
 
   /* Neutrals */
   --color-ground: #f2f4f0;
@@ -68,4 +78,49 @@
   --m3-ease-emphasized: cubic-bezier(0.05, 0.7, 0.1, 1);
   --m3-duration-short: 150ms;
   --m3-duration-medium: 250ms;
+}
+
+/* Dark theme: a deep green-black ground with mint accents, not pure black. */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-accent: #b4f0ce;
+    --color-green-soft: #1e3a2c;
+    --color-ink: #e8f0ea;
+    --color-muted: #9fb0a6;
+    --color-red: #f0a8a2;
+    --color-red-soft: #3a1f1d;
+    --color-amber: #e8c68a;
+    --color-amber-soft: #3a2e1c;
+    --color-ground: #0e1512;
+    --color-surface: #141d18;
+    --color-surface-muted: #1f2a24;
+    --color-line: #2b3a32;
+    --color-line-soft: #223028;
+    --color-canvas: #0a100d;
+    --color-on-accent: #0b2e1f;
+    --color-scrim: rgba(0, 0, 0, 0.6);
+  }
+
+  :root[data-platform="android"] {
+    --m3-surface: #0e1512;
+    --m3-surface-container-lowest: #141d18;
+    --m3-surface-container-low: #18231d;
+    --m3-surface-container: #1f2a24;
+    --m3-surface-container-high: #27352d;
+    --m3-on-surface: #e8f0ea;
+    --m3-on-surface-variant: #9fb0a6;
+    --m3-primary: #b4f0ce;
+    --m3-on-primary: #0b2e1f;
+    --m3-primary-container: #1e3a2c;
+    --m3-on-primary-container: #c8f5dc;
+    --m3-secondary-container: #24382d;
+    --m3-on-secondary-container: #d9efe2;
+    --m3-error: #f0a8a2;
+    --m3-error-container: #3a1f1d;
+    --m3-on-error-container: #f9dedc;
+    --m3-outline: #3a4a40;
+    --m3-outline-variant: #2b3a32;
+    --m3-amber-container: #3a2e1c;
+    --m3-on-amber-container: #f1d9ae;
+  }
 }

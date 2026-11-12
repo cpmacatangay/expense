@@ -1,6 +1,7 @@
 import { NavLink, Outlet, useLocation } from "react-router-dom";
 import { useGroup } from "@/features/groups/groupContext";
 import { useOnlineStatus } from "@/features/realtime/useOnlineStatus";
+import { BrandMark } from "@/ui/primitives/BrandMark";
 import { Icon } from "@/ui/primitives/Icon";
 import { tabItems } from "@/ui/primitives/tabs";
 import "./iOSTokens.css";
@@ -18,11 +19,7 @@ export function IOSShell() {
       </a>
       <header className="ios-head">
         <div className="ios-brand">
-          <img
-            className="ios-brand-mark"
-            src="/brand/salo-symbol-mono-1f5c45.svg"
-            alt="Salo"
-          />
+          <BrandMark className="ios-brand-mark" />
           <span className="ios-group">{group?.name ?? "Salo"}</span>
         </div>
       </header>

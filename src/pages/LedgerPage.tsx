@@ -1,4 +1,4 @@
-import { useMemo, useState, type FormEvent } from "react";
+import { useCallback, useMemo, useState, type FormEvent } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { formatPeso, parsePesoToCentavos } from "@/domain/money/format";
 import type { LedgerTransfer } from "@/domain/ledger/computeLedger";
@@ -8,6 +8,7 @@ import type { Settlement } from "@/features/ledger/types";
 import { useLedgerView } from "@/features/ledger/useLedger";
 import { PaymentQrImage } from "@/features/payments/PaymentQrImage";
 import { Icon } from "@/ui/primitives/Icon";
+import { Sheet } from "@/ui/primitives/Sheet";
 import { todayInManila } from "@/features/outings/api";
 import { formatDate } from "@/lib/dates";
 import { getErrorMessage } from "@/lib/errors";
@@ -39,6 +40,7 @@ export function LedgerPage() {
   const [declineNote, setDeclineNote] = useState("");
   const [voidingId, setVoidingId] = useState<string | null>(null);
   const [qrTarget, setQrTarget] = useState<LedgerTransfer | null>(null);
+  const closeQr = useCallback(() => setQrTarget(null), []);
 
   const isOwner = group?.owner_id === profile?.id;
   const activeAdults = adults.filter((adult) => adult.status === "active");
@@ -51,7 +53,7 @@ export function LedgerPage() {
   }
 
   function colorOf(adultId: string) {
-    return adultById.get(adultId)?.color ?? "#1D3A2C";
+    return adultById.get(adultId)?.color ?? "var(--platform-muted)";
   }
 
   function qrFor(adultId: string) {
@@ -293,7 +295,11 @@ export function LedgerPage() {
         </p>
       ) : null}
 
-      {notice ? <p className="form-notice">{notice}</p> : null}
+      {notice ? (
+        <p className="form-notice" role="status">
+          {notice}
+        </p>
+      ) : null}
 
       <section
         className={`panel balance-anchor ${myNet < 0 ? "is-negative" : ""}`}
@@ -376,16 +382,7 @@ export function LedgerPage() {
                 >
                   {initials(nameOf(transfer.fromAdultId))}
                 </span>
-                <svg className="ledger-arrow" viewBox="0 0 16 16" aria-hidden="true">
-                  <path
-                    d="M3 8h9m-3.5-3.5L12 8l-3.5 3.5"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
+                <Icon name="arrow-right" size={16} className="ledger-arrow" />
                 <span
                   className="member-initials"
                   style={{ background: colorOf(transfer.toAdultId) }}
@@ -432,40 +429,45 @@ export function LedgerPage() {
         </div>
       </section>
 
-      {qrTarget && qrTargetInfo ? (
-        <section className="panel" aria-label="Scan to pay">
-          <span className="panel-label">Scan to pay</span>
-          <h2 className="panel-title">{qrTargetInfo.name}</h2>
-          <p className="panel-copy">
-            {formatPeso(qrTarget.amountCentavos)}
-            {qrTargetInfo.label ? ` · ${qrTargetInfo.label}` : ""}
-          </p>
-          <div className="qr-preview">
-            <PaymentQrImage path={qrTargetInfo.path} name={qrTargetInfo.name} />
-          </div>
-          <p className="panel-copy">
-            Scan with your banking app. The QR is display-only; record the payment when done.
-          </p>
-          <div className="form-actions">
-            <button
-              className="secondary-action"
-              type="button"
-              onClick={() => setQrTarget(null)}
-            >
-              <Icon name="x" />
-              Close
-            </button>
-            <button
-              className="primary-action"
-              type="button"
-              onClick={() => openRecord(qrTarget)}
-            >
-              <Icon name="arrow-right" />
-              Record payment
-            </button>
-          </div>
-        </section>
-      ) : null}
+      <Sheet
+        open={Boolean(qrTarget && qrTargetInfo)}
+        onClose={closeQr}
+        title={qrTargetInfo?.name ?? "Scan to pay"}
+      >
+        <span className="panel-label">Scan to pay</span>
+        {qrTarget && qrTargetInfo ? (
+          <>
+            <p className="panel-copy">
+              {formatPeso(qrTarget.amountCentavos)}
+              {qrTargetInfo.label ? ` · ${qrTargetInfo.label}` : ""}
+            </p>
+            <div className="qr-preview">
+              <PaymentQrImage path={qrTargetInfo.path} name={qrTargetInfo.name} />
+            </div>
+            <p className="panel-copy">
+              Scan with your banking app. The QR is display-only; record the payment when done.
+            </p>
+            <div className="form-actions">
+              <button className="secondary-action" type="button" onClick={closeQr}>
+                <Icon name="x" />
+                Close
+              </button>
+              <button
+                className="primary-action"
+                type="button"
+                onClick={() => {
+                  const target = qrTarget;
+                  closeQr();
+                  openRecord(target);
+                }}
+              >
+                <Icon name="arrow-right" />
+                Record payment
+              </button>
+            </div>
+          </>
+        ) : null}
+      </Sheet>
 
       {pendingIncoming.length > 0 ? (
         <section className="panel">

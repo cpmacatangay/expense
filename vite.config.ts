@@ -29,8 +29,8 @@ export default defineConfig({
         name: "Salo · shared group ledger",
         short_name: "Salo",
         description: "One shared meal ledger for the table.",
-        theme_color: "#F4F2ED",
-        background_color: "#F2F4F0",
+        theme_color: "#F2F4F0",
+        background_color: "#1F5C45",
         display: "standalone",
         orientation: "portrait",
         start_url: "/",
@@ -39,7 +39,7 @@ export default defineConfig({
           { src: "/icons/salo-192.png", sizes: "192x192", type: "image/png" },
           { src: "/icons/salo-512.png", sizes: "512x512", type: "image/png" },
           {
-            src: "/icons/salo-512.png",
+            src: "/icons/salo-maskable-512.png",
             sizes: "512x512",
             type: "image/png",
             purpose: "maskable"

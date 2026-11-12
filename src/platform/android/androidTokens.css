@@ -6,6 +6,11 @@
   --platform-muted: var(--m3-on-surface-variant);
   --platform-accent: var(--m3-primary);
   --platform-accent-soft: var(--m3-primary-container);
+  --platform-on-accent: var(--m3-on-primary);
+  --platform-initials-ink: var(--color-initials-ink);
+  --platform-qr-surface: var(--color-qr-surface);
+  --platform-qr-ink: var(--color-qr-ink);
+  --platform-scrim: var(--color-scrim);
   --platform-line: var(--m3-outline-variant);
   --platform-line-soft: var(--m3-outline-variant);
   --platform-danger: var(--m3-error);
@@ -50,7 +55,7 @@
 .android-brand-mark {
   width: 24px;
   height: 24px;
-  display: block;
+  color: var(--platform-accent);
 }
 
 .android-group {

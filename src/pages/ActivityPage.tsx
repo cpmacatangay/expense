@@ -60,14 +60,13 @@ export function ActivityPage() {
         <p className="page-sub">Every change at this table.</p>
       </header>
 
-      <div className="activity-filters" role="tablist" aria-label="Activity filters">
+      <div className="activity-filters" role="group" aria-label="Filter activity">
         {filters.map((option) => (
           <button
             key={option.id}
             className={`activity-filter${filter === option.id ? " is-active" : ""}`}
             type="button"
-            role="tab"
-            aria-selected={filter === option.id}
+            aria-pressed={filter === option.id}
             onClick={() => setFilter(option.id)}
           >
             {option.label}
@@ -109,7 +108,7 @@ export function ActivityPage() {
               <article className="activity-row" key={event.id}>
                 <span
                   className="member-initials"
-                  style={{ background: actor?.color ?? "#5D6B63" }}
+                  style={{ background: actor?.color ?? "var(--platform-muted)" }}
                 >
                   {initials(actorName)}
                 </span>

@@ -181,7 +181,7 @@ export function HomePage() {
             return (
               <Link className="outing-link" key={outing.id} to={`/outings/${outing.id}`}>
                 <span>
-                  <strong>{outing.place || "Untitled outing"}</strong>
+                  <span className="row-title">{outing.place || "Untitled outing"}</span>
                   <span className="row-sub">
                     {formatDate(outing.date)}
                     {payer ? ` · Paid by ${payer.display_name}` : ""}
@@ -218,7 +218,7 @@ export function HomePage() {
               return (
                 <Link className="outing-link" key={draft.id} to={`/drafts/${draft.id}`}>
                   <span>
-                    <strong>{draft.place || "Untitled draft"}</strong>
+                    <span className="row-title">{draft.place || "Untitled draft"}</span>
                     <span className="row-sub">
                       {formatDate(draft.date)} · {draft.items.length}{" "}
                       {draft.items.length === 1 ? "item" : "items"} · saved locally

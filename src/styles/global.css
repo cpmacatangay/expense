@@ -30,6 +30,27 @@ a {
   color: inherit;
 }
 
+::selection {
+  background: var(--color-green-soft);
+  color: var(--color-ink);
+}
+
+input,
+textarea,
+select {
+  caret-color: var(--platform-accent);
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: var(--platform-muted);
+  opacity: 1;
+}
+
+html {
+  scrollbar-color: var(--color-line) transparent;
+}
+
 h1,
 h2,
 h3,
@@ -63,6 +84,16 @@ summary:focus-visible {
 
 .skip-link:focus {
   top: calc(8px + env(safe-area-inset-top));
+}
+
+.brand-mark {
+  display: block;
+  width: 24px;
+  height: 24px;
+  flex: 0 0 auto;
+  background-color: currentColor;
+  -webkit-mask: url("/brand/salo-symbol-mono-1f5c45.svg") center / contain no-repeat;
+  mask: url("/brand/salo-symbol-mono-1f5c45.svg") center / contain no-repeat;
 }
 
 [hidden] {
@@ -146,7 +177,7 @@ summary:focus-visible {
   justify-content: center;
   border-radius: 999px;
   background: var(--platform-accent);
-  color: #fff;
+  color: var(--platform-on-accent);
   font-size: 16px;
   font-weight: 600;
   transition: transform var(--duration-press) var(--ease-out);
@@ -179,6 +210,7 @@ a.primary-action {
 .onboarding-mark {
   width: 48px;
   height: 48px;
+  color: var(--platform-accent);
 }
 
 .onboarding-actions {
@@ -260,7 +292,7 @@ select {
   min-height: 44px;
   padding: 0 10px;
   border: 1px solid var(--platform-line);
-  border-radius: 10px;
+  border-radius: var(--platform-radius-control);
   background: var(--platform-surface);
   color: var(--platform-ink);
   font: inherit;
@@ -343,9 +375,8 @@ select {
   border-top: 1px solid var(--platform-line-soft);
 }
 
-.outing-link strong {
+.outing-link .row-title {
   display: block;
-  font-size: 15px;
 }
 
 .outing-link .row-sub {
@@ -440,11 +471,17 @@ select {
   gap: 12px;
 }
 
+.form-actions .primary-action,
 .form-actions .secondary-action {
   width: auto;
   min-height: 44px;
+  margin-top: 0;
   padding: 0 18px;
   font-size: 14px;
+}
+
+.form-actions .text-action {
+  min-height: 44px;
 }
 
 .student-list {
@@ -530,15 +567,76 @@ select {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 12px;
-  background: var(--platform-ground);
-  color: var(--platform-muted);
+  gap: 14px;
+  background: var(--color-ledger-green);
+  color: rgba(255, 255, 255, 0.82);
   font-size: 14px;
+  font-weight: 500;
 }
 
 .splash-mark {
-  width: 40px;
-  height: 40px;
+  width: 56px;
+  height: 56px;
+}
+
+.sheet-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  background: var(--platform-scrim);
+  animation: scrim-in 160ms var(--ease-out);
+}
+
+.sheet {
+  width: 100%;
+  max-width: 430px;
+  max-height: 92dvh;
+  overflow-y: auto;
+  padding: 18px var(--platform-card-padding) calc(20px + env(safe-area-inset-bottom));
+  border-radius: 16px 16px 0 0;
+  background: var(--platform-surface);
+  color: var(--platform-ink);
+  box-shadow: 0 -12px 40px rgba(0, 0, 0, 0.24);
+  animation: sheet-in var(--platform-duration) var(--ease-out);
+}
+
+.sheet-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.sheet-title {
+  font-size: 20px;
+  line-height: 1.2;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.sheet .panel-label {
+  display: block;
+  margin-top: 8px;
+}
+
+.sheet .qr-preview {
+  margin-top: 14px;
+}
+
+@keyframes scrim-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes sheet-in {
+  from {
+    transform: translateY(16px);
+    opacity: 0;
+  }
 }
 
 .auth-form {
@@ -550,6 +648,7 @@ select {
 .field {
   display: grid;
   gap: 6px;
+  min-width: 0;
 }
 
 .field > span {
@@ -558,20 +657,27 @@ select {
   font-weight: 600;
 }
 
-.field input {
+.field input,
+.field select {
   width: 100%;
+  min-width: 0;
   min-height: 48px;
   padding: 0 12px;
   border: 1px solid var(--platform-line);
-  border-radius: 12px;
+  border-radius: var(--platform-radius-control);
   background: var(--platform-surface);
   color: var(--platform-ink);
   font: inherit;
 }
 
 .field select {
-  width: 100%;
   min-width: 0;
+}
+
+.field input::placeholder,
+.field select::placeholder {
+  color: var(--platform-muted);
+  opacity: 1;
 }
 
 .field input:focus-visible {
@@ -602,10 +708,10 @@ select {
   display: flex;
   align-items: center;
   gap: 10px;
-  min-height: 52px;
+  min-height: 48px;
   padding: 0 12px;
   border: 1px solid var(--platform-line);
-  border-radius: 12px;
+  border-radius: var(--platform-radius-control);
   background: var(--platform-surface);
   cursor: pointer;
 }
@@ -660,7 +766,7 @@ select {
 .form-error {
   margin: 0;
   padding: 10px 12px;
-  border-radius: 10px;
+  border-radius: var(--platform-radius-control);
   background: var(--color-red-soft);
   color: var(--color-red);
   font-size: 14px;
@@ -843,7 +949,7 @@ select {
   border-radius: 50%;
   display: inline-grid;
   place-items: center;
-  color: #123526;
+  color: var(--platform-initials-ink);
   font-size: 11px;
   font-weight: 700;
 }
@@ -1277,7 +1383,7 @@ select {
   padding: 16px;
   border: 1px solid var(--platform-line);
   border-radius: 12px;
-  background: #ffffff;
+  background: var(--platform-qr-surface);
 }
 
 .qr-image {
@@ -1291,8 +1397,8 @@ select {
   max-width: 180px;
   padding: 8px;
   border: 1px solid var(--platform-line);
-  border-radius: 10px;
-  background: #ffffff;
+  border-radius: var(--platform-radius-control);
+  background: var(--platform-qr-surface);
 }
 
 .qr-inline {
@@ -1311,7 +1417,7 @@ select {
   place-items: center;
   min-height: 120px;
   padding: 12px;
-  color: var(--platform-muted);
+  color: var(--platform-qr-ink);
   font-size: 13px;
   text-align: center;
 }
@@ -1377,7 +1483,22 @@ select {
 
 @media (prefers-reduced-motion: reduce) {
   .primary-action:active,
-  .ios-tab:active {
+  .secondary-action:active,
+  .text-action:active,
+  .icon-action:active,
+  .outing-link:active,
+  .person:active,
+  .ios-tab:active,
+  .android-tab:active {
     transform: none;
+  }
+
+  .activity-detail-chevron {
+    transition: none;
+  }
+
+  .sheet,
+  .sheet-backdrop {
+    animation: none;
   }
 }
