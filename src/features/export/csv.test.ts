@@ -58,6 +58,12 @@ describe("toCsv", () => {
       'after_json\r\n"{""status"":""confirmed""}"'
     );
   });
+
+  it("neutralizes spreadsheet formulas in text cells", () => {
+    expect(toCsv([{ name: "=SUM(A1)" }])).toBe("name\r\n'=SUM(A1)");
+    expect(toCsv([{ name: "-1+1" }])).toBe("name\r\n'-1+1");
+    expect(toCsv([{ amount: -500 }])).toBe("amount\r\n-500");
+  });
 });
 
 describe("buildCsvFiles", () => {
@@ -120,8 +126,6 @@ describe("buildCsvFiles", () => {
 describe("exportBaseName", () => {
   it("names group and member files with the date", () => {
     expect(exportBaseName(groupExport)).toMatch(/^salo-salo-crew-\d{4}-\d{2}-\d{2}$/);
-    expect(exportBaseName(memberExport)).toMatch(
-      /^salo-salo-crew-alpha-\d{4}-\d{2}-\d{2}$/
-    );
+    expect(exportBaseName(memberExport)).toMatch(/^salo-salo-crew-alpha-\d{4}-\d{2}-\d{2}$/);
   });
 });

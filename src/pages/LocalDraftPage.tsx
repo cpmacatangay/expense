@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { Fragment, useEffect, useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { computeShares } from "@/domain/money/computeShares";
@@ -21,12 +21,13 @@ export function LocalDraftPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const online = useOnlineStatus();
-  const { adults, students } = useGroup();
+  const { profile, adults, students } = useGroup();
+  const myAdultId = adults.find((adult) => adult.profile_id === profile?.id)?.id;
 
   const { data, isLoading } = useQuery({
-    queryKey: ["local-draft", draftId],
-    queryFn: () => getLocalDraft(draftId as string),
-    enabled: Boolean(draftId),
+    queryKey: ["local-draft", profile?.id, draftId],
+    queryFn: () => getLocalDraft(draftId as string, profile?.id as string),
+    enabled: Boolean(draftId && profile?.id),
     networkMode: "always"
   });
 
@@ -35,6 +36,7 @@ export function LocalDraftPage() {
   const [publishBusy, setPublishBusy] = useState<"draft" | "private_draft" | null>(null);
   const [publishError, setPublishError] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [deletingItemId, setDeletingItemId] = useState<string | null>(null);
 
   const [itemName, setItemName] = useState("");
   const [itemQty, setItemQty] = useState("1");
@@ -514,29 +516,59 @@ export function LocalDraftPage() {
 
         <div className="item-list">
           {draft.items.map((item) => (
-            <div className="item-row" key={item.id}>
-              <span className="row-main">
-                <span className="row-title">{item.name}</span>
-                <span className="row-sub">
-                  {item.quantity} × {formatPeso(item.unitAmountCentavos)} ·{" "}
-                  {item.assignmentType === "shared"
-                    ? "Shared"
-                    : item.assignmentType === "adult"
-                      ? "One adult"
-                      : "One student"}
+            <Fragment key={item.id}>
+              <div className="item-row">
+                <span className="row-main">
+                  <span className="row-title">{item.name}</span>
+                  <span className="row-sub">
+                    {item.quantity} × {formatPeso(item.unitAmountCentavos)} ·{" "}
+                    {item.assignmentType === "shared"
+                      ? "Shared"
+                      : item.assignmentType === "adult"
+                        ? "One adult"
+                        : "One student"}
+                  </span>
                 </span>
-              </span>
-              <span className="amount">{formatPeso(item.quantity * item.unitAmountCentavos)}</span>
-              <button
-                className="icon-action is-danger"
-                type="button"
-                onClick={() => removeItem(item.id)}
-                aria-label={`Remove ${item.name}`}
-                title="Remove item"
-              >
-                <Icon name="trash" />
-              </button>
-            </div>
+                <span className="amount">
+                  {formatPeso(item.quantity * item.unitAmountCentavos)}
+                </span>
+                <button
+                  className="icon-action is-danger"
+                  type="button"
+                  onClick={() => setDeletingItemId(item.id)}
+                  aria-label={`Remove ${item.name}`}
+                  title="Remove item"
+                >
+                  <Icon name="trash" />
+                </button>
+              </div>
+              {deletingItemId === item.id ? (
+                <div className="item-confirm">
+                  <span className="panel-copy">Remove {item.name}?</span>
+                  <div className="item-confirm-actions">
+                    <button
+                      className="text-action"
+                      type="button"
+                      onClick={() => setDeletingItemId(null)}
+                    >
+                      <Icon name="x" />
+                      Keep
+                    </button>
+                    <button
+                      className="text-action is-danger"
+                      type="button"
+                      onClick={() => {
+                        setDeletingItemId(null);
+                        removeItem(item.id);
+                      }}
+                    >
+                      <Icon name="trash" />
+                      Remove
+                    </button>
+                  </div>
+                </div>
+              ) : null}
+            </Fragment>
           ))}
           {draft.items.length === 0 ? (
             <p className="panel-copy">Add the first item to start the bill.</p>
@@ -547,7 +579,7 @@ export function LocalDraftPage() {
       <section className="panel">
         <h2 className="panel-title">Who pays what</h2>
         {preview ? (
-          <ShareBand slices={splitSlices} label="The split" />
+          <ShareBand slices={splitSlices} youId={myAdultId} label="The split" />
         ) : (
           <p className="panel-copy">
             Mark at least two adults present and assign every item to see the split.

@@ -13,6 +13,11 @@ function escapeCell(value: unknown): string {
     cell = String(value);
   }
 
+  // Spreadsheet apps evaluate a leading =, +, -, @, tab or CR as a formula.
+  if (typeof value === "string" && /^[=+\-@\t\r]/.test(cell)) {
+    cell = `'${cell}`;
+  }
+
   if (/[",\r\n]/.test(cell)) {
     cell = `"${cell.replace(/"/g, '""')}"`;
   }

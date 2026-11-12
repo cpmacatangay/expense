@@ -77,6 +77,8 @@ Rules:
 - The identity circles keep their pale adult colour from the database, with a constant dark ink in
   both themes.
 - Dark mode is a warm black, not navy; text is a neutral off-white, not cream.
+- Control boundaries use `--control`, not the softer panel `--border`, and clear 3:1 against the
+  surface or ground in both themes. Panels and row rules stay quiet.
 
 ### Type
 
@@ -163,7 +165,8 @@ as a detection flag.
   exception is the dark theme's inverted light fill.
 - **Secondary:** 44px, transparent, 1px control border, ink label.
 - **Text action:** 44px on phone / 34px on wide, transparent, 1px border, 4px radius, 13/500. A command
-  is never styled as bare underlined text. Destructive: red text with the same neutral border.
+  is never styled as bare underlined text. Destructive: red text with the same neutral border; only the
+  hover state earns a red edge.
 - **Icon action:** 44px phone / 36px wide, 1px border, 16px icon, accessible name + title.
 - **Text link:** navigation only, 44px hit area, 13/500 ink, trailing arrow; underline on hover. Never
   use it for a command.
@@ -171,8 +174,9 @@ as a detection flag.
 ### Forms
 
 - Label above the field, 13/500 muted; control 44px, 1px `control` border, 6px radius, surface fill.
-- Inputs and selects share one height and radius; native date controls are mono 13. Placeholder uses
-  `faint`, never a label.
+- Inputs and selects share one height and radius; native date controls are mono 16 on a phone and 13
+  on a wide screen, and every text control is 16px at phone widths so iOS does not zoom on focus.
+  Placeholder uses `faint`, never a label.
 - File upload is the shared `FileField`: 44px bordered control, upload icon, file name, Browse/Replace,
   a 13px hint, and a focus ring on the wrapper. No bare native file input.
 - Action rows: 44px controls; primary right, cancel/secondary left. Destructive confirmation names the
@@ -203,7 +207,8 @@ as a detection flag.
 - **Settings:** a 760px column of titled panels in task order: group, members, invite, students,
   ownership, payment QR, export, lifecycle, install, account. No eyebrow labels; every panel is named.
 - **Outing editor / draft:** back link, place and date, attendance toggles, a receipt of items with mono
-  amounts and a delete action, the table split, and a fixed total bar with the stamp or Finalize.
+  amounts and a delete action, the table split, and a fixed total bar with the stamp or Finalize. Item
+  deletion asks once inline before removing the line; Cancel is hidden while the bill is empty.
 - **History:** back link, date/adult/student filters, a count title, and outing rows.
 - **Onboarding:** paper ground, the S mark, a 28px title, one sentence, one primary. No shell.
 - **Splash:** Ledger Green with the white S and "Loading Salo…"; the same splash is inlined in
@@ -214,10 +219,13 @@ as a detection flag.
 - **Empty:** keep the panel frame and header; one sentence naming the state and the next action.
 - **Loading:** keep the final layout, labels at once, values replaced by a flat tonal bar. No shimmer.
   Existing copy may name the operation ("Loading outings…") until the skeleton exists.
-- **Error:** inside the panel that failed, one sentence and a retry; role="alert".
+- **Error:** inside the panel that failed, one sentence and a retry; role="alert". If the app tree
+  throws, a paper error surface offers Reload Salo; a group-load failure offers Try again instead of
+  inviting a duplicate group.
 - **Success:** role="status"; brief, no toast layer.
 - **Offline:** a 13px warning strip under the header; shared writes disabled with the reason.
 - Missing value: a muted dash. A real zero prints as `₱0.00`.
+- Private drafts are filtered by their author; signing out clears the React Query cache.
 
 ## 8. Motion and accessibility
 

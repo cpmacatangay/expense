@@ -61,6 +61,7 @@ textarea::placeholder {
 }
 
 html {
+  background: var(--ground);
   scrollbar-color: var(--control) transparent;
   scrollbar-width: thin;
 }
@@ -307,6 +308,7 @@ summary:focus-visible,
   color: var(--muted);
   font-size: 13px;
   line-height: 1.45;
+  overflow-wrap: anywhere;
 }
 
 .page--editor {
@@ -370,6 +372,7 @@ summary:focus-visible,
   color: var(--muted);
   font-size: 13px;
   line-height: 1.5;
+  overflow-wrap: anywhere;
 }
 
 .panel-copy:first-child {
@@ -432,6 +435,7 @@ summary:focus-visible,
   color: var(--muted);
   font-size: 13px;
   line-height: 1.45;
+  overflow-wrap: anywhere;
 }
 
 .ticket-rule {
@@ -467,19 +471,47 @@ summary:focus-visible,
 }
 
 .split-seg[data-tone="2"] {
-  opacity: 0.55;
+  opacity: 0.9;
 }
 
 .split-seg[data-tone="3"] {
-  opacity: 0.38;
+  opacity: 0.8;
 }
 
 .split-seg[data-tone="4"] {
-  opacity: 0.24;
+  opacity: 0.72;
 }
 
 .split-seg[data-tone="5"] {
-  opacity: 0.14;
+  opacity: 0.65;
+}
+
+.split-seg[data-tone="6"] {
+  opacity: 0.58;
+}
+
+.split-seg[data-tone="7"] {
+  opacity: 0.52;
+}
+
+.split-seg[data-tone="8"] {
+  opacity: 0.46;
+}
+
+.split-seg[data-tone="9"] {
+  opacity: 0.41;
+}
+
+.split-seg[data-tone="10"] {
+  opacity: 0.36;
+}
+
+.split-seg[data-tone="11"] {
+  opacity: 0.32;
+}
+
+.split-seg[data-tone="12"] {
+  opacity: 0.28;
 }
 
 .split-seg.is-you {
@@ -511,19 +543,47 @@ summary:focus-visible,
 }
 
 .split-dot[data-tone="2"] {
-  opacity: 0.55;
+  opacity: 0.9;
 }
 
 .split-dot[data-tone="3"] {
-  opacity: 0.38;
+  opacity: 0.8;
 }
 
 .split-dot[data-tone="4"] {
-  opacity: 0.24;
+  opacity: 0.72;
 }
 
 .split-dot[data-tone="5"] {
-  opacity: 0.14;
+  opacity: 0.65;
+}
+
+.split-dot[data-tone="6"] {
+  opacity: 0.58;
+}
+
+.split-dot[data-tone="7"] {
+  opacity: 0.52;
+}
+
+.split-dot[data-tone="8"] {
+  opacity: 0.46;
+}
+
+.split-dot[data-tone="9"] {
+  opacity: 0.41;
+}
+
+.split-dot[data-tone="10"] {
+  opacity: 0.36;
+}
+
+.split-dot[data-tone="11"] {
+  opacity: 0.32;
+}
+
+.split-dot[data-tone="12"] {
+  opacity: 0.28;
 }
 
 .split-dot.is-you {
@@ -923,7 +983,7 @@ summary:focus-visible,
   width: auto;
   min-height: 44px;
   padding: 0 12px;
-  border: 1px solid var(--border);
+  border: 1px solid var(--control);
   border-radius: var(--radius-chip);
   background: transparent;
   color: var(--text);
@@ -957,12 +1017,12 @@ summary:focus-visible,
 }
 
 .text-action.is-danger {
-  border-color: var(--negative);
+  border-color: var(--control);
   color: var(--negative);
 }
 
 .text-action.is-danger:disabled {
-  border-color: var(--border);
+  border-color: var(--control);
   color: var(--muted);
 }
 
@@ -973,6 +1033,7 @@ summary:focus-visible,
 
   .text-action.is-danger:hover {
     background: var(--pill-negative-bg);
+    border-color: var(--negative);
   }
 }
 
@@ -1020,7 +1081,7 @@ summary:focus-visible,
   width: 44px;
   height: 44px;
   flex: 0 0 auto;
-  border: 1px solid var(--border);
+  border: 1px solid var(--control);
   border-radius: var(--radius-control);
   background: transparent;
   color: var(--text);
@@ -1036,7 +1097,7 @@ summary:focus-visible,
 }
 
 .icon-action.is-danger {
-  border-color: var(--border);
+  border-color: var(--control);
   color: var(--negative);
 }
 
@@ -1192,13 +1253,13 @@ summary:focus-visible,
   border-radius: var(--radius-control);
   background: var(--surface);
   color: var(--text);
-  font-size: 14px;
+  font-size: 16px;
   font-family: var(--font-sans);
 }
 
 .field input[type="date"] {
   font-family: var(--font-mono);
-  font-size: 13px;
+  font-size: 16px;
 }
 
 .field select {
@@ -1252,6 +1313,7 @@ summary:focus-visible,
   color: var(--muted);
   font-size: var(--fs-small);
   line-height: 1.45;
+  overflow-wrap: anywhere;
 }
 
 .file-field {
@@ -1362,6 +1424,7 @@ summary:focus-visible,
   color: var(--muted);
   font-size: var(--fs-small);
   line-height: 1.5;
+  overflow-wrap: anywhere;
 }
 
 .onboarding .primary-action {
@@ -1409,6 +1472,27 @@ summary:focus-visible,
   flex: 0 0 auto;
 }
 
+.item-confirm {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--rule);
+}
+
+.item-confirm .panel-copy {
+  margin: 0;
+}
+
+.item-confirm-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
 .attendance-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1428,7 +1512,7 @@ summary:focus-visible,
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  border: 1px solid var(--border);
+  border: 1px solid var(--control);
   border-radius: var(--radius-control);
   background: var(--surface);
   color: var(--text);
@@ -1476,13 +1560,14 @@ summary:focus-visible,
   display: flex;
   align-items: center;
   gap: 8px;
+  min-height: 44px;
   min-width: 0;
   font-size: 13px;
 }
 
 .student-check input {
-  width: 16px;
-  height: 16px;
+  width: 18px;
+  height: 18px;
   accent-color: var(--text);
 }
 
@@ -1494,7 +1579,7 @@ summary:focus-visible,
   border-radius: var(--radius-chip);
   background: var(--surface);
   color: var(--text);
-  font-size: var(--fs-small);
+  font-size: 16px;
 }
 
 .student-edit {
@@ -1538,10 +1623,17 @@ summary:focus-visible,
   display: none;
 }
 
+@media (max-width: 420px) {
+  .activity-filters {
+    flex-wrap: wrap;
+    overflow-x: visible;
+  }
+}
+
 .activity-filter {
   min-height: 44px;
   padding: 0 12px;
-  border: 1px solid var(--border);
+  border: 1px solid var(--control);
   border-radius: var(--radius-chip);
   background: transparent;
   color: var(--muted);
@@ -1700,7 +1792,7 @@ summary:focus-visible,
 
 .editor-total .primary-action {
   width: auto;
-  min-height: 40px;
+  min-height: 44px;
   margin: 0;
   padding: 0 16px;
   font-size: 13px;
@@ -1764,6 +1856,14 @@ summary:focus-visible,
   color: var(--qr-ink);
   font-size: var(--fs-small);
   text-align: center;
+}
+
+.qr-placeholder--empty {
+  min-height: 140px;
+  border: 1px dashed var(--control);
+  border-radius: var(--radius-control);
+  background: var(--raised);
+  color: var(--muted);
 }
 
 /* ---------- Recap ---------- */
@@ -1977,6 +2077,16 @@ summary:focus-visible,
 
   .student-row select {
     min-height: 34px;
+    font-size: 13px;
+  }
+
+  .field input,
+  .field select {
+    font-size: 14px;
+  }
+
+  .field input[type="date"] {
+    font-size: 13px;
   }
 
   .page {

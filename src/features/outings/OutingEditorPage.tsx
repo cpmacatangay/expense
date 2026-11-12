@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type FormEvent } from "react";
+import { Fragment, useEffect, useMemo, useState, type FormEvent } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { computeShares } from "@/domain/money/computeShares";
@@ -66,6 +66,7 @@ export function OutingEditorPage() {
   const [reopenState, setReopenState] = useState<"idle" | "saving">("idle");
   const [publishState, setPublishState] = useState<"idle" | "saving">("idle");
   const [showItemForm, setShowItemForm] = useState(true);
+  const [deletingItemId, setDeletingItemId] = useState<string | null>(null);
 
   const [itemName, setItemName] = useState("");
   const [itemQty, setItemQty] = useState("1");
@@ -570,9 +571,13 @@ export function OutingEditorPage() {
             })}
           </div>
         ) : (
-          <p className="panel-copy">
-            No students yet. <Link to="/settings">Add students in Settings.</Link>
-          </p>
+          <>
+            <p className="panel-copy">No students yet.</p>
+            <Link className="text-link" to="/settings">
+              Add students in Settings
+              <Icon name="arrow-right" />
+            </Link>
+          </>
         )}
       </section>
 
@@ -613,31 +618,59 @@ export function OutingEditorPage() {
 
         <div className="item-list">
           {data.items.map((item) => (
-            <div className="item-row" key={item.id}>
-              <span className="row-main">
-                <span className="row-title">{item.name}</span>
-                <span className="row-sub">
-                  {item.quantity} × {formatPeso(item.unit_amount_centavos)} ·{" "}
-                  {item.assignment_type === "adult"
-                    ? adultName(item.assigned_adult_id)
-                    : item.assignment_type === "student"
-                      ? studentName(item.assigned_student_id)
-                      : "Shared"}
+            <Fragment key={item.id}>
+              <div className="item-row">
+                <span className="row-main">
+                  <span className="row-title">{item.name}</span>
+                  <span className="row-sub">
+                    {item.quantity} × {formatPeso(item.unit_amount_centavos)} ·{" "}
+                    {item.assignment_type === "adult"
+                      ? adultName(item.assigned_adult_id)
+                      : item.assignment_type === "student"
+                        ? studentName(item.assigned_student_id)
+                        : "Shared"}
+                  </span>
                 </span>
-              </span>
-              <span className="amount">{formatPeso(item.amount_centavos)}</span>
-              {isEditable ? (
-                <button
-                  className="icon-action is-danger"
-                  type="button"
-                  onClick={() => void handleDeleteItem(item.id)}
-                  aria-label={`Delete ${item.name}`}
-                  title="Remove item"
-                >
-                  <Icon name="trash" />
-                </button>
+                <span className="amount">{formatPeso(item.amount_centavos)}</span>
+                {isEditable ? (
+                  <button
+                    className="icon-action is-danger"
+                    type="button"
+                    onClick={() => setDeletingItemId(item.id)}
+                    aria-label={`Delete ${item.name}`}
+                    title="Remove item"
+                  >
+                    <Icon name="trash" />
+                  </button>
+                ) : null}
+              </div>
+              {deletingItemId === item.id ? (
+                <div className="item-confirm">
+                  <span className="panel-copy">Remove {item.name}?</span>
+                  <div className="item-confirm-actions">
+                    <button
+                      className="text-action"
+                      type="button"
+                      onClick={() => setDeletingItemId(null)}
+                    >
+                      <Icon name="x" />
+                      Keep
+                    </button>
+                    <button
+                      className="text-action is-danger"
+                      type="button"
+                      onClick={() => {
+                        setDeletingItemId(null);
+                        void handleDeleteItem(item.id);
+                      }}
+                    >
+                      <Icon name="trash" />
+                      Remove
+                    </button>
+                  </div>
+                </div>
               ) : null}
-            </div>
+            </Fragment>
           ))}
           {data.items.length === 0 ? (
             <p className="panel-copy">Add the first item to start the bill.</p>
@@ -723,10 +756,16 @@ export function OutingEditorPage() {
               </label>
             ) : null}
             <div className="form-actions">
-              <button className="text-action" type="button" onClick={() => setShowItemForm(false)}>
-                <Icon name="x" />
-                Cancel
-              </button>
+              {data.items.length > 0 ? (
+                <button
+                  className="text-action"
+                  type="button"
+                  onClick={() => setShowItemForm(false)}
+                >
+                  <Icon name="x" />
+                  Cancel
+                </button>
+              ) : null}
               <button className="secondary-action" type="submit">
                 <Icon name="plus" />
                 Add item

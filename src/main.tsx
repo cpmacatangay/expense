@@ -3,6 +3,7 @@ import { createRoot } from "react-dom/client";
 import { App } from "@/app/App";
 import { Providers } from "@/app/providers";
 import { PlatformProvider } from "@/platform/PlatformProvider";
+import { ErrorBoundary } from "@/app/ErrorBoundary";
 import "@/ui/tokens/fonts.css";
 import "@/ui/tokens/tokens.css";
 import "@/styles/global.css";
@@ -14,7 +15,9 @@ createRoot(root).render(
   <StrictMode>
     <PlatformProvider>
       <Providers>
-        <App />
+        <ErrorBoundary>
+          <App />
+        </ErrorBoundary>
       </Providers>
     </PlatformProvider>
   </StrictMode>

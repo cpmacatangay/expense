@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { NavLink, Outlet, useLocation } from "react-router-dom";
 import { useGroup } from "@/features/groups/groupContext";
 import { useOnlineStatus } from "@/features/realtime/useOnlineStatus";
@@ -57,8 +58,10 @@ export function PlatformShell() {
         ))}
       </nav>
 
-      <main className="app-main" id="main-content">
-        <Outlet />
+      <main className="app-main" id="main-content" tabIndex={-1}>
+        <Suspense fallback={<p className="panel-copy">Loading the table…</p>}>
+          <Outlet />
+        </Suspense>
       </main>
     </div>
   );

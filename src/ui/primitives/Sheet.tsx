@@ -1,4 +1,5 @@
 import { useEffect, useId, useRef, type ReactNode } from "react";
+import { createPortal } from "react-dom";
 import { Icon } from "./Icon";
 
 export function Sheet({
@@ -27,7 +28,10 @@ export function Sheet({
 
     previousFocus.current = document.activeElement;
     const bodyOverflow = document.body.style.overflow;
+    const app = document.querySelector<HTMLElement>(".app");
+    const appWasInert = app?.hasAttribute("inert") ?? false;
     document.body.style.overflow = "hidden";
+    app?.setAttribute("inert", "");
     closeRef.current?.focus();
 
     function handleKeyDown(event: KeyboardEvent) {
@@ -58,13 +62,14 @@ export function Sheet({
     return () => {
       document.removeEventListener("keydown", handleKeyDown);
       document.body.style.overflow = bodyOverflow;
+      if (!appWasInert) app?.removeAttribute("inert");
       if (previousFocus.current instanceof HTMLElement) previousFocus.current.focus();
     };
   }, [open]);
 
   if (!open) return null;
 
-  return (
+  return createPortal(
     <div
       className="sheet-backdrop"
       onClick={(event) => {
@@ -94,6 +99,7 @@ export function Sheet({
         </div>
         {children}
       </section>
-    </div>
+    </div>,
+    document.body
   );
 }

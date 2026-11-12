@@ -31,9 +31,9 @@ export function HomePage() {
   });
 
   const { data: localDrafts } = useQuery({
-    queryKey: ["local-drafts", group?.id],
-    queryFn: () => listLocalDrafts(group?.id as string),
-    enabled: Boolean(group?.id),
+    queryKey: ["local-drafts", group?.id, profile?.id],
+    queryFn: () => listLocalDrafts(group?.id as string, profile?.id as string),
+    enabled: Boolean(group?.id && profile?.id),
     staleTime: 0,
     networkMode: "always"
   });
@@ -293,37 +293,50 @@ export function HomePage() {
         <div className="ledger-rows">
           {adults
             .filter((adult) => adult.status !== "removed")
-            .map((adult) => (
-              <div className="ledger-row" key={adult.id}>
-                <span className="member-initials" style={{ background: adult.color }}>
-                  {initials(adult.display_name)}
-                </span>
-                <span className="ledger-name">
-                  {adult.display_name}
-                  {adult.id === myAdult?.id ? <span className="ledger-you">You</span> : null}
-                  {adult.status === "pending" ? (
-                    <span className="member-status">Pending</span>
-                  ) : null}
-                </span>
-                {adult.status === "pending" ? (
-                  <span className="ledger-net">—</span>
-                ) : (
-                  <span
-                    className={`ledger-net ${
-                      ledgerLoading
-                        ? ""
-                        : (ledger?.netByAdult[adult.id] ?? 0) < 0
-                          ? "owes"
-                          : (ledger?.netByAdult[adult.id] ?? 0) > 0
-                            ? "is-owed"
-                            : ""
-                    }`}
-                  >
-                    {ledgerLoading ? "—" : formatPeso(Math.abs(ledger?.netByAdult[adult.id] ?? 0))}
+            .map((adult) => {
+              const net = ledger?.netByAdult[adult.id] ?? 0;
+              const pending = adult.status === "pending";
+              return (
+                <div className="ledger-row" key={adult.id}>
+                  <span className="member-initials" style={{ background: adult.color }}>
+                    {initials(adult.display_name)}
                   </span>
-                )}
-              </div>
-            ))}
+                  <span className="ledger-name ledger-name--stacked">
+                    <span className="ledger-name-line">
+                      {adult.display_name}
+                      {adult.id === myAdult?.id ? <span className="ledger-you">You</span> : null}
+                      {pending ? <span className="member-status">Pending</span> : null}
+                    </span>
+                    <span
+                      className={`ledger-sub ${
+                        ledgerLoading || pending ? "" : net < 0 ? "owes" : net > 0 ? "is-owed" : ""
+                      }`}
+                    >
+                      {pending
+                        ? "Invited"
+                        : ledgerLoading
+                          ? "—"
+                          : net < 0
+                            ? "owes"
+                            : net > 0
+                              ? "is owed"
+                              : "even"}
+                    </span>
+                  </span>
+                  {pending ? (
+                    <span className="ledger-net">—</span>
+                  ) : (
+                    <span
+                      className={`ledger-net ${
+                        ledgerLoading ? "" : net < 0 ? "owes" : net > 0 ? "is-owed" : ""
+                      }`}
+                    >
+                      {ledgerLoading ? "—" : formatPeso(Math.abs(net))}
+                    </span>
+                  )}
+                </div>
+              );
+            })}
         </div>
         {pendingAdults.length > 0 ? (
           <p className="panel-copy">

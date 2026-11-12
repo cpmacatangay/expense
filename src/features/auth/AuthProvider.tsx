@@ -1,9 +1,12 @@
 import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/data/supabase/client";
+import { queryStorage } from "@/data/cache/queryStorage";
 import { AuthContext, type AuthContextValue } from "./authContext";
 import type { Session } from "@supabase/supabase-js";
 
 export function AuthProvider({ children }: { children: ReactNode }) {
+  const queryClient = useQueryClient();
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -21,7 +24,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setLoading(false);
     });
 
-    const { data: subscription } = supabase.auth.onAuthStateChange((_event, next) => {
+    const { data: subscription } = supabase.auth.onAuthStateChange((event, next) => {
+      if (event === "SIGNED_OUT") {
+        queryClient.clear();
+        void queryStorage.removeItem("salo-query-cache");
+      }
       setSession(next);
       setLoading(false);
     });
@@ -30,7 +37,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       mounted = false;
       subscription.subscription.unsubscribe();
     };
-  }, []);
+  }, [queryClient]);
 
   const value = useMemo<AuthContextValue>(
     () => ({
@@ -66,9 +73,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (!supabase) return;
         const { error } = await supabase.auth.signOut();
         if (error) throw error;
+        queryClient.clear();
+        await queryStorage.removeItem("salo-query-cache");
       }
     }),
-    [session, loading]
+    [session, loading, queryClient]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

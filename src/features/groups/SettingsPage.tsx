@@ -813,13 +813,15 @@ export function SettingsPage() {
             recaps or exports.
           </p>
 
-          <div className="qr-preview">
-            {myAdult.payment_qr_path ? (
+          {myAdult.payment_qr_path ? (
+            <div className="qr-preview">
               <PaymentQrImage path={myAdult.payment_qr_path} name={myAdult.display_name} />
-            ) : (
-              <div className="qr-placeholder">No QR yet. Upload a PNG or JPEG under 2 MB.</div>
-            )}
-          </div>
+            </div>
+          ) : (
+            <div className="qr-placeholder qr-placeholder--empty">
+              No QR yet. Upload a PNG or JPEG under 2 MB.
+            </div>
+          )}
 
           {myAdult.payment_qr_label ? (
             <p className="form-notice">Label: {myAdult.payment_qr_label}</p>

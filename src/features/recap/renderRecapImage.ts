@@ -3,15 +3,16 @@ import type { Recap } from "./buildRecap";
 const WIDTH = 1080;
 const HEIGHT = 1350;
 const MARGIN = 72;
-const FONT =
-  '-apple-system, BlinkMacSystemFont, "SF Pro Display", "Roboto", "Segoe UI", sans-serif';
+const FONT = '"Geist", system-ui, -apple-system, "Segoe UI", sans-serif';
+const MONO = '"Geist Mono", ui-monospace, "SFMono-Regular", monospace';
 
-const ink = "#15221C";
-const muted = "#5D6B63";
+const ink = "#171512";
+const muted = "#625E55";
 const green = "#1F5C45";
-const greenSoft = "#D9EFE2";
-const ground = "#F2F4F0";
-const line = "#D8DDD4";
+const greenSoft = "#DCEBE1";
+const ground = "#F2F1ED";
+const card = "#FBFAF7";
+const line = "#D9D5CC";
 
 let symbolLoader: Promise<HTMLImageElement | null> | null = null;
 
@@ -44,26 +45,15 @@ function roundRect(
   context.closePath();
 }
 
-function setFont(
-  context: CanvasRenderingContext2D,
-  size: number,
-  weight: number
-) {
-  context.font = `${weight} ${size}px ${FONT}`;
+function setFont(context: CanvasRenderingContext2D, size: number, weight: number, family = FONT) {
+  context.font = `${weight} ${size}px ${family}`;
 }
 
-function fitText(
-  context: CanvasRenderingContext2D,
-  value: string,
-  maxWidth: number
-): string {
+function fitText(context: CanvasRenderingContext2D, value: string, maxWidth: number): string {
   if (context.measureText(value).width <= maxWidth) return value;
 
   let trimmed = value;
-  while (
-    trimmed.length > 1 &&
-    context.measureText(`${trimmed}…`).width > maxWidth
-  ) {
+  while (trimmed.length > 1 && context.measureText(`${trimmed}…`).width > maxWidth) {
     trimmed = trimmed.slice(0, -1);
   }
   return `${trimmed}…`;
@@ -77,9 +67,10 @@ function text(
   size: number,
   weight: number,
   color: string,
-  align: CanvasTextAlign = "left"
+  align: CanvasTextAlign = "left",
+  family = FONT
 ) {
-  setFont(context, size, weight);
+  setFont(context, size, weight, family);
   context.fillStyle = color;
   context.textAlign = align;
   context.textBaseline = "alphabetic";
@@ -96,6 +87,16 @@ export async function renderRecapImage(recap: Recap): Promise<Blob> {
   canvas.height = HEIGHT;
   const context = canvas.getContext("2d");
   if (!context) throw new Error("This browser cannot draw a recap image");
+
+  try {
+    await document.fonts.ready;
+    await Promise.all([
+      document.fonts.load("600 46px Geist"),
+      document.fonts.load('500 84px "Geist Mono"')
+    ]);
+  } catch {
+    // The system fallback keeps the recap readable if the faces are unavailable.
+  }
 
   const symbol = await loadSymbol();
 
@@ -116,29 +117,11 @@ export async function renderRecapImage(recap: Recap): Promise<Blob> {
   text(context, "Shared meal", WIDTH - MARGIN, 120, 20, 400, muted, "right");
 
   setFont(context, 46, 600);
-  text(
-    context,
-    fitText(context, recap.groupName, WIDTH - MARGIN * 2),
-    MARGIN,
-    224,
-    46,
-    600,
-    ink
-  );
+  text(context, fitText(context, recap.groupName, WIDTH - MARGIN * 2), MARGIN, 224, 46, 600, ink);
 
-  const when = recap.place
-    ? `${recap.dateLabel} · ${recap.place}`
-    : recap.dateLabel;
+  const when = recap.place ? `${recap.dateLabel} · ${recap.place}` : recap.dateLabel;
   setFont(context, 26, 400);
-  text(
-    context,
-    fitText(context, when, WIDTH - MARGIN * 2),
-    MARGIN,
-    268,
-    26,
-    400,
-    muted
-  );
+  text(context, fitText(context, when, WIDTH - MARGIN * 2), MARGIN, 268, 26, 400, muted);
 
   roundRect(context, MARGIN, 320, WIDTH - MARGIN * 2, 236, 32);
   context.fillStyle = greenSoft;
@@ -153,24 +136,21 @@ export async function renderRecapImage(recap: Recap): Promise<Blob> {
     496,
     84,
     700,
-    green
+    green,
+    "left",
+    MONO
   );
 
   const cardTop = 620;
   const visibleShares = recap.shares.slice(0, 12);
   const twoColumns = visibleShares.length > 6;
-  const columnWidth = twoColumns
-    ? (WIDTH - MARGIN * 2 - 64 - 36) / 2
-    : WIDTH - MARGIN * 2 - 64;
+  const columnWidth = twoColumns ? (WIDTH - MARGIN * 2 - 64 - 36) / 2 : WIDTH - MARGIN * 2 - 64;
   const rowsPerColumn = twoColumns ? 6 : Math.max(1, visibleShares.length);
   const rowHeight = twoColumns ? 44 : 48;
-  const cardHeight = Math.max(
-    260,
-    104 + Math.max(0, rowsPerColumn - 1) * rowHeight + 24
-  );
+  const cardHeight = Math.max(260, 104 + Math.max(0, rowsPerColumn - 1) * rowHeight + 24);
 
   roundRect(context, MARGIN, cardTop, WIDTH - MARGIN * 2, cardHeight, 28);
-  context.fillStyle = "#FCFDFB";
+  context.fillStyle = card;
   context.fill();
   context.strokeStyle = line;
   context.lineWidth = 1;
@@ -196,16 +176,8 @@ export async function renderRecapImage(recap: Recap): Promise<Blob> {
       context.stroke();
     }
 
-    text(
-      context,
-      fitText(context, share.name, columnWidth - 150),
-      x,
-      y,
-      28,
-      400,
-      ink
-    );
-    text(context, share.totalLabel, amountX, y, 28, 600, ink, "right");
+    text(context, fitText(context, share.name, columnWidth - 150), x, y, 28, 400, ink);
+    text(context, share.totalLabel, amountX, y, 28, 600, ink, "right", MONO);
   });
 
   const cust = cardTop + cardHeight;
@@ -224,16 +196,8 @@ export async function renderRecapImage(recap: Recap): Promise<Blob> {
     const visibleTransfers = recap.transfers.slice(0, 4);
     visibleTransfers.forEach((transfer, index) => {
       const y = transfersStart + index * 36;
-      text(
-        context,
-        `${transfer.fromName} pays ${transfer.toName}`,
-        MARGIN,
-        y,
-        28,
-        400,
-        ink
-      );
-      text(context, transfer.amountLabel, WIDTH - MARGIN, y, 28, 600, ink, "right");
+      text(context, `${transfer.fromName} pays ${transfer.toName}`, MARGIN, y, 28, 400, ink);
+      text(context, transfer.amountLabel, WIDTH - MARGIN, y, 28, 600, ink, "right", MONO);
     });
 
     if (recap.transfers.length > visibleTransfers.length) {
