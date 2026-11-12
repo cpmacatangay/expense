@@ -70,7 +70,7 @@ export function PlatformShell() {
       <main className="app-main" id="main-content" tabIndex={-1}>
         <Suspense
           fallback={
-            <p className="panel-copy" role="status">
+            <p className="panel-copy">
               Loading the table…
             </p>
           }

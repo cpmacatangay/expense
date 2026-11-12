@@ -3,6 +3,7 @@ import { Icon } from "./Icon";
 
 export function FileField({
   label,
+  name,
   accept,
   file,
   onSelect,
@@ -10,6 +11,7 @@ export function FileField({
   inputRef
 }: {
   label: string;
+  name?: string;
   accept: string;
   file: File | null;
   onSelect: (file: File | null) => void;
@@ -29,6 +31,7 @@ export function FileField({
           ref={inputRef}
           className="file-field-input"
           type="file"
+          name={name}
           accept={accept}
           aria-label={label}
           aria-describedby={hint ? hintId : undefined}

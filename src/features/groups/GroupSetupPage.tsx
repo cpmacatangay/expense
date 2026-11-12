@@ -5,6 +5,7 @@ import { listInactiveOwnedGroups, restoreGroup } from "./lifecycle";
 import { useGroup } from "./groupContext";
 import { formatDate } from "@/lib/dates";
 import { getErrorMessage } from "@/lib/errors";
+import { usePageTitle } from "@/lib/usePageTitle";
 import { BrandMark } from "@/ui/primitives/BrandMark";
 import { Icon } from "@/ui/primitives/Icon";
 
@@ -18,6 +19,8 @@ export function GroupSetupPage() {
   const [error, setError] = useState<string | null>(null);
   const [restoreBusy, setRestoreBusy] = useState<string | null>(null);
   const [restoreError, setRestoreError] = useState<string | null>(null);
+
+  usePageTitle("Start or join a table");
 
   const { data: inactiveGroups } = useQuery({
     queryKey: ["inactive-groups", user?.id],
@@ -74,30 +77,36 @@ export function GroupSetupPage() {
       </header>
 
       {error ? (
-        <p className="form-error" role="alert">
+        <p className="form-error" role="alert" id="group-error">
           {error}
         </p>
       ) : null}
 
       <section className="panel">
         <h2 className="panel-title">Start a group</h2>
-        <form className="auth-form" onSubmit={handleCreate}>
-          <label className="field">
+        <form className="auth-form" onSubmit={handleCreate} aria-labelledby="start-group-title">
+          <label className="field" htmlFor="group-name">
             <span>Group name</span>
             <input
+              id="group-name"
+              name="groupName"
               type="text"
               value={name}
-              onChange={(event) => setName(event.target.value)}
+              onChange={(event) => {
+                setName(event.target.value);
+                if (error) setError(null);
+              }}
               placeholder="Salo Crew"
+              minLength={2}
               maxLength={60}
+              autoComplete="organization"
+              enterKeyHint="done"
+              aria-invalid={Boolean(error)}
+              aria-describedby={error ? "group-error" : undefined}
               required
             />
           </label>
-          <button
-            className="primary-action"
-            type="submit"
-            disabled={busy !== null || name.trim().length < 2}
-          >
+          <button className="primary-action" type="submit" disabled={busy !== null}>
             <Icon name="plus" />
             Create group
           </button>
@@ -107,24 +116,31 @@ export function GroupSetupPage() {
       <section className="panel">
         <h2 className="panel-title">I have an invite</h2>
         <form className="auth-form" onSubmit={handleJoin}>
-          <label className="field">
+          <label className="field" htmlFor="group-code">
             <span>Six-character code</span>
             <input
+              id="group-code"
+              name="inviteCode"
               type="text"
               value={code}
-              onChange={(event) => setCode(event.target.value.toUpperCase())}
+              onChange={(event) => {
+                setCode(event.target.value.toUpperCase());
+                if (error) setError(null);
+              }}
               placeholder="ABC123"
               inputMode="text"
               autoCapitalize="characters"
+              autoCorrect="off"
+              spellCheck={false}
+              enterKeyHint="go"
+              pattern="[A-Za-z0-9]{6}"
               maxLength={6}
+              aria-invalid={Boolean(error)}
+              aria-describedby={error ? "group-error" : undefined}
               required
             />
           </label>
-          <button
-            className="secondary-action"
-            type="submit"
-            disabled={busy !== null || code.trim().length !== 6}
-          >
+          <button className="secondary-action" type="submit" disabled={busy !== null}>
             <Icon name="log-in" />
             Join group
           </button>
@@ -140,9 +156,9 @@ export function GroupSetupPage() {
               {restoreError}
             </p>
           ) : null}
-          <div className="ledger-rows">
+          <ul className="ledger-rows">
             {inactiveGroups.map((inactive) => (
-              <div className="ledger-row" key={inactive.id}>
+              <li className="ledger-row" key={inactive.id}>
                 <div className="row-main">
                   <span className="row-title">{inactive.name}</span>
                   <span className="row-sub">
@@ -164,9 +180,9 @@ export function GroupSetupPage() {
                   <Icon name="restore" />
                   {restoreBusy === inactive.id ? "Restoring…" : "Restore"}
                 </button>
-              </div>
+              </li>
             ))}
-          </div>
+          </ul>
         </section>
       ) : null}
 

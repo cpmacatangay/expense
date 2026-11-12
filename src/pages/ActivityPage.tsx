@@ -10,6 +10,7 @@ import { listOutings } from "@/features/outings/api";
 import { formatRelativeTime } from "@/lib/dates";
 import { getErrorMessage } from "@/lib/errors";
 import { initials } from "@/lib/names";
+import { usePageTitle } from "@/lib/usePageTitle";
 import { Icon } from "@/ui/primitives/Icon";
 
 const filters: { id: ActivityFilter; label: string }[] = [
@@ -22,6 +23,8 @@ const filters: { id: ActivityFilter; label: string }[] = [
 export function ActivityPage() {
   const { group, adults, students } = useGroup();
   const [filter, setFilter] = useState<ActivityFilter>("all");
+
+  usePageTitle("Activity");
 
   const activity = useInfiniteQuery({
     queryKey: ["activity", group?.id, filter],
@@ -74,7 +77,7 @@ export function ActivityPage() {
         ))}
       </div>
 
-      <section className="panel" aria-label="Activity feed">
+      <section className="panel">
         <div className="section-head">
           <h2 className="panel-title">Activity log</h2>
         </div>
@@ -94,7 +97,7 @@ export function ActivityPage() {
           </p>
         ) : null}
 
-        <div className="activity-list">
+        <ol className="activity-list" role="list">
           {events.map((event) => {
             const actor = event.actor_profile_id
               ? adultByProfile.get(event.actor_profile_id)
@@ -108,7 +111,7 @@ export function ActivityPage() {
             });
 
             return (
-              <article className="activity-row" key={event.id}>
+              <li className="activity-row" key={event.id}>
                 <span
                   className="member-initials"
                   style={{ background: actor?.color ?? "var(--platform-muted)" }}
@@ -149,10 +152,10 @@ export function ActivityPage() {
                     </details>
                   ) : null}
                 </div>
-              </article>
+              </li>
             );
           })}
-        </div>
+        </ol>
 
         {activity.hasNextPage ? (
           <button

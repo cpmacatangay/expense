@@ -8,6 +8,7 @@ import { filterHistory } from "@/features/history/filterHistory";
 import type { HistoryFilters } from "@/features/history/types";
 import { formatDate } from "@/lib/dates";
 import { getErrorMessage } from "@/lib/errors";
+import { usePageTitle } from "@/lib/usePageTitle";
 import { Icon } from "@/ui/primitives/Icon";
 
 const emptyFilters: HistoryFilters = {
@@ -20,6 +21,8 @@ const emptyFilters: HistoryFilters = {
 export function HistoryPage() {
   const { group, adults } = useGroup();
   const [filters, setFilters] = useState<HistoryFilters>(emptyFilters);
+
+  usePageTitle("History");
 
   const { data, isLoading, error } = useQuery({
     queryKey: ["history", group?.id],
@@ -54,31 +57,42 @@ export function HistoryPage() {
       </div>
 
       <section className="panel">
-        <h2 className="panel-title">Find an outing</h2>
+        <h2 className="panel-title" id="history-filter-title">
+          Find an outing
+        </h2>
 
-        <div className="history-filters">
-          <div className="field-pair">
-            <label className="field">
-              <span>From</span>
-              <input
-                type="date"
-                value={filters.from}
-                onChange={(event) => update("from", event.target.value)}
-              />
-            </label>
-            <label className="field">
-              <span>To</span>
-              <input
-                type="date"
-                value={filters.to}
-                onChange={(event) => update("to", event.target.value)}
-              />
-            </label>
-          </div>
+        <search className="history-filters" aria-labelledby="history-filter-title">
+          <fieldset className="filter-group">
+            <legend>Date range</legend>
+            <div className="field-pair">
+              <label className="field" htmlFor="history-from">
+                <span>From</span>
+                <input
+                  id="history-from"
+                  name="from"
+                  type="date"
+                  value={filters.from}
+                  onChange={(event) => update("from", event.target.value)}
+                />
+              </label>
+              <label className="field" htmlFor="history-to">
+                <span>To</span>
+                <input
+                  id="history-to"
+                  name="to"
+                  type="date"
+                  value={filters.to}
+                  onChange={(event) => update("to", event.target.value)}
+                />
+              </label>
+            </div>
+          </fieldset>
 
-          <label className="field">
+          <label className="field" htmlFor="history-adult">
             <span>Adult</span>
             <select
+              id="history-adult"
+              name="adult"
               value={filters.adultId}
               onChange={(event) => update("adultId", event.target.value)}
             >
@@ -92,9 +106,11 @@ export function HistoryPage() {
             </select>
           </label>
 
-          <label className="field">
+          <label className="field" htmlFor="history-student">
             <span>Student</span>
             <select
+              id="history-student"
+              name="student"
               value={filters.studentId}
               onChange={(event) => update("studentId", event.target.value)}
             >
@@ -114,7 +130,7 @@ export function HistoryPage() {
               Clear filters
             </button>
           ) : null}
-        </div>
+        </search>
       </section>
 
       <section className="panel">
@@ -140,7 +156,7 @@ export function HistoryPage() {
           <p className="panel-copy">No outings match these filters.</p>
         ) : null}
 
-        <div className="outing-list">
+        <ul className="outing-list" role="list">
           {filtered.map((entry) => {
             const payer = entry.payerAdultId
               ? adultById.get(entry.payerAdultId)?.display_name
@@ -149,23 +165,25 @@ export function HistoryPage() {
             const studentCount = entry.presentStudentIds.length;
 
             return (
-              <Link className="outing-link" key={entry.id} to={`/outings/${entry.id}`}>
-                <span>
-                  <span className="row-title">{entry.place || "Untitled outing"}</span>
-                  <span className="row-sub">
-                    {formatDate(entry.date)}
-                    {payer ? ` · Paid by ${payer}` : ""}
-                    {` · ${adultCount} at the table`}
-                    {studentCount > 0
-                      ? ` · ${studentCount} ${studentCount === 1 ? "student" : "students"}`
-                      : ""}
+              <li key={entry.id}>
+                <Link className="outing-link" to={`/outings/${entry.id}`}>
+                  <span>
+                    <span className="row-title">{entry.place || "Untitled outing"}</span>
+                    <span className="row-sub">
+                      {formatDate(entry.date)}
+                      {payer ? ` · Paid by ${payer}` : ""}
+                      {` · ${adultCount} at the table`}
+                      {studentCount > 0
+                        ? ` · ${studentCount} ${studentCount === 1 ? "student" : "students"}`
+                        : ""}
+                    </span>
                   </span>
-                </span>
-                <span className="amount">{formatPeso(entry.totalCentavos)}</span>
-              </Link>
+                  <span className="amount">{formatPeso(entry.totalCentavos)}</span>
+                </Link>
+              </li>
             );
           })}
-        </div>
+        </ul>
       </section>
     </div>
   );

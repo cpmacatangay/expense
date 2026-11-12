@@ -2,6 +2,7 @@ import { useState, type FormEvent } from "react";
 import { useAuth } from "@/features/auth/authContext";
 import { env } from "@/lib/env";
 import { getErrorMessage } from "@/lib/errors";
+import { usePageTitle } from "@/lib/usePageTitle";
 import { BrandMark } from "@/ui/primitives/BrandMark";
 import { Icon } from "@/ui/primitives/Icon";
 
@@ -14,6 +15,8 @@ export function SignInPage() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+
+  usePageTitle("Sign in");
 
   async function handleGoogle() {
     setBusy(true);
@@ -76,7 +79,7 @@ export function SignInPage() {
       </p>
 
       {error ? (
-        <p className="form-error" role="alert">
+        <p className="form-error" role="alert" id="signin-error">
           {error}
         </p>
       ) : null}
@@ -97,42 +100,60 @@ export function SignInPage() {
 
           {step === "email" ? (
             <form className="auth-form" onSubmit={handleSendCode}>
-              <label className="field">
+              <label className="field" htmlFor="signin-email">
                 <span>Email</span>
                 <input
+                  id="signin-email"
+                  name="email"
                   type="email"
                   value={email}
-                  onChange={(event) => setEmail(event.target.value)}
+                  onChange={(event) => {
+                    setEmail(event.target.value);
+                    if (error) setError(null);
+                  }}
                   placeholder="you@email.com"
-                  autoComplete="email"
+                  autoComplete="username"
+                  autoCorrect="off"
+                  autoCapitalize="none"
+                  spellCheck={false}
+                  enterKeyHint="send"
+                  aria-invalid={Boolean(error)}
+                  aria-describedby={error ? "signin-error" : undefined}
                   required
                 />
               </label>
-              <button className="secondary-action" type="submit" disabled={busy || !email.trim()}>
+              <button className="secondary-action" type="submit" disabled={busy}>
                 <Icon name="mail" />
                 Email me a code
               </button>
             </form>
           ) : (
             <form className="auth-form" onSubmit={handleVerify}>
-              <label className="field">
+              <label className="field" htmlFor="signin-code">
                 <span>Six-digit code</span>
                 <input
+                  id="signin-code"
+                  name="code"
                   type="text"
                   value={code}
-                  onChange={(event) => setCode(event.target.value)}
+                  onChange={(event) => {
+                    setCode(event.target.value);
+                    if (error) setError(null);
+                  }}
                   placeholder="000000"
                   inputMode="numeric"
                   autoComplete="one-time-code"
+                  autoCorrect="off"
+                  spellCheck={false}
+                  enterKeyHint="done"
+                  pattern="[0-9]{6}"
                   maxLength={6}
+                  aria-invalid={Boolean(error)}
+                  aria-describedby={error ? "signin-error" : undefined}
                   required
                 />
               </label>
-              <button
-                className="secondary-action"
-                type="submit"
-                disabled={busy || code.trim().length < 6}
-              >
+              <button className="secondary-action" type="submit" disabled={busy}>
                 <Icon name="check" />
                 Verify code
               </button>

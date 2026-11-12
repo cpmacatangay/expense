@@ -25,6 +25,7 @@ import { InstallHint } from "@/ui/primitives/InstallHint";
 import { useGroup } from "./groupContext";
 import { getErrorMessage } from "@/lib/errors";
 import { initials } from "@/lib/names";
+import { usePageTitle } from "@/lib/usePageTitle";
 import type { Invitation } from "./types";
 
 export function SettingsPage() {
@@ -69,6 +70,8 @@ export function SettingsPage() {
   const [rosterBusyId, setRosterBusyId] = useState<string | null>(null);
   const [rosterError, setRosterError] = useState<string | null>(null);
   const [rosterNotice, setRosterNotice] = useState<string | null>(null);
+
+  usePageTitle("Settings");
 
   const activeAdults = adults.filter((adult) => adult.status === "active");
   const pendingAdults = adults.filter((adult) => adult.status === "pending");
@@ -440,11 +443,11 @@ export function SettingsPage() {
             </p>
           ) : null}
 
-          <div className="ledger-rows">
+          <ul className="ledger-rows" role="list">
             {activeAndPending.map((adult) => {
               const isGroupOwner = adult.profile_id === group?.owner_id;
               return (
-                <div className="ledger-row" key={adult.id}>
+                <li className="ledger-row" key={adult.id}>
                   <span className="member-initials" style={{ background: adult.color }}>
                     {initials(adult.display_name)}
                   </span>
@@ -512,12 +515,12 @@ export function SettingsPage() {
                       )}
                     </div>
                   ) : null}
-                </div>
+                </li>
               );
             })}
 
             {removedAdults.map((adult) => (
-              <div className="ledger-row" key={adult.id}>
+              <li className="ledger-row" key={adult.id}>
                 <span className="member-initials" style={{ background: adult.color }}>
                   {initials(adult.display_name)}
                 </span>
@@ -534,9 +537,9 @@ export function SettingsPage() {
                   <Icon name="restore" />
                   {memberBusyId === adult.id ? "Restoring…" : "Restore"}
                 </button>
-              </div>
+              </li>
             ))}
-          </div>
+          </ul>
         </section>
       ) : null}
 
@@ -575,27 +578,30 @@ export function SettingsPage() {
             Create a pending adult identity, then share the six-character code.
           </p>
           {error ? (
-            <p className="form-error" role="alert">
+            <p className="form-error" role="alert" id="invite-error">
               {error}
             </p>
           ) : null}
           <form className="auth-form" onSubmit={handleInvite}>
-            <label className="field">
+            <label className="field" htmlFor="invite-adult-name">
               <span>Adult name</span>
               <input
+                id="invite-adult-name"
+                name="adultName"
                 type="text"
                 value={name}
-                onChange={(event) => setName(event.target.value)}
+                onChange={(event) => {
+                  setName(event.target.value);
+                  if (error) setError(null);
+                }}
                 placeholder="Mai"
+                autoComplete="off"
+                enterKeyHint="done"
                 maxLength={50}
                 required
               />
             </label>
-            <button
-              className="secondary-action"
-              type="submit"
-              disabled={busy || name.trim().length < 1}
-            >
+            <button className="secondary-action" type="submit" disabled={busy}>
               <Icon name="user-plus" />
               {busy ? "Creating…" : "Create invite"}
             </button>
@@ -618,18 +624,27 @@ export function SettingsPage() {
             </p>
           ) : null}
           {(roster ?? students).length > 0 ? (
-            <div className="item-list">
+            <ul className="item-list" role="list">
               {(roster ?? students).map((student) => (
-                <div className="item-row" key={student.id}>
+                <li className="item-row" key={student.id}>
                   {editingStudentId === student.id ? (
-                    <div className="student-edit">
-                      <label className="field">
+                    <form
+                      className="student-edit"
+                      onSubmit={(event) => {
+                        event.preventDefault();
+                        void handleRenameStudent(student.id);
+                      }}
+                    >
+                      <label className="field" htmlFor={`student-rename-${student.id}`}>
                         <span>Student name</span>
                         <input
+                          id={`student-rename-${student.id}`}
+                          name="studentEditName"
                           type="text"
                           value={studentEditName}
                           onChange={(event) => setStudentEditName(event.target.value)}
                           maxLength={50}
+                          required
                         />
                       </label>
                       <div className="form-actions">
@@ -643,15 +658,14 @@ export function SettingsPage() {
                         </button>
                         <button
                           className="primary-action"
-                          type="button"
-                          onClick={() => void handleRenameStudent(student.id)}
-                          disabled={rosterBusyId === student.id || !studentEditName.trim()}
+                          type="submit"
+                          disabled={rosterBusyId === student.id}
                         >
                           <Icon name="check" />
                           {rosterBusyId === student.id ? "Saving…" : "Save"}
                         </button>
                       </div>
-                    </div>
+                    </form>
                   ) : (
                     <>
                       <span className="row-main">
@@ -694,34 +708,37 @@ export function SettingsPage() {
                       </div>
                     </>
                   )}
-                </div>
+                </li>
               ))}
-            </div>
+            </ul>
           ) : (
             <p className="panel-copy">No students yet.</p>
           )}
           {studentError ? (
-            <p className="form-error" role="alert">
+            <p className="form-error" role="alert" id="student-error">
               {studentError}
             </p>
           ) : null}
           <form className="auth-form" onSubmit={handleAddStudent}>
-            <label className="field">
+            <label className="field" htmlFor="student-name">
               <span>Student name</span>
               <input
+                id="student-name"
+                name="studentName"
                 type="text"
                 value={studentName}
-                onChange={(event) => setStudentName(event.target.value)}
+                onChange={(event) => {
+                  setStudentName(event.target.value);
+                  if (studentError) setStudentError(null);
+                }}
                 placeholder="Ana"
+                autoComplete="off"
+                enterKeyHint="done"
                 maxLength={50}
                 required
               />
             </label>
-            <button
-              className="secondary-action"
-              type="submit"
-              disabled={studentBusy || studentName.trim().length < 1}
-            >
+            <button className="secondary-action" type="submit" disabled={studentBusy}>
               <Icon name="plus" />
               {studentBusy ? "Adding…" : "Add student"}
             </button>
@@ -736,7 +753,7 @@ export function SettingsPage() {
             The new owner finalizes, reopens, invites, and manages members. You stay a member.
           </p>
           {transferError ? (
-            <p className="form-error" role="alert">
+            <p className="form-error" role="alert" id="transfer-error">
               {transferError}
             </p>
           ) : null}
@@ -746,15 +763,25 @@ export function SettingsPage() {
             </p>
           ) : (
             <>
-              <div className="auth-form">
-                <label className="field">
+              <form
+                className="auth-form"
+                onSubmit={(event) => {
+                  event.preventDefault();
+                  setTransferConfirm(true);
+                }}
+              >
+                <label className="field" htmlFor="transfer-owner">
                   <span>New owner</span>
                   <select
+                    id="transfer-owner"
+                    name="newOwner"
                     value={transferTo}
                     onChange={(event) => {
                       setTransferTo(event.target.value);
                       setTransferConfirm(false);
                     }}
+                    aria-describedby={transferError ? "transfer-error" : undefined}
+                    required
                   >
                     <option value="">Choose an adult</option>
                     {eligibleOwners.map((adult) => (
@@ -764,40 +791,35 @@ export function SettingsPage() {
                     ))}
                   </select>
                 </label>
-              </div>
-              {transferConfirm ? (
-                <div className="export-actions">
-                  <button
-                    className="secondary-action"
-                    type="button"
-                    onClick={() => setTransferConfirm(false)}
-                  >
-                    <Icon name="x" />
-                    Keep ownership
-                  </button>
-                  <button
-                    className="primary-action"
-                    type="button"
-                    onClick={() => void handleTransferOwnership()}
-                    disabled={transferBusy}
-                  >
-                    <Icon name="users" />
-                    {transferBusy ? "Transferring…" : "Transfer ownership"}
-                  </button>
-                </div>
-              ) : (
-                <div className="export-actions">
-                  <button
-                    className="secondary-action"
-                    type="button"
-                    onClick={() => setTransferConfirm(true)}
-                    disabled={!transferTo}
-                  >
-                    <Icon name="users" />
-                    Transfer ownership
-                  </button>
-                </div>
-              )}
+                {transferConfirm ? (
+                  <div className="export-actions">
+                    <button
+                      className="secondary-action"
+                      type="button"
+                      onClick={() => setTransferConfirm(false)}
+                    >
+                      <Icon name="x" />
+                      Keep ownership
+                    </button>
+                    <button
+                      className="primary-action"
+                      type="button"
+                      onClick={() => void handleTransferOwnership()}
+                      disabled={transferBusy}
+                    >
+                      <Icon name="users" />
+                      {transferBusy ? "Transferring…" : "Transfer ownership"}
+                    </button>
+                  </div>
+                ) : (
+                  <div className="export-actions">
+                    <button className="secondary-action" type="submit" disabled={transferBusy}>
+                      <Icon name="users" />
+                      Transfer ownership
+                    </button>
+                  </div>
+                )}
+              </form>
             </>
           )}
         </section>
@@ -825,7 +847,7 @@ export function SettingsPage() {
             <p className="form-notice">Label: {myAdult.payment_qr_label}</p>
           ) : null}
           {qrError ? (
-            <p className="form-error" role="alert">
+            <p className="form-error" role="alert" id="qr-error">
               {qrError}
             </p>
           ) : null}
@@ -836,18 +858,23 @@ export function SettingsPage() {
           ) : null}
 
           <div className="auth-form">
-            <label className="field">
+            <label className="field" htmlFor="payment-qr-label">
               <span>Label</span>
               <input
+                id="payment-qr-label"
+                name="paymentQrLabel"
                 type="text"
                 value={qrLabel}
                 onChange={(event) => setQrLabel(event.target.value)}
                 placeholder="GCash"
+                autoComplete="off"
                 maxLength={40}
+                aria-describedby={qrError ? "qr-error" : undefined}
               />
             </label>
             <FileField
               label="Image"
+              name="paymentQr"
               accept="image/png,image/jpeg"
               file={qrFile}
               onSelect={handleQrFile}

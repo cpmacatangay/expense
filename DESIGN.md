@@ -106,7 +106,7 @@ Rules:
 - Panel padding 16px (20px at ≥760), card gap 16px.
 - Radii: panel/ticket 8px, control 6px, chip 4px, sheet 12px. No 9–16px middle values elsewhere.
 - No shadows at rest. A sheet is the only floating surface, with a soft shadow and a scrim.
-- Touch controls 44px on a phone; 32–36px on a wide screen.
+- Touch controls 44px, 48px on coarse pointers; 32–36px on a wide screen.
 
 ## 4. Shell
 
@@ -173,10 +173,18 @@ as a detection flag.
 
 ### Forms
 
-- Label above the field, 13/500 muted; control 44px, 1px `control` border, 6px radius, surface fill.
+- Label above the field, 13/500 muted; control 44px (48px on coarse pointers), 1px `control` border,
+  6px radius, surface fill.
+- Every control has an explicit `id`, a `name`, and a `<label for>` association, even when nested.
 - Inputs and selects share one height and radius; native date controls are mono 16 on a phone and 13
   on a wide screen, and every text control is 16px at phone widths so iOS does not zoom on focus.
   Placeholder uses `faint`, never a label.
+- Forms submit and validate natively: `required`, `pattern`, `minLength`, and `type` constraints do the
+  work, then the handler checks the parsed value and writes an `aria-describedby` error. Submit stays
+  enabled until a valid submission is in flight; it is never disabled to pre-empt invalid input.
+- Email and one-time-code fields add the matching `autocomplete`, `autocorrect="off"`,
+  `autocapitalize="none"`, `spellcheck="false"`, and `enterKeyHint`. Date ranges sit in a
+  `<fieldset><legend>`; filter controls sit in `<search>`.
 - File upload is the shared `FileField`: 44px bordered control, upload icon, file name, Browse/Replace,
   a 13px hint, and a focus ring on the wrapper. No bare native file input.
 - Action rows: 44px controls; primary right, cancel/secondary left. Destructive confirmation names the
@@ -184,9 +192,13 @@ as a detection flag.
 
 ### Sheet
 
-- Payment QR opens a bottom sheet, not an inline panel: scrim, 12px top radius, 430px max width, focus
-  on Close, Escape closes, Tab is trapped, focus returns to the QR button, body scroll locks. On wide
+- Payment QR opens a bottom sheet, not an inline panel: scrim, 12px top radius, 430px max width. On wide
   screens it centers as a 460px dialog.
+- It is a native `<dialog>` opened with `showModal()`: the browser supplies the top layer, focus
+  handling, `Escape`, and focus return to the QR button. Do not add `role="dialog"`, `aria-modal`, a
+  focus trap, `inert`, an Escape handler, or a body scroll lock. `closedby="any"` plus a pointer
+  fallback gives backdrop dismissal; `::backdrop` carries the scrim and `overscroll-behavior: contain`
+  keeps the page still.
 - The QR surface stays white in both themes; its label ink stays dark, independent of the theme.
 
 ### Recap / export / payment QR
@@ -217,7 +229,8 @@ as a detection flag.
 ## 7. States
 
 - **Empty:** keep the panel frame and header; one sentence naming the state and the next action.
-- **Loading:** keep the final layout, labels at once, values replaced by a flat tonal bar. No shimmer.
+- **Loading:** keep the final layout, labels at once, values replaced by a flat tonal bar. No shimmer,
+  and no live region: interstitial "Loading…" copy is not an announcement worth interrupting for.
   Existing copy may name the operation ("Loading outings…") until the skeleton exists.
 - **Error:** inside the panel that failed, one sentence and a retry; role="alert". If the app tree
   throws, a paper error surface offers Reload Salo; a group-load failure offers Try again instead of
@@ -233,9 +246,11 @@ as a detection flag.
   14px rise, the activity chevron. No page-load animations.
 - `prefers-reduced-motion` removes press scales, chevron rotation, and sheet animation while keeping
   state changes.
-- 44px targets on phones; visible 2px accent focus rings; skip link; one h1 and section headings;
-  labels on every control; icon-only controls have `aria-label` and `title`; live regions for async
-  notices; sheet focus trap and restore.
+- 44px targets (48px on coarse pointers); visible 2px accent focus rings; skip link; one h1 and section
+  headings; labels on every control; icon-only controls have `aria-label` and `title`; live regions for
+  async notices only; repeated rows are `ul`/`ol` lists (with `role="list"` where grid strips Safari
+  semantics); each route sets its own document title.
+- Native `<dialog>` owns the sheet's focus, Escape, backdrop, and focus restore; there is no focus trap.
 - Contrast: body copy ≥4.5:1 in both themes; status pills ≥7:1 in the pairs used.
 
 ## 9. Do / Don't

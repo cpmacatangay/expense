@@ -12,6 +12,7 @@ import { useOnlineStatus } from "@/features/realtime/useOnlineStatus";
 import { formatDate } from "@/lib/dates";
 import { getErrorMessage } from "@/lib/errors";
 import { greetingName, initials } from "@/lib/names";
+import { usePageTitle } from "@/lib/usePageTitle";
 import { Icon } from "@/ui/primitives/Icon";
 import { ShareBand, type ShareSlice } from "@/ui/primitives/ShareBand";
 
@@ -23,6 +24,8 @@ export function HomePage() {
   const online = useOnlineStatus();
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  usePageTitle("Home");
 
   const { data: outings, isLoading } = useQuery({
     queryKey: ["outings", group?.id],
@@ -210,31 +213,32 @@ export function HomePage() {
           </button>
         </div>
 
-        <section className="panel">
-          <div className="section-head">
-            <h2 className="panel-title">Recent outings</h2>
-            <Link className="text-link" to="/history">
-              View all
-            </Link>
-          </div>
-          {isLoading ? <p className="panel-copy">Loading outings…</p> : null}
-          {!isLoading && outings?.length === 0 ? (
-            <p className="panel-copy">No outings yet. Start the first shared meal.</p>
-          ) : null}
-          <div className="outing-list">
-            {outings?.slice(0, 4).map((outing) => {
-              const payer = outing.payer_adult_id
-                ? adults.find((adult) => adult.id === outing.payer_adult_id)
-                : null;
-              const draftLabel =
-                outing.status === "private_draft"
-                  ? "Private"
-                  : outing.status === "reopened"
-                    ? "Reopened"
-                    : "Draft";
+      <section className="panel">
+        <div className="section-head">
+          <h2 className="panel-title">Recent outings</h2>
+          <Link className="text-link" to="/history">
+            View all
+          </Link>
+        </div>
+        {isLoading ? <p className="panel-copy">Loading outings…</p> : null}
+        {!isLoading && outings?.length === 0 ? (
+          <p className="panel-copy">No outings yet. Start the first shared meal.</p>
+        ) : null}
+        <ul className="outing-list" role="list">
+          {outings?.slice(0, 4).map((outing) => {
+            const payer = outing.payer_adult_id
+              ? adults.find((adult) => adult.id === outing.payer_adult_id)
+              : null;
+            const draftLabel =
+              outing.status === "private_draft"
+                ? "Private"
+                : outing.status === "reopened"
+                  ? "Reopened"
+                  : "Draft";
 
-              return (
-                <Link className="outing-link" key={outing.id} to={`/outings/${outing.id}`}>
+            return (
+              <li key={outing.id}>
+                <Link className="outing-link" to={`/outings/${outing.id}`}>
                   <span>
                     <span className="row-title">{outing.place || "Untitled outing"}</span>
                     <span className="row-sub">
@@ -248,10 +252,11 @@ export function HomePage() {
                     <span className="status-chip status-chip--pending">{draftLabel}</span>
                   )}
                 </Link>
-              );
-            })}
-          </div>
-        </section>
+              </li>
+            );
+          })}
+        </ul>
+      </section>
       </div>
 
       {localDrafts && localDrafts.length > 0 ? (
@@ -260,44 +265,46 @@ export function HomePage() {
           <p className="panel-copy">
             Saved on this device. Publish or share them when you are connected.
           </p>
-          <div className="outing-list">
+          <ul className="outing-list" role="list">
             {localDrafts.map((draft) => {
               const total = draft.items.reduce(
                 (sum, item) => sum + item.quantity * item.unitAmountCentavos,
                 0
               );
               return (
-                <Link className="outing-link" key={draft.id} to={`/drafts/${draft.id}`}>
-                  <span>
-                    <span className="row-title">{draft.place || "Untitled draft"}</span>
-                    <span className="row-sub">
-                      {formatDate(draft.date)} · {draft.items.length}{" "}
-                      {draft.items.length === 1 ? "item" : "items"} · saved locally
+                <li key={draft.id}>
+                  <Link className="outing-link" to={`/drafts/${draft.id}`}>
+                    <span>
+                      <span className="row-title">{draft.place || "Untitled draft"}</span>
+                      <span className="row-sub">
+                        {formatDate(draft.date)} · {draft.items.length}{" "}
+                        {draft.items.length === 1 ? "item" : "items"} · saved locally
+                      </span>
                     </span>
-                  </span>
-                  <span className="amount">{formatPeso(total)}</span>
-                </Link>
+                    <span className="amount">{formatPeso(total)}</span>
+                  </Link>
+                </li>
               );
             })}
-          </div>
+          </ul>
         </section>
       ) : null}
 
-      <section className="panel" aria-label="Your table">
+      <section className="panel">
         <div className="section-head">
           <h2 className="panel-title">Your table</h2>
           <Link className="text-link" to="/settings">
             Manage
           </Link>
         </div>
-        <div className="ledger-rows">
+        <ul className="ledger-rows" role="list">
           {adults
             .filter((adult) => adult.status !== "removed")
             .map((adult) => {
               const net = ledger?.netByAdult[adult.id] ?? 0;
               const pending = adult.status === "pending";
               return (
-                <div className="ledger-row" key={adult.id}>
+                <li className="ledger-row" key={adult.id}>
                   <span className="member-initials" style={{ background: adult.color }}>
                     {initials(adult.display_name)}
                   </span>
@@ -334,10 +341,10 @@ export function HomePage() {
                       {ledgerLoading ? "—" : formatPeso(Math.abs(net))}
                     </span>
                   )}
-                </div>
+                </li>
               );
             })}
-        </div>
+        </ul>
         {pendingAdults.length > 0 ? (
           <p className="panel-copy">
             {pendingAdults.length} {pendingAdults.length === 1 ? "adult is" : "adults are"} still

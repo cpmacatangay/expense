@@ -1,8 +1,11 @@
 import { Link } from "react-router-dom";
+import { usePageTitle } from "@/lib/usePageTitle";
 import { BrandMark } from "@/ui/primitives/BrandMark";
 import { Icon } from "@/ui/primitives/Icon";
 
 export function NotFoundPage() {
+  usePageTitle("Not found");
+
   return (
     <main className="onboarding">
       <BrandMark className="onboarding-mark" />

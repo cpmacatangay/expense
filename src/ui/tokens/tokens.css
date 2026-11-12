@@ -142,3 +142,9 @@
     --scrim: rgba(0, 0, 0, 0.62);
   }
 }
+
+@media (pointer: coarse) {
+  :root {
+    --control-height: 48px;
+  }
+}

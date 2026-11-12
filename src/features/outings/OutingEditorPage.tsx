@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useMemo, useState, type FormEvent } from "react";
+import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { computeShares } from "@/domain/money/computeShares";
@@ -21,6 +21,7 @@ import { RecapPanel } from "@/features/recap/RecapPanel";
 import { formatDate } from "@/lib/dates";
 import { getErrorMessage } from "@/lib/errors";
 import { initials } from "@/lib/names";
+import { usePageTitle } from "@/lib/usePageTitle";
 import { Icon } from "@/ui/primitives/Icon";
 import { ShareBand } from "@/ui/primitives/ShareBand";
 
@@ -35,6 +36,8 @@ export function OutingEditorPage() {
     queryFn: () => getOuting(outingId as string),
     enabled: Boolean(outingId)
   });
+
+  usePageTitle(data?.outing.place || "Outing");
 
   const { data: ledgerData } = useLedger(group?.id);
   const recapShares = useMemo(() => {
@@ -447,18 +450,23 @@ export function OutingEditorPage() {
 
       <form className="panel auth-form" onSubmit={saveDetails} aria-label="Outing details">
         <div className="field-pair">
-          <label className="field">
+          <label className="field" htmlFor="outing-date">
             <span>Date</span>
             <input
+              id="outing-date"
+              name="date"
               type="date"
               value={date}
               onChange={(event) => setDate(event.target.value)}
               disabled={!isEditable}
+              required
             />
           </label>
-          <label className="field">
+          <label className="field" htmlFor="outing-place">
             <span>Place</span>
             <input
+              id="outing-place"
+              name="place"
               type="text"
               value={place}
               onChange={(event) => setPlace(event.target.value)}
@@ -468,9 +476,11 @@ export function OutingEditorPage() {
             />
           </label>
         </div>
-        <label className="field">
+        <label className="field" htmlFor="outing-notes">
           <span>Notes</span>
           <input
+            id="outing-notes"
+            name="notes"
             type="text"
             value={notes}
             onChange={(event) => setNotes(event.target.value)}
@@ -479,9 +489,11 @@ export function OutingEditorPage() {
             disabled={!isEditable}
           />
         </label>
-        <label className="field">
+        <label className="field" htmlFor="outing-payer">
           <span>Paid by</span>
           <select
+            id="outing-payer"
+            name="payer"
             value={payerAdultId}
             onChange={(event) => void changePayer(event.target.value)}
             disabled={!isEditable}
@@ -535,14 +547,16 @@ export function OutingEditorPage() {
             })}
         </div>
         {groupStudents.length > 0 ? (
-          <div className="student-list">
+          <ul className="student-list" role="list">
             {groupStudents.map((student) => {
               const row = data.students.find((item) => item.student_id === student.id);
               const present = Boolean(row?.present);
               return (
-                <div className="student-row" key={student.id}>
-                  <label className="student-check">
+                <li className="student-row" key={student.id}>
+                  <label className="student-check" htmlFor={`student-present-${student.id}`}>
                     <input
+                      id={`student-present-${student.id}`}
+                      name="presentStudents"
                       type="checkbox"
                       checked={present}
                       disabled={!isEditable}
@@ -552,6 +566,8 @@ export function OutingEditorPage() {
                   </label>
                   {present ? (
                     <select
+                      id={`student-cover-${student.id}`}
+                      name={`cover-${student.id}`}
                       aria-label={`Cover for ${student.name}`}
                       value={row?.covering_adult_id ?? ""}
                       onChange={(event) => void changeStudentCover(student.id, event.target.value)}
@@ -566,10 +582,10 @@ export function OutingEditorPage() {
                         ))}
                     </select>
                   ) : null}
-                </div>
+                </li>
               );
             })}
-          </div>
+          </ul>
         ) : (
           <>
             <p className="panel-copy">No students yet.</p>
@@ -616,9 +632,9 @@ export function OutingEditorPage() {
           )
         ) : null}
 
-        <div className="item-list">
+        <ul className="item-list" role="list">
           {data.items.map((item) => (
-            <Fragment key={item.id}>
+            <li key={item.id}>
               <div className="item-row">
                 <span className="row-main">
                   <span className="row-title">{item.name}</span>
@@ -672,18 +688,22 @@ export function OutingEditorPage() {
                   </div>
                 </div>
               ) : null}
-            </Fragment>
+            </li>
           ))}
           {data.items.length === 0 ? (
-            <p className="panel-copy">Add the first item to start the bill.</p>
+            <li>
+              <p className="panel-copy">Add the first item to start the bill.</p>
+            </li>
           ) : null}
-        </div>
+        </ul>
 
         {isEditable && (showItemForm || data.items.length === 0) ? (
           <form className="auth-form" onSubmit={handleAddItem}>
-            <label className="field">
+            <label className="field" htmlFor="item-name">
               <span>Item</span>
               <input
+                id="item-name"
+                name="itemName"
                 type="text"
                 value={itemName}
                 onChange={(event) => setItemName(event.target.value)}
@@ -693,18 +713,23 @@ export function OutingEditorPage() {
               />
             </label>
             <div className="field-pair">
-              <label className="field">
+              <label className="field" htmlFor="item-qty">
                 <span>Quantity</span>
                 <input
+                  id="item-qty"
+                  name="itemQty"
                   type="number"
                   min={1}
                   value={itemQty}
                   onChange={(event) => setItemQty(event.target.value)}
+                  required
                 />
               </label>
-              <label className="field">
+              <label className="field" htmlFor="item-price">
                 <span>Unit price</span>
                 <input
+                  id="item-price"
+                  name="itemPrice"
                   type="text"
                   inputMode="decimal"
                   value={itemPrice}
@@ -714,9 +739,11 @@ export function OutingEditorPage() {
                 />
               </label>
             </div>
-            <label className="field">
+            <label className="field" htmlFor="item-assignment">
               <span>Who shares it</span>
               <select
+                id="item-assignment"
+                name="assignment"
                 value={assignment}
                 onChange={(event) => setAssignment(event.target.value as AssignmentType)}
               >
@@ -726,11 +753,14 @@ export function OutingEditorPage() {
               </select>
             </label>
             {assignment === "adult" ? (
-              <label className="field">
+              <label className="field" htmlFor="item-adult">
                 <span>Adult</span>
                 <select
+                  id="item-adult"
+                  name="assignedAdult"
                   value={assignedAdultId}
                   onChange={(event) => setAssignedAdultId(event.target.value)}
+                  required
                 >
                   <option value="">Choose an adult</option>
                   {presentAdultIds.map((id) => (
@@ -742,11 +772,14 @@ export function OutingEditorPage() {
               </label>
             ) : null}
             {assignment === "student" ? (
-              <label className="field">
+              <label className="field" htmlFor="item-student">
                 <span>Student</span>
                 <select
+                  id="item-student"
+                  name="assignedStudent"
                   value={assignedStudentId}
                   onChange={(event) => setAssignedStudentId(event.target.value)}
+                  required
                 >
                   <option value="">Choose a student</option>
                   {presentStudents.map((student) => (

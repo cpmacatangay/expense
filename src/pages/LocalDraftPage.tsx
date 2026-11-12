@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { computeShares } from "@/domain/money/computeShares";
@@ -11,6 +11,7 @@ import { useOnlineStatus } from "@/features/realtime/useOnlineStatus";
 import { formatDate } from "@/lib/dates";
 import { getErrorMessage } from "@/lib/errors";
 import { initials } from "@/lib/names";
+import { usePageTitle } from "@/lib/usePageTitle";
 import { Icon } from "@/ui/primitives/Icon";
 import { ShareBand } from "@/ui/primitives/ShareBand";
 
@@ -32,8 +33,7 @@ export function LocalDraftPage() {
   });
 
   const [draft, setDraft] = useState<LocalDraft | null>(null);
-  const [saveState, setSaveState] = useState<"idle" | "saving" | "saved">("idle");
-  const [publishBusy, setPublishBusy] = useState<"draft" | "private_draft" | null>(null);
+  const [saveState, setSaveState] = useState<"idle" | "saving" | "saved">("idle");  const [publishBusy, setPublishBusy] = useState<"draft" | "private_draft" | null>(null);
   const [publishError, setPublishError] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [deletingItemId, setDeletingItemId] = useState<string | null>(null);
@@ -44,6 +44,8 @@ export function LocalDraftPage() {
   const [assignment, setAssignment] = useState<Assignment>("shared");
   const [assignedAdultId, setAssignedAdultId] = useState("");
   const [assignedStudentId, setAssignedStudentId] = useState("");
+
+  usePageTitle(draft?.place || "Private draft");
 
   useEffect(() => {
     if (data) setDraft(data);
@@ -305,17 +307,22 @@ export function LocalDraftPage() {
       <form className="panel auth-form" onSubmit={(event) => event.preventDefault()}>
         <h2 className="panel-title">The table</h2>
         <div className="field-pair">
-          <label className="field">
+          <label className="field" htmlFor="draft-date">
             <span>Date</span>
             <input
+              id="draft-date"
+              name="date"
               type="date"
               value={draft.date}
               onChange={(event) => update({ date: event.target.value })}
+              required
             />
           </label>
-          <label className="field">
+          <label className="field" htmlFor="draft-place">
             <span>Place</span>
             <input
+              id="draft-place"
+              name="place"
               type="text"
               value={draft.place}
               onChange={(event) => update({ place: event.target.value })}
@@ -324,9 +331,11 @@ export function LocalDraftPage() {
             />
           </label>
         </div>
-        <label className="field">
+        <label className="field" htmlFor="draft-notes">
           <span>Notes</span>
           <input
+            id="draft-notes"
+            name="notes"
             type="text"
             value={draft.notes}
             onChange={(event) => update({ notes: event.target.value })}
@@ -334,9 +343,11 @@ export function LocalDraftPage() {
             maxLength={1000}
           />
         </label>
-        <label className="field">
+        <label className="field" htmlFor="draft-payer">
           <span>Paid by</span>
           <select
+            id="draft-payer"
+            name="payer"
             value={draft.payerAdultId}
             onChange={(event) => update({ payerAdultId: event.target.value })}
           >
@@ -375,13 +386,15 @@ export function LocalDraftPage() {
         </div>
 
         {activeStudents.length > 0 ? (
-          <div className="student-list">
+          <ul className="student-list" role="list">
             {activeStudents.map((student) => {
               const present = draft.presentStudents.find((row) => row.studentId === student.id);
               return (
-                <div className="student-row" key={student.id}>
-                  <label className="student-check">
+                <li className="student-row" key={student.id}>
+                  <label className="student-check" htmlFor={`draft-student-present-${student.id}`}>
                     <input
+                      id={`draft-student-present-${student.id}`}
+                      name="presentStudents"
                       type="checkbox"
                       checked={Boolean(present)}
                       onChange={() => toggleStudent(student.id, !present)}
@@ -390,6 +403,8 @@ export function LocalDraftPage() {
                   </label>
                   {present ? (
                     <select
+                      id={`draft-student-cover-${student.id}`}
+                      name={`cover-${student.id}`}
                       aria-label={`Cover for ${student.name}`}
                       value={present.coveringAdultId}
                       onChange={(event) => changeCover(student.id, event.target.value)}
@@ -403,10 +418,10 @@ export function LocalDraftPage() {
                         ))}
                     </select>
                   ) : null}
-                </div>
+                </li>
               );
             })}
-          </div>
+          </ul>
         ) : (
           <p className="panel-copy">No students yet. Add them in Settings.</p>
         )}
@@ -422,40 +437,51 @@ export function LocalDraftPage() {
             addItem();
           }}
         >
-          <label className="field">
+          <label className="field" htmlFor="draft-item-name">
             <span>Item</span>
             <input
+              id="draft-item-name"
+              name="itemName"
               type="text"
               value={itemName}
               onChange={(event) => setItemName(event.target.value)}
               placeholder="Shared rice"
               maxLength={120}
+              required
             />
           </label>
           <div className="field-pair">
-            <label className="field">
+            <label className="field" htmlFor="draft-item-qty">
               <span>Quantity</span>
               <input
+                id="draft-item-qty"
+                name="itemQty"
                 type="number"
                 min={1}
                 value={itemQty}
                 onChange={(event) => setItemQty(event.target.value)}
+                required
               />
             </label>
-            <label className="field">
+            <label className="field" htmlFor="draft-item-price">
               <span>Unit price</span>
               <input
+                id="draft-item-price"
+                name="itemPrice"
                 type="text"
                 inputMode="decimal"
                 value={itemPrice}
                 onChange={(event) => setItemPrice(event.target.value)}
                 placeholder="0.00"
+                required
               />
             </label>
           </div>
-          <label className="field">
+          <label className="field" htmlFor="draft-item-assignment">
             <span>Who shares it</span>
             <select
+              id="draft-item-assignment"
+              name="assignment"
               value={assignment}
               onChange={(event) => {
                 setAssignment(event.target.value as Assignment);
@@ -469,11 +495,14 @@ export function LocalDraftPage() {
             </select>
           </label>
           {assignment === "adult" ? (
-            <label className="field">
+            <label className="field" htmlFor="draft-item-adult">
               <span>Adult</span>
               <select
+                id="draft-item-adult"
+                name="assignedAdult"
                 value={assignedAdultId}
                 onChange={(event) => setAssignedAdultId(event.target.value)}
+                required
               >
                 <option value="">Choose an adult</option>
                 {activeAdults
@@ -487,11 +516,14 @@ export function LocalDraftPage() {
             </label>
           ) : null}
           {assignment === "student" ? (
-            <label className="field">
+            <label className="field" htmlFor="draft-item-student">
               <span>Student</span>
               <select
+                id="draft-item-student"
+                name="assignedStudent"
                 value={assignedStudentId}
                 onChange={(event) => setAssignedStudentId(event.target.value)}
+                required
               >
                 <option value="">Choose a student</option>
                 {draft.presentStudents.map((student) => {
@@ -514,9 +546,9 @@ export function LocalDraftPage() {
           </div>
         </form>
 
-        <div className="item-list">
+        <ul className="item-list" role="list">
           {draft.items.map((item) => (
-            <Fragment key={item.id}>
+            <li key={item.id}>
               <div className="item-row">
                 <span className="row-main">
                   <span className="row-title">{item.name}</span>
@@ -570,12 +602,14 @@ export function LocalDraftPage() {
                   </div>
                 </div>
               ) : null}
-            </Fragment>
+            </li>
           ))}
           {draft.items.length === 0 ? (
-            <p className="panel-copy">Add the first item to start the bill.</p>
+            <li>
+              <p className="panel-copy">Add the first item to start the bill.</p>
+            </li>
           ) : null}
-        </div>
+        </ul>
       </section>
 
       <section className="panel">

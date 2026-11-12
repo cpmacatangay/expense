@@ -1,5 +1,4 @@
-import { useEffect, useId, useRef, type ReactNode } from "react";
-import { createPortal } from "react-dom";
+import { useEffect, useId, useRef, type PointerEvent, type ReactNode } from "react";
 import { Icon } from "./Icon";
 
 export function Sheet({
@@ -13,93 +12,63 @@ export function Sheet({
   title: string;
   children: ReactNode;
 }) {
-  const panelRef = useRef<HTMLElement | null>(null);
-  const closeRef = useRef<HTMLButtonElement | null>(null);
-  const previousFocus = useRef<Element | null>(null);
-  const onCloseRef = useRef(onClose);
+  const dialogRef = useRef<HTMLDialogElement | null>(null);
+  const pressedOutside = useRef(false);
   const titleId = useId();
 
   useEffect(() => {
-    onCloseRef.current = onClose;
-  }, [onClose]);
+    const dialog = dialogRef.current;
+    if (!dialog) return;
 
-  useEffect(() => {
-    if (!open) return;
-
-    previousFocus.current = document.activeElement;
-    const bodyOverflow = document.body.style.overflow;
-    const app = document.querySelector<HTMLElement>(".app");
-    const appWasInert = app?.hasAttribute("inert") ?? false;
-    document.body.style.overflow = "hidden";
-    app?.setAttribute("inert", "");
-    closeRef.current?.focus();
-
-    function handleKeyDown(event: KeyboardEvent) {
-      if (event.key === "Escape") {
-        event.preventDefault();
-        onCloseRef.current();
-        return;
-      }
-      if (event.key !== "Tab" || !panelRef.current) return;
-
-      const focusable = panelRef.current.querySelectorAll<HTMLElement>(
-        'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
-      );
-      if (focusable.length === 0) return;
-
-      const first = focusable[0];
-      const last = focusable[focusable.length - 1];
-      if (event.shiftKey && document.activeElement === first) {
-        event.preventDefault();
-        last.focus();
-      } else if (!event.shiftKey && document.activeElement === last) {
-        event.preventDefault();
-        first.focus();
-      }
+    if (open && !dialog.open) {
+      if (typeof dialog.showModal === "function") dialog.showModal();
+      else dialog.show();
+    } else if (!open && dialog.open) {
+      dialog.close();
     }
-
-    document.addEventListener("keydown", handleKeyDown);
-    return () => {
-      document.removeEventListener("keydown", handleKeyDown);
-      document.body.style.overflow = bodyOverflow;
-      if (!appWasInert) app?.removeAttribute("inert");
-      if (previousFocus.current instanceof HTMLElement) previousFocus.current.focus();
-    };
   }, [open]);
 
-  if (!open) return null;
+  function outside(dialog: HTMLDialogElement, event: PointerEvent<HTMLDialogElement>) {
+    const rect = dialog.getBoundingClientRect();
+    return (
+      event.clientX < rect.left ||
+      event.clientX > rect.right ||
+      event.clientY < rect.top ||
+      event.clientY > rect.bottom
+    );
+  }
 
-  return createPortal(
-    <div
-      className="sheet-backdrop"
-      onClick={(event) => {
-        if (event.target === event.currentTarget) onClose();
-      }}
+  function handlePointerDown(event: PointerEvent<HTMLDialogElement>) {
+    pressedOutside.current = outside(event.currentTarget, event);
+  }
+
+  function handlePointerUp(event: PointerEvent<HTMLDialogElement>) {
+    const dialog = event.currentTarget;
+    const dismiss =
+      pressedOutside.current && outside(dialog, event) && typeof dialog.close === "function";
+    pressedOutside.current = false;
+    if (dismiss) dialog.close();
+  }
+
+  return (
+    <dialog
+      ref={dialogRef}
+      className="sheet"
+      aria-labelledby={titleId}
+      {...({ closedby: "any" } as Record<string, string>)}
+      onClose={onClose}
+      onPointerDown={handlePointerDown}
+      onPointerUp={handlePointerUp}
     >
-      <section
-        ref={panelRef}
-        className="sheet"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby={titleId}
-      >
-        <div className="sheet-head">
-          <h2 className="sheet-title" id={titleId}>
-            {title}
-          </h2>
-          <button
-            ref={closeRef}
-            className="icon-action"
-            type="button"
-            onClick={onClose}
-            aria-label="Close"
-          >
-            <Icon name="x" />
-          </button>
-        </div>
-        {children}
-      </section>
-    </div>,
-    document.body
+      <div className="sheet-head">
+        <h2 className="sheet-title" id={titleId}>
+          {title}
+        </h2>
+        <button className="icon-action" type="button" onClick={onClose} aria-label="Close">
+          <Icon name="x" />
+        </button>
+      </div>
+      {children}
+    </dialog>
   );
 }

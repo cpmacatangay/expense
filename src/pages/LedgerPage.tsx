@@ -12,6 +12,7 @@ import { Sheet } from "@/ui/primitives/Sheet";
 import { todayInManila } from "@/features/outings/api";
 import { formatDate } from "@/lib/dates";
 import { getErrorMessage } from "@/lib/errors";
+import { usePageTitle } from "@/lib/usePageTitle";
 import { initials } from "@/lib/names";
 
 const statusLabels: Record<Settlement["status"], string> = {
@@ -41,6 +42,8 @@ export function LedgerPage() {
   const [voidingId, setVoidingId] = useState<string | null>(null);
   const [qrTarget, setQrTarget] = useState<LedgerTransfer | null>(null);
   const closeQr = useCallback(() => setQrTarget(null), []);
+
+  usePageTitle("Ledger");
 
   const isOwner = group?.owner_id === profile?.id;
   const activeAdults = adults.filter((adult) => adult.status === "active");
@@ -217,7 +220,7 @@ export function LedgerPage() {
       .join(" · ");
 
     return (
-      <div className="settlement-row" key={settlement.id}>
+      <li className="settlement-row" key={settlement.id}>
         <span className="member-initials" style={{ background: colorOf(settlement.from_adult_id) }}>
           {initials(nameOf(settlement.from_adult_id))}
         </span>
@@ -263,7 +266,7 @@ export function LedgerPage() {
         <span className={`status-chip status-chip--${settlement.status}`}>
           {statusLabels[settlement.status]}
         </span>
-      </div>
+      </li>
     );
   }
 
@@ -294,7 +297,6 @@ export function LedgerPage() {
 
       <section
         className={`panel balance-strip ${!isLoading && myNet < 0 ? "is-negative" : ""}`}
-        aria-label="Your position"
       >
         <div>
           <span className="ticket-label">
@@ -336,11 +338,11 @@ export function LedgerPage() {
           {!isLoading && balanceRows.every((adult) => (ledger?.netByAdult[adult.id] ?? 0) === 0) ? (
             <p className="panel-copy">Nothing outstanding. The table is even.</p>
           ) : null}
-          <div className="ledger-rows">
+          <ul className="ledger-rows" role="list">
             {balanceRows.map((adult) => {
               const net = ledger?.netByAdult[adult.id] ?? 0;
               return (
-                <div className="ledger-row" key={adult.id}>
+                <li className="ledger-row" key={adult.id}>
                   <span className="member-initials" style={{ background: adult.color }}>
                     {initials(adult.display_name)}
                   </span>
@@ -359,10 +361,10 @@ export function LedgerPage() {
                   <span className={`ledger-net ${net < 0 ? "owes" : net > 0 ? "is-owed" : ""}`}>
                     {formatPeso(Math.abs(net))}
                   </span>
-                </div>
+                </li>
               );
             })}
-          </div>
+          </ul>
         </section>
 
         <section className="panel">
@@ -371,11 +373,14 @@ export function LedgerPage() {
           {!isLoading && (ledger?.transfers.length ?? 0) === 0 ? (
             <p className="panel-copy">Everyone is square.</p>
           ) : null}
-          <div className="ledger-rows">
+          <ul className="ledger-rows" role="list">
             {ledger?.transfers.map((transfer) => {
               const mine = transfer.fromAdultId === myAdult?.id;
               return (
-                <div className="ledger-row" key={`${transfer.fromAdultId}-${transfer.toAdultId}`}>
+                <li
+                  className="ledger-row"
+                  key={`${transfer.fromAdultId}-${transfer.toAdultId}`}
+                >
                   <span
                     className="member-initials"
                     style={{ background: colorOf(transfer.fromAdultId) }}
@@ -423,10 +428,10 @@ export function LedgerPage() {
                       <Icon name="plus" />
                     </button>
                   ) : null}
-                </div>
+                </li>
               );
             })}
-          </div>
+          </ul>
         </section>
       </div>
 
@@ -474,8 +479,9 @@ export function LedgerPage() {
         <section className="panel">
           <h2 className="panel-title">Confirm payments</h2>
           <p className="panel-copy">Only confirmed payments change balances.</p>
-          {pendingIncoming.map((settlement) => (
-            <div className="settlement-row settlement-row--stacked" key={settlement.id}>
+          <ul className="ledger-rows" role="list">
+            {pendingIncoming.map((settlement) => (
+              <li className="settlement-row settlement-row--stacked" key={settlement.id}>
               <span
                 className="member-initials"
                 style={{ background: colorOf(settlement.from_adult_id) }}
@@ -514,31 +520,36 @@ export function LedgerPage() {
                   </button>
                 </div>
                 {decliningId === settlement.id ? (
-                  <div className="ledger-decline">
-                    <label className="field">
+                  <form
+                    className="ledger-decline"
+                    onSubmit={(event) => {
+                      event.preventDefault();
+                      void handleDecision(settlement, "declined", declineNote);
+                    }}
+                  >
+                    <label className="field" htmlFor={`decline-note-${settlement.id}`}>
                       <span>Note (required)</span>
                       <input
+                        id={`decline-note-${settlement.id}`}
+                        name="declineNote"
                         type="text"
                         value={declineNote}
                         onChange={(event) => setDeclineNote(event.target.value)}
                         placeholder="Why is this wrong?"
                         maxLength={500}
+                        required
                       />
                     </label>
-                    <button
-                      className="secondary-action"
-                      type="button"
-                      disabled={!declineNote.trim() || saving}
-                      onClick={() => void handleDecision(settlement, "declined", declineNote)}
-                    >
+                    <button className="secondary-action" type="submit" disabled={saving}>
                       <Icon name="x" />
                       Decline payment
                     </button>
-                  </div>
+                  </form>
                 ) : null}
               </div>
-            </div>
-          ))}
+              </li>
+            ))}
+          </ul>
         </section>
       ) : null}
 
@@ -554,9 +565,9 @@ export function LedgerPage() {
             waiting for the recipient to confirm.
           </p>
         ) : null}
-        <div className="ledger-rows">
+        <ul className="ledger-rows" role="list">
           {visibleHistory.slice(0, 20).map((settlement) => renderSettlementRow(settlement))}
-        </div>
+        </ul>
         <button className="secondary-action" type="button" onClick={() => openRecord()}>
           <Icon name="plus" />
           Record payment
@@ -570,15 +581,18 @@ export function LedgerPage() {
             The recipient confirms before anything changes. Partial payments are fine.
           </p>
 
-          <label className="field">
+          <label className="field" htmlFor="settlement-from">
             <span>From</span>
             {isOwner ? (
               <select
+                id="settlement-from"
+                name="from"
                 value={fromId}
                 onChange={(event) => {
                   setFromId(event.target.value);
                   if (event.target.value === toId) setToId("");
                 }}
+                required
               >
                 {activeAdults.map((adult) => (
                   <option key={adult.id} value={adult.id}>
@@ -588,13 +602,25 @@ export function LedgerPage() {
                 ))}
               </select>
             ) : (
-              <input type="text" value={myAdult?.display_name ?? "You"} readOnly />
+              <input
+                id="settlement-from"
+                name="from"
+                type="text"
+                value={myAdult?.display_name ?? "You"}
+                readOnly
+              />
             )}
           </label>
 
-          <label className="field">
+          <label className="field" htmlFor="settlement-to">
             <span>To</span>
-            <select value={toId} onChange={(event) => setToId(event.target.value)}>
+            <select
+              id="settlement-to"
+              name="to"
+              value={toId}
+              onChange={(event) => setToId(event.target.value)}
+              required
+            >
               <option value="">Choose a recipient</option>
               {activeAdults
                 .filter((adult) => adult.id !== fromId)
@@ -609,25 +635,37 @@ export function LedgerPage() {
           {renderQrHint()}
 
           <div className="field-pair">
-            <label className="field">
+            <label className="field" htmlFor="settlement-amount">
               <span>Amount</span>
               <input
+                id="settlement-amount"
+                name="amount"
                 type="text"
                 inputMode="decimal"
                 value={amount}
                 onChange={(event) => setAmount(event.target.value)}
                 placeholder="0.00"
+                required
               />
             </label>
-            <label className="field">
+            <label className="field" htmlFor="settlement-date">
               <span>Date</span>
-              <input type="date" value={date} onChange={(event) => setDate(event.target.value)} />
+              <input
+                id="settlement-date"
+                name="date"
+                type="date"
+                value={date}
+                onChange={(event) => setDate(event.target.value)}
+                required
+              />
             </label>
           </div>
 
-          <label className="field">
+          <label className="field" htmlFor="settlement-note">
             <span>Note (optional)</span>
             <input
+              id="settlement-note"
+              name="note"
               type="text"
               value={note}
               onChange={(event) => setNote(event.target.value)}
@@ -637,7 +675,7 @@ export function LedgerPage() {
           </label>
 
           {formError ? (
-            <p className="form-error" role="alert">
+            <p className="form-error" role="alert" id="settlement-error">
               {formError}
             </p>
           ) : null}
