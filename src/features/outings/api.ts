@@ -36,8 +36,7 @@ export async function createOuting(input: {
       author_profile_id: input.authorProfileId,
       date: input.date,
       place: input.place ?? null,
-      status: "draft",
-      total_mode: "auto"
+      status: "draft"
     })
     .select()
     .single();
@@ -101,11 +100,11 @@ export async function getOuting(id: string): Promise<OutingDetail> {
 export async function updateOuting(
   id: string,
   version: number,
-  patch: Partial<Pick<Outing, "date" | "place" | "notes" | "payer_adult_id" | "total_mode">>
+  patch: Partial<Pick<Outing, "date" | "place" | "notes" | "payer_adult_id">>
 ): Promise<Outing> {
   const { data, error } = await requireSupabase()
     .from("outings")
-    .update({ ...patch, version: version + 1 })
+    .update(patch)
     .eq("id", id)
     .eq("version", version)
     .select()
@@ -115,6 +114,21 @@ export async function updateOuting(
   if (!data) {
     throw new Error("This outing changed on another device. Reload before saving.");
   }
+  return data as Outing;
+}
+
+export async function setOutingTotalMode(
+  id: string,
+  version: number,
+  totalMode: "auto" | "manual" | "fixed"
+): Promise<Outing> {
+  const { data, error } = await requireSupabase().rpc("set_outing_total_mode", {
+    p_outing_id: id,
+    p_expected_version: version,
+    p_total_mode: totalMode
+  });
+
+  if (error) throw error;
   return data as Outing;
 }
 

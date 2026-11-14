@@ -178,8 +178,8 @@ export function SignInPage() {
 
       <p className="onboarding-note">
         {emailEnabled
-          ? "No Apple sign-in. Email codes use the group's SMTP and may take a minute."
-          : "No Apple sign-in. Email sign-in will be enabled when a sending domain is ready."}
+          ? "New accounts need an invitation from a group owner. Email codes use the group's SMTP and may take a minute."
+          : "Email sign-in will be enabled when a sending domain is ready. New accounts need an invitation from a group owner."}
       </p>
     </main>
   );

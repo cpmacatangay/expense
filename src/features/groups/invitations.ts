@@ -4,12 +4,13 @@ import type { Invitation } from "./types";
 export type OpenInvitation = {
   adult_id: string;
   expires_at: string;
+  invitee_email: string | null;
 };
 
 export async function listOpenInvitations(groupId: string): Promise<OpenInvitation[]> {
   const { data, error } = await requireSupabase()
     .from("invitations")
-    .select("adult_id, expires_at")
+    .select("adult_id, expires_at, invitee_email")
     .eq("group_id", groupId)
     .is("accepted_at", null)
     .is("revoked_at", null)
@@ -20,9 +21,13 @@ export async function listOpenInvitations(groupId: string): Promise<OpenInvitati
   return (data ?? []) as OpenInvitation[];
 }
 
-export async function invitePendingAdult(adultId: string): Promise<Invitation> {
+export async function invitePendingAdult(
+  adultId: string,
+  email?: string | null
+): Promise<Invitation> {
   const { data, error } = await requireSupabase().rpc("invite_pending_adult", {
-    p_adult_id: adultId
+    p_adult_id: adultId,
+    p_invitee_email: email ?? null
   });
   if (error) throw error;
   return data as Invitation;

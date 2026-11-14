@@ -1,0 +1,2 @@
+-- Intentionally empty. Security tests create their own dummy fixtures inside a
+-- transaction and roll them back.

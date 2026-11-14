@@ -117,7 +117,7 @@ export function GroupSetupPage() {
         <h2 className="panel-title">I have an invite</h2>
         <form className="auth-form" onSubmit={handleJoin}>
           <label className="field" htmlFor="group-code">
-            <span>Six-character code</span>
+            <span>Six- or eight-character code</span>
             <input
               id="group-code"
               name="inviteCode"
@@ -127,14 +127,14 @@ export function GroupSetupPage() {
                 setCode(event.target.value.toUpperCase());
                 if (error) setError(null);
               }}
-              placeholder="ABC123"
+              placeholder="ABC12345"
               inputMode="text"
               autoCapitalize="characters"
               autoCorrect="off"
               spellCheck={false}
               enterKeyHint="go"
-              pattern="[A-Za-z0-9]{6}"
-              maxLength={6}
+              pattern="[A-Za-z0-9]{6,8}"
+              maxLength={8}
               aria-invalid={Boolean(error)}
               aria-describedby={error ? "group-error" : undefined}
               required

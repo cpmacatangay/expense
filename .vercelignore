@@ -14,4 +14,9 @@
 /brand
 /.git
 /.secrets
+/.env
+/.env.*
+/supabase/.env
+/supabase/.env.*
+/supabase/.temp
 *.log

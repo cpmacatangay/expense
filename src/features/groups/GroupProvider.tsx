@@ -103,7 +103,7 @@ export function GroupProvider({ children }: { children: ReactNode }) {
 
         if (networkFailure) {
           const snapshot = await loadGroupSnapshot();
-          if (snapshot) {
+          if (snapshot && snapshot.profile.id === user.id) {
             setProfile(snapshot.profile);
             setGroup(snapshot.group);
             setAdults(snapshot.adults);
@@ -138,20 +138,22 @@ export function GroupProvider({ children }: { children: ReactNode }) {
   const joinGroup = useCallback(
     async (code: string) => {
       const client = requireSupabase();
-      const { error: rpcError } = await client.rpc("join_group_with_code", {
+      const { data, error: rpcError } = await client.rpc("join_group_with_code", {
         invite_code: code
       });
       if (rpcError) throw rpcError;
+      if (!data) throw new Error("Invitation not found or expired");
       await load();
     },
     [load]
   );
 
   const inviteAdult = useCallback(
-    async (name: string) => {
+    async (name: string, email: string) => {
       const client = requireSupabase();
       const { data, error: rpcError } = await client.rpc("create_invitation", {
-        adult_display_name: name
+        adult_display_name: name,
+        invitee_email: email
       });
       if (rpcError) throw rpcError;
       await load();

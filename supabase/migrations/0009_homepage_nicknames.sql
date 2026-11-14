@@ -15,14 +15,8 @@ create table if not exists public.homepage_nicknames (
 
 alter table public.homepage_nicknames enable row level security;
 
-insert into public.homepage_nicknames (match_name, match_email, nickname) values
-  ('[redacted-name]', '[redacted-email]', 'boi ldr'),
-  ('[redacted-name]', null, 'the little prince'),
-  ('[redacted-name]', null, 'tender juicy hotdog'),
-  ('[redacted-name]', null, 'backburner')
-on conflict (match_name) do update
-  set match_email = excluded.match_email,
-      nickname = excluded.nickname;
+-- Seed data intentionally omitted. Nicknames are managed explicitly and are not
+-- committed as real personal identifiers.
 
 create or replace function public.lookup_homepage_nickname(p_name text, p_email text)
 returns text

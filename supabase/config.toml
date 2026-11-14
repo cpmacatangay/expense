@@ -186,6 +186,12 @@ minimum_password_length = 6
 # are: `letters_digits`, `lower_upper_letters_digits`, `lower_upper_letters_digits_symbols`
 password_requirements = ""
 
+# Invite-gated account creation. Rejects password sign-ups and new accounts whose
+# email is not on an open invitation. Existing users are unaffected.
+[auth.hook.before_user_created]
+enabled = true
+uri = "pg-functions://postgres/public/before_user_created_hook"
+
 # Configure passkey sign-ins.
 # [auth.passkey]
 # enabled = false

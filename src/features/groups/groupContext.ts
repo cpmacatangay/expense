@@ -10,7 +10,7 @@ export type GroupContextValue = {
   error: string | null;
   createGroup: (name: string) => Promise<void>;
   joinGroup: (code: string) => Promise<void>;
-  inviteAdult: (name: string) => Promise<Invitation>;
+  inviteAdult: (name: string, email: string) => Promise<Invitation>;
   createStudent: (name: string) => Promise<void>;
   refresh: () => Promise<void>;
 };

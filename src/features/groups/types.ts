@@ -33,4 +33,5 @@ export type Invitation = {
   code: string;
   token: string;
   expires_at: string;
+  invitee_email?: string;
 };

@@ -37,15 +37,14 @@ product.
   No native app, TWA, or store listing in v1.
 - **UI**: one Salo interface on iPhone and Android. Shared information architecture, components, and
   domain rules; only safe areas and input behavior differ.
-- **Identity**: sign-in required. Google OAuth or email one-time code. No Sign in with Apple in v1.
-  Every adult has an account; students do not. Pending adults are allowed until they join.
-- **Homepage nickname**: four predetermined people get a preset nickname shown only in the Home
-  greeting. Matching uses their account email first, then a tolerant name match (seeded first name
-  and surname may appear in any order or joined together). Every money surface — rosters, payer,
-  shares, ledger, activity, recaps, exports — keeps the exact `display_name`.
+- **Identity**: sign-in required. Invite-gated Google OAuth or email one-time code; password sign-up is
+  disabled. Every adult has an account; students do not. Pending adults are allowed until they join.
+- **Homepage nickname**: an explicit, owner-managed nickname lookup. No personal email or name seed is
+  stored in the repository. Every money surface keeps the exact `display_name`.
 - **Groups**: 2–12 adults; one owner per group; owner is the only admin in v1. A user may own one
   group and join many. Group switcher on Home.
-- **Invitations**: share link plus short code, bound to a pending adult, revocable and expiring.
+- **Invitations**: bound to the invited email and a pending adult, with an eight-character code,
+  seven-day expiry, revocation, and bounded claim attempts.
 - **Money**: present adults and students per outing; one present payer; item-sum rule; Auto/Manual/
   Fixed total; no tax, service charge, discount, or printed-receipt reconciliation.
 - **Settlements**: payer records; recipient confirms or declines with a note; only confirmed amounts
@@ -71,7 +70,7 @@ product.
   printed as a ticket.
 - **Density**: calm Home, dense Ledger, a focused 760px column on wide screens.
 - **Components**: ticket balance, share band, ledger rows, ink primary actions, outlined secondary,
-  compact text actions, the shared file field, and a focus-trapped payment QR sheet.
+  compact text actions, the shared file field, and a native dialog payment QR sheet.
 - **Implemented**: S mark header, one responsive shell (bottom tabs on a phone, a text nav on wide
   screens), confirm/record settlement split, permission-aware payment QR, item and review panels,
   onboarding, offline/stale/declined/empty states, recap/export/QR management, and class-based motion
@@ -99,6 +98,9 @@ npm run dev
 **Status**: the shared PWA is implemented; see Status above. The design system is in `DESIGN.md`.
 
 Commands: `npm run typecheck`, `npm run lint`, `npm run test`, `npm run test:e2e`, `npm run build`.
+Database checks: `npx supabase start`, `npx supabase test db`.
+
+Security model and hosted setup: [`SECURITY.md`](SECURITY.md).
 
 ## Architecture
 
@@ -144,8 +146,10 @@ The PWA will live at the repository root once implementation starts: `src/`, `pu
 - No receipt images, OCR, or LLM extraction.
 - Student records are a display name and optional notes only.
 - No analytics, ad SDKs, or tracking.
-- Group data is isolated by row-level security.
+- Group data is isolated by row-level security; member-writable outing columns are limited to
+  presentation fields.
 - Only the owner can export the full group; a member can export their own data.
+- No personal email or name seed data is committed.
 - Free-tier services only; any new recurring cost requires explicit approval.
 
 ## Archived Android app

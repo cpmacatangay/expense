@@ -73,12 +73,16 @@ Deno.serve(async (request) => {
 
     const { data: group } = await service
       .from("groups")
-      .select("owner_id")
+      .select("owner_id, status")
       .eq("id", outing.group_id)
       .single();
 
     if (!group || group.owner_id !== user.id) {
       return json({ error: "Only the group owner can finalize" }, 403);
+    }
+
+    if (group.status !== "active") {
+      return json({ error: "This group is not active" }, 400);
     }
 
     const [{ data: adultRows }, { data: studentRows }, { data: itemRows }] = await Promise.all([
@@ -105,6 +109,34 @@ Deno.serve(async (request) => {
         id: row.student_id,
         coveredByAdultId: row.covering_adult_id as string
       }));
+
+    const presentStudentIds = presentStudents.map((student) => student.id);
+    const [{ data: adultStatusRows }, { data: studentStatusRows }] = await Promise.all([
+      service.from("group_adults").select("id, status").in("id", presentAdults),
+      presentStudentIds.length > 0
+        ? service.from("students").select("id, status").in("id", presentStudentIds)
+        : Promise.resolve({ data: [], error: null })
+    ]);
+
+    if ((adultStatusRows ?? []).some((row) => row.status !== "active")) {
+      return json({ error: "Attendance includes a removed adult" }, 400);
+    }
+
+    if ((studentStatusRows ?? []).some((row) => row.status !== "active")) {
+      return json({ error: "Attendance includes an archived student" }, 400);
+    }
+
+    if (
+      presentStudents.some(
+        (student) =>
+          !presentAdults.includes(student.coveredByAdultId) ||
+          !(adultStatusRows ?? []).some(
+            (row) => row.id === student.coveredByAdultId && row.status === "active"
+          )
+      )
+    ) {
+      return json({ error: "A student is covered by an adult who is not present" }, 400);
+    }
 
     if (presentAdults.length < 2) {
       return json({ error: "At least two adults must be present" }, 400);

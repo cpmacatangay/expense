@@ -32,6 +32,7 @@ export function SettingsPage() {
   const { profile, group, adults, students, inviteAdult, createStudent, refresh } = useGroup();
   const { signOut } = useAuth();
   const [name, setName] = useState("");
+  const [inviteEmail, setInviteEmail] = useState("");
   const [invitation, setInvitation] = useState<Invitation | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -123,9 +124,10 @@ export function SettingsPage() {
     setInvitation(null);
     setCopied(false);
     try {
-      const next = await inviteAdult(name.trim());
+      const next = await inviteAdult(name.trim(), inviteEmail.trim());
       setInvitation(next);
       setName("");
+      setInviteEmail("");
       if (group) {
         await queryClient.invalidateQueries({ queryKey: ["open-invitations", group.id] });
       }
@@ -253,7 +255,9 @@ export function SettingsPage() {
     setInviteError(null);
     setInviteNotice(null);
     try {
-      const next = await invitePendingAdult(adultId);
+      const email =
+        openInvitations?.find((invite) => invite.adult_id === adultId)?.invitee_email ?? null;
+      const next = await invitePendingAdult(adultId, email);
       setInvitation(next);
       setCopied(false);
       setInviteNotice("Invite ready. Share the code with the adult.");
@@ -575,7 +579,8 @@ export function SettingsPage() {
         <section className="panel">
           <h2 className="panel-title">Invite an adult</h2>
           <p className="panel-copy">
-            Create a pending adult identity, then share the six-character code.
+            Create a pending adult identity, then share the eight-character code. The invited
+            email can use Google or an email code to sign in.
           </p>
           {error ? (
             <p className="form-error" role="alert" id="invite-error">
@@ -596,8 +601,28 @@ export function SettingsPage() {
                 }}
                 placeholder="Mai"
                 autoComplete="off"
-                enterKeyHint="done"
+                enterKeyHint="next"
                 maxLength={50}
+                required
+              />
+            </label>
+            <label className="field" htmlFor="invite-adult-email">
+              <span>Email</span>
+              <input
+                id="invite-adult-email"
+                name="inviteeEmail"
+                type="email"
+                value={inviteEmail}
+                onChange={(event) => {
+                  setInviteEmail(event.target.value);
+                  if (error) setError(null);
+                }}
+                placeholder="mai@email.com"
+                autoComplete="email"
+                autoCorrect="off"
+                autoCapitalize="none"
+                spellCheck={false}
+                enterKeyHint="done"
                 required
               />
             </label>

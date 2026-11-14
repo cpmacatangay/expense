@@ -12,6 +12,7 @@ import {
   publishPrivateDraft,
   reopenOuting,
   setAdultPresent,
+  setOutingTotalMode,
   setStudentPresent,
   updateOuting
 } from "@/features/outings/api";
@@ -243,7 +244,7 @@ export function OutingEditorPage() {
     if (!data) return;
     setActionError(null);
     try {
-      await updateOuting(data.outing.id, data.outing.version, { total_mode: "auto" });
+      await setOutingTotalMode(data.outing.id, data.outing.version, "auto");
       await refresh();
       setFinalizeMessage({
         kind: "notice",
