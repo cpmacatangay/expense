@@ -1,7 +1,6 @@
 -- Nickname matching by email, then by a tolerant name match.
--- Email is authoritative; names match when the seeded first name and surname both appear
--- anywhere in the candidate name (handles "[redacted-name]hannah", "[redacted-name], Hannah Mae",
--- "Kent M. [redacted-name]", and similar).
+-- Email is authoritative; names match when the seeded first name and surname both
+-- appear anywhere in the candidate name.
 alter table public.homepage_nicknames drop column if exists match_email;
 
 create table if not exists public.homepage_nickname_emails (
