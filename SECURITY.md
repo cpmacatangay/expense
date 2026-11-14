@@ -19,6 +19,11 @@ The `invite-adult` function requires `SUPABASE_SERVICE_ROLE_KEY` in its environm
 keep self-service sign-up disabled; configuring `supabase/config.toml` alone does not change a
 deployed project.
 
+Adults invited before this flow have no auth user, so enabling `enable_signup = false` makes their
+codes unclaimable. Remove those pending adults and re-invite them through the app, which provisions
+their account. Re-inviting an adult created by `invite-adult` is safe because the account already
+exists.
+
 ## Money and membership
 
 - Members may update only `date`, `place`, `notes`, and `payer_adult_id` on an outing. `status`,
@@ -43,6 +48,8 @@ deployed project.
 ## Deployment checklist
 
 1. Apply migrations through `0030_bind_invite_claim_email.sql`.
+   If the hosted project predates the numbered migration history, reconcile it first with
+   `supabase migration repair`; pushing numbered migrations onto an already-migrated database fails.
 2. Disable self-service sign-up in the hosted Auth settings and deploy the `invite-adult` function with
    `SUPABASE_SERVICE_ROLE_KEY`.
 3. Keep the hosted redirect allowlist to Salo-controlled HTTPS origins. Remove cleartext loopback
