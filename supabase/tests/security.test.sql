@@ -1,6 +1,6 @@
 begin;
 
-select plan(16);
+select plan(14);
 
 -- Deterministic dummy principals.
 \set owner '00000000-0000-0000-0000-000000000001'
@@ -53,18 +53,6 @@ select is(
   (select count(*)::int from public.homepage_nickname_emails),
   0,
   'seeded personal emails are removed'
-);
-select throws_ok(
-  $$select public.before_user_created_hook('{"user":{"email":"new@example.test","app_metadata":{"provider":"email"}}}'::jsonb)$$,
-  'P0001',
-  'Password sign-up is disabled. Use Google or an email code.',
-  'password sign-up is rejected'
-);
-select throws_ok(
-  $$select public.before_user_created_hook('{"user":{"email":"uninvited@example.test","raw_user_meta_data":{"salo_signup":"otp"}}}'::jsonb)$$,
-  'P0001',
-  'Salo is invite-only. Ask a group owner for an invitation.',
-  'uninvited account creation is rejected'
 );
 
 -- Author creates a private draft and one item.

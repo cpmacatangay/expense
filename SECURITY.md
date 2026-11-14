@@ -7,16 +7,17 @@ column privileges, SECURITY DEFINER RPCs, the private `payment-qr` bucket, and t
 
 ## Account lifecycle
 
-- New accounts must use an invited email. The `before_user_created` auth hook rejects uninvited
-  sign-ups and every email/password sign-up. Existing users can still use Google or email OTP.
-- The first account is allowed so a fresh deployment can create its first group owner.
-- Email OTP requests carry `salo_signup: "otp"` metadata; Google sign-ups are matched by invited email.
+- Client sign-up is disabled (`enable_signup = false`). New accounts are provisioned by the owner-only
+  `invite-adult` Edge Function, which creates the auth user with the service role and then calls
+  `create_invitation` as the owner.
+- Existing users can sign in with Google or email OTP. The first owner is provisioned by the operator
+  in Supabase Auth before the group is created.
 - Invitations are bound to `invitee_email`, use an eight-character code, expire after seven days, and
   are throttled after repeated failed claims.
 
-The hook is configured in `supabase/config.toml` as
-`pg-functions://postgres/public/before_user_created_hook`. A hosted project must enable the same
-Postgres hook in its Auth settings; configuring the file alone does not change a deployed project.
+The `invite-adult` function requires `SUPABASE_SERVICE_ROLE_KEY` in its environment. Hosted Auth must
+keep self-service sign-up disabled; configuring `supabase/config.toml` alone does not change a
+deployed project.
 
 ## Money and membership
 
@@ -41,8 +42,9 @@ Postgres hook in its Auth settings; configuring the file alone does not change a
 
 ## Deployment checklist
 
-1. Apply migrations through `0024_auth_hook.sql`.
-2. Enable the `before_user_created` Postgres hook in the hosted Auth settings.
+1. Apply migrations through `0026_reset_untrusted_outing_totals.sql`.
+2. Disable self-service sign-up in the hosted Auth settings and deploy the `invite-adult` function with
+   `SUPABASE_SERVICE_ROLE_KEY`.
 3. Keep the hosted redirect allowlist to Salo-controlled HTTPS origins. Remove cleartext loopback
    origins from the production project; keep them only in local development.
 4. Confirm the `payment-qr` bucket is private with the 2 MB / PNG-JPEG policy.

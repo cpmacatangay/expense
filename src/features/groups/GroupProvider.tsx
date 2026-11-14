@@ -151,11 +151,10 @@ export function GroupProvider({ children }: { children: ReactNode }) {
   const inviteAdult = useCallback(
     async (name: string, email: string) => {
       const client = requireSupabase();
-      const { data, error: rpcError } = await client.rpc("create_invitation", {
-        adult_display_name: name,
-        invitee_email: email
+      const { data, error } = await client.functions.invoke("invite-adult", {
+        body: { name, email }
       });
-      if (rpcError) throw rpcError;
+      if (error) throw error;
       await load();
       return data as Invitation;
     },
