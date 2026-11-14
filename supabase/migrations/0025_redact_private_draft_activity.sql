@@ -14,9 +14,11 @@ or (
   ae.entity_type = 'item'
   and exists (
     select 1
-    from public.items i
-    join public.outings o on o.id = i.outing_id
-    where i.id = ae.entity_id
+    from public.outings o
+    where o.id = coalesce(
+      (ae.after_json ->> 'outingId')::uuid,
+      (ae.before_json ->> 'outingId')::uuid
+    )
       and o.status = 'private_draft'
   )
 )

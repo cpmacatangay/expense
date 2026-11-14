@@ -7,5 +7,11 @@ update public.outings
 set total_mode = 'auto',
     total_centavos = 0,
     version = version + 1
-where status in ('draft', 'private_draft')
-  and total_mode <> 'auto';
+where (
+  status in ('draft', 'private_draft')
+  and total_mode <> 'auto'
+)
+or (
+  status = 'reopened'
+  and total_mode = 'manual'
+);

@@ -7,9 +7,9 @@ column privileges, SECURITY DEFINER RPCs, the private `payment-qr` bucket, and t
 
 ## Account lifecycle
 
-- Client sign-up is disabled (`enable_signup = false`). New accounts are provisioned by the owner-only
-  `invite-adult` Edge Function, which creates the auth user with the service role and then calls
-  `create_invitation` as the owner.
+- Client sign-up is disabled (`enable_signup = false`), and the app's OTP request uses
+  `shouldCreateUser: false`. New accounts are provisioned by the owner-only `invite-adult` Edge Function,
+  which creates the auth user with the service role and then calls `create_invitation` as the owner.
 - Existing users can sign in with Google or email OTP. The first owner is provisioned by the operator
   in Supabase Auth before the group is created.
 - Invitations are bound to `invitee_email`, use an eight-character code, expire after seven days, and
@@ -42,7 +42,7 @@ deployed project.
 
 ## Deployment checklist
 
-1. Apply migrations through `0026_reset_untrusted_outing_totals.sql`.
+1. Apply migrations through `0028_restrict_draft_total_mode.sql`.
 2. Disable self-service sign-up in the hosted Auth settings and deploy the `invite-adult` function with
    `SUPABASE_SERVICE_ROLE_KEY`.
 3. Keep the hosted redirect allowlist to Salo-controlled HTTPS origins. Remove cleartext loopback
