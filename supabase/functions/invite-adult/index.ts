@@ -69,13 +69,16 @@ Deno.serve(async (request) => {
     if (groupError) return json({ error: groupError.message }, 400);
     if (!group) return json({ error: "Only the group owner can invite adults" }, 403);
 
-    const { error: createError } = await service.auth.admin.createUser({
+    const { data: created, error: createError } = await service.auth.admin.createUser({
       email,
       email_confirm: true,
       user_metadata: { salo_invite: true }
     });
 
-    if (createError && !/already|registered|exists/i.test(createError.message)) {
+    const createdUserId: string | null = created?.user?.id ?? null;
+    const alreadyExists = Boolean(createError && /already|registered|exists/i.test(createError.message));
+
+    if (createError && !alreadyExists) {
       return json({ error: createError.message }, 400);
     }
 
@@ -84,7 +87,12 @@ Deno.serve(async (request) => {
       invitee_email: email
     });
 
-    if (inviteError) return json({ error: inviteError.message }, 400);
+    if (inviteError) {
+      if (createdUserId) {
+        await service.auth.admin.deleteUser(createdUserId);
+      }
+      return json({ error: inviteError.message }, 400);
+    }
 
     return json(invitation);
   } catch (error) {

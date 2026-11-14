@@ -1,17 +1,10 @@
--- Before 0018, members could write total_mode/total_centavos. A non-auto total
--- on a draft/private draft has no legitimate owner path, so reset it to the item
--- sum before the hardened finalize path can trust it. Reopened outings retain
--- their owner-managed fixed total.
+-- Before 0018, members could write total_mode/total_centavos on draft, private,
+-- and reopened outings. Reset every non-auto total before finalization; an owner
+-- can re-establish an exceptional total after reopen through the owner-only RPC.
 
 update public.outings
 set total_mode = 'auto',
     total_centavos = 0,
     version = version + 1
-where (
-  status in ('draft', 'private_draft')
-  and total_mode <> 'auto'
-)
-or (
-  status = 'reopened'
-  and total_mode = 'manual'
-);
+where status in ('draft', 'private_draft', 'reopened')
+  and total_mode <> 'auto';

@@ -1,6 +1,6 @@
 begin;
 
-select plan(14);
+select plan(20);
 
 -- Deterministic dummy principals.
 \set owner '00000000-0000-0000-0000-000000000001'
@@ -49,6 +49,26 @@ select ok(
   has_column_privilege('authenticated', 'public.outings', 'date', 'UPDATE'),
   'members can update presentation columns'
 );
+select ok(
+  not has_column_privilege('authenticated', 'public.outings', 'total_mode', 'UPDATE'),
+  'members cannot update total_mode'
+);
+select ok(
+  not has_column_privilege('authenticated', 'public.outings', 'status', 'UPDATE'),
+  'members cannot update status'
+);
+select ok(
+  not has_column_privilege('authenticated', 'public.outings', 'group_id', 'UPDATE'),
+  'members cannot update group_id'
+);
+select ok(
+  not has_column_privilege('authenticated', 'public.outings', 'author_profile_id', 'UPDATE'),
+  'members cannot update author_profile_id'
+);
+select ok(
+  not has_column_privilege('authenticated', 'public.outings', 'version', 'UPDATE'),
+  'members cannot update version'
+);
 select is(
   (select count(*)::int from public.homepage_nickname_emails),
   0,
@@ -75,6 +95,11 @@ select is(
   (select count(*)::int from public.activity_events where entity_id = :'private_outing_id'),
   0,
   'private draft activity is not exposed to members'
+);
+select is(
+  (select count(*)::int from public.activity_events where after_json ->> 'outingId' = :'private_outing_id'),
+  0,
+  'private draft item activity is not exposed to members'
 );
 
 -- Member creates a shared draft; total_centavos is column-protected.
