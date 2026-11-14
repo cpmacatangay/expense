@@ -42,7 +42,7 @@ deployed project.
 
 ## Deployment checklist
 
-1. Apply migrations through `0028_restrict_draft_total_mode.sql`.
+1. Apply migrations through `0030_bind_invite_claim_email.sql`.
 2. Disable self-service sign-up in the hosted Auth settings and deploy the `invite-adult` function with
    `SUPABASE_SERVICE_ROLE_KEY`.
 3. Keep the hosted redirect allowlist to Salo-controlled HTTPS origins. Remove cleartext loopback

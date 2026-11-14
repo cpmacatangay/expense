@@ -1,6 +1,6 @@
 begin;
 
-select plan(20);
+select plan(21);
 
 -- Deterministic dummy principals.
 \set owner '00000000-0000-0000-0000-000000000001'
@@ -40,6 +40,16 @@ where group_id = :'group_id' and profile_id = :'member' \gset
 select id as recipient_adult_id
 from public.group_adults
 where group_id = :'group_id' and profile_id = :'recipient' \gset
+
+set local role authenticated;
+select set_config('request.jwt.claims', json_build_object('sub', :'owner', 'role', 'authenticated')::text, true);
+select throws_ok(
+  format('update public.group_adults set display_name = %L where id = %L', 'Hijacked', :'author_adult_id'),
+  'P0001',
+  'Use the group management actions to change an adult',
+  'direct group_adult updates are blocked'
+);
+reset role;
 
 select ok(
   not has_column_privilege('authenticated', 'public.outings', 'total_centavos', 'UPDATE'),
