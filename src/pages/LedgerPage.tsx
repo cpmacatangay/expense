@@ -419,7 +419,7 @@ export function LedgerPage() {
                     <button
                       className="icon-action"
                       type="button"
-                      aria-label={`Record a payment from ${nameOf(
+                      aria-label={`Record payment from ${nameOf(
                         transfer.fromAdultId
                       )} to ${nameOf(transfer.toAdultId)}`}
                       title="Record payment"
@@ -574,7 +574,7 @@ export function LedgerPage() {
         </button>
       </section>
 
-      <Sheet open={showForm} onClose={closeRecord} title="Record a payment">
+      <Sheet open={showForm} onClose={closeRecord} title="Record payment">
         <form className="auth-form" onSubmit={(event) => void handleRecord(event)}>
           <p className="panel-copy">
             The recipient confirms before anything changes. Partial payments are fine.

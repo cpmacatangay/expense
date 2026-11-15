@@ -159,6 +159,7 @@ export function FirstRunPanel() {
                   type="button"
                   onClick={() => void handleRestore(inactive.id)}
                   disabled={restoreBusyId === inactive.id}
+                  aria-label={`Restore ${inactive.name}`}
                 >
                   <Icon name="restore" />
                   {restoreBusyId === inactive.id ? "Restoring…" : "Restore"}

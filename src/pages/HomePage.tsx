@@ -26,7 +26,12 @@ export function HomePage() {
 
   usePageTitle("Home");
 
-  const { data: outings, isLoading } = useQuery({
+  const {
+    data: outings,
+    isLoading,
+    error: outingsError,
+    refetch: refetchOutings
+  } = useQuery({
     queryKey: ["outings", group?.id],
     queryFn: () => listOutings(group?.id as string),
     enabled: Boolean(group?.id)
@@ -34,7 +39,13 @@ export function HomePage() {
 
   const greeting = greetingName(profile, user?.email);
   const activeAdults = adults.filter((adult) => adult.status === "active");
-  const { data: ledgerData, ledger, isLoading: ledgerLoading } = useLedgerView(group?.id, adults);
+  const {
+    data: ledgerData,
+    ledger,
+    isLoading: ledgerLoading,
+    error: ledgerError,
+    refetch: refetchLedger
+  } = useLedgerView(group?.id, adults);
   const myAdult = activeAdults.find((adult) => adult.profile_id === profile?.id) ?? null;
   const myNet = myAdult && ledger ? (ledger.netByAdult[myAdult.id] ?? 0) : 0;
   const pendingIncoming =
@@ -101,22 +112,26 @@ export function HomePage() {
     }
   }
 
-  const balanceWord = ledgerLoading
-    ? "Your balance"
-    : myNet < 0
-      ? "You owe"
-      : myNet > 0
-        ? "You are owed"
-        : "Your balance";
-  const balanceCopy = ledgerLoading
-    ? "Loading the ledger…"
-    : myNet < 0
-      ? `Settle ${formatPeso(Math.abs(myNet))} with the table when you are ready.`
-      : myNet > 0
-        ? "Waiting for the table to settle."
-        : hasFinalizedOuting
-          ? "All square."
-          : "No finalized expenses yet.";
+  const balanceWord = ledgerError
+    ? "Balance unavailable"
+    : ledgerLoading
+      ? "Your balance"
+      : myNet < 0
+        ? "You owe"
+        : myNet > 0
+          ? "You are owed"
+          : "Your balance";
+  const balanceCopy = ledgerError
+    ? "Try again when you are connected."
+    : ledgerLoading
+      ? "Loading the ledger…"
+      : myNet < 0
+        ? `Settle ${formatPeso(Math.abs(myNet))} with the table when you are ready.`
+        : myNet > 0
+          ? "Waiting for the table to settle."
+          : hasFinalizedOuting
+            ? "All square."
+            : "No finalized expenses yet.";
 
   return (
     <div className="page">
@@ -131,6 +146,28 @@ export function HomePage() {
         </p>
       ) : null}
 
+      {outingsError || ledgerError ? (
+        <div className="error-row">
+          <p className="form-error" role="alert">
+            {getErrorMessage(
+              outingsError ?? ledgerError,
+              "Could not load this table. Try again."
+            )}
+          </p>
+          <button
+            className="text-action"
+            type="button"
+            onClick={() => {
+              if (outingsError) void refetchOutings();
+              if (ledgerError) void refetchLedger();
+            }}
+          >
+            <Icon name="restore" />
+            Try again
+          </button>
+        </div>
+      ) : null}
+
       <div className="home-grid">
         <div className="home-lead">
           <section
@@ -138,7 +175,9 @@ export function HomePage() {
             aria-label="Your balance"
           >
             <span className="ticket-label">{balanceWord}</span>
-            <div className="ticket-figure">{ledgerLoading ? "—" : formatPeso(Math.abs(myNet))}</div>
+            <div className="ticket-figure">
+              {ledgerLoading || ledgerError ? "—" : formatPeso(Math.abs(myNet))}
+            </div>
             <p className="ticket-copy">{balanceCopy}</p>
             {pendingIncoming > 0 ? (
               <p className="ticket-copy">
@@ -184,7 +223,7 @@ export function HomePage() {
             </Link>
           </div>
           {isLoading ? <p className="panel-copy">Loading expenses…</p> : null}
-          {!isLoading && outings?.length === 0 ? (
+          {!isLoading && !outingsError && outings?.length === 0 ? (
             <p className="panel-copy">No expenses yet. Start the first one.</p>
           ) : null}
           <ul className="outing-list" role="list">

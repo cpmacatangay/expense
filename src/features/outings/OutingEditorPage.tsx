@@ -369,6 +369,9 @@ export function OutingEditorPage() {
     presentAdultIds.includes(payerAdultId) &&
     presentAdultIds.length >= 2 &&
     finalizeState !== "saving";
+  const totalCentavos =
+    preview?.totalCentavos ??
+    (data.outing.total_mode === "auto" ? null : data.outing.total_centavos);
 
   return (
     <div className="page page--editor">
@@ -386,7 +389,7 @@ export function OutingEditorPage() {
         {isOwner && data.outing.status === "finalized" ? (
           <button className="text-action" type="button" onClick={() => setShowReopen(true)}>
             <Icon name="restore" />
-            Reopen this expense
+            Reopen expense
           </button>
         ) : null}
       </div>
@@ -837,7 +840,9 @@ export function OutingEditorPage() {
               ? "Fixed total"
               : "Total"}
           </div>
-          <div className="total-amount">{preview ? formatPeso(preview.totalCentavos) : "—"}</div>
+          <div className="total-amount">
+            {totalCentavos === null ? "—" : formatPeso(totalCentavos)}
+          </div>
         </div>
         {data.outing.status === "finalized" ? (
           <span className="stamp">Finalized</span>

@@ -32,7 +32,7 @@ import { usePageTitle } from "@/lib/usePageTitle";
 import type { Invitation } from "./types";
 
 export function SettingsPage() {
-  const { profile, group, groups, adults, students, inviteAdult, createStudent, refresh } =
+  const { profile, group, groups, adults, students, inviteAdult, createStudent, refresh, selectGroup } =
     useGroup();
   const { signOut } = useAuth();
   const [switcherOpen, setSwitcherOpen] = useState(false);
@@ -451,10 +451,34 @@ export function SettingsPage() {
           {groups.length} {groups.length === 1 ? "table" : "tables"}. Switch tables or start a new
           one.
         </p>
+        <ul className="ledger-rows" role="list">
+          {groups.map((entry) => (
+            <li className="ledger-row" key={entry.id}>
+              <span className="row-main">
+                <span className="row-title">{entry.name}</span>
+                <span className="row-sub">
+                  {entry.id === group?.id ? "Current table" : "Switch to this table"}
+                </span>
+              </span>
+              {entry.id === group?.id ? (
+                <span className="status-chip status-chip--confirmed">Current</span>
+              ) : (
+                <button
+                  className="text-action"
+                  type="button"
+                  onClick={() => void selectGroup(entry.id)}
+                  aria-label={`Switch to ${entry.name}`}
+                >
+                  Switch
+                </button>
+              )}
+            </li>
+          ))}
+        </ul>
         <div className="export-actions">
           <button className="secondary-action" type="button" onClick={() => setSwitcherOpen(true)}>
             <Icon name="users" />
-            Switch or add a table
+            New or join a table
           </button>
         </div>
       </section>
@@ -533,6 +557,7 @@ export function SettingsPage() {
                             type="button"
                             onClick={() => void handleRemoveAdult(adult.id)}
                             disabled={memberBusyId === adult.id}
+                            aria-label={`Remove ${adult.display_name}`}
                           >
                             <Icon name="trash" />
                             {memberBusyId === adult.id ? "Removing…" : "Remove"}
@@ -551,6 +576,7 @@ export function SettingsPage() {
                           className="text-action is-danger"
                           type="button"
                           onClick={() => setConfirmRemoveId(adult.id)}
+                          aria-label={`Remove ${adult.display_name}`}
                         >
                           <Icon name="trash" />
                           Remove
@@ -747,6 +773,7 @@ export function SettingsPage() {
                             setStudentEditName(student.name);
                             setRosterNotice(null);
                           }}
+                          aria-label={`Rename ${student.name}`}
                         >
                           <Icon name="pencil" />
                           Rename
@@ -755,6 +782,9 @@ export function SettingsPage() {
                           className="text-action"
                           type="button"
                           disabled={rosterBusyId === student.id}
+                          aria-label={`${
+                            student.status === "active" ? "Archive" : "Reactivate"
+                          } ${student.name}`}
                           onClick={() =>
                             void handleStudentStatus(
                               student.id,
@@ -1145,6 +1175,7 @@ export function SettingsPage() {
                       type="button"
                       onClick={() => void handleRestoreGroup(inactive.id)}
                       disabled={restoreBusyId === inactive.id}
+                      aria-label={`Restore ${inactive.name}`}
                     >
                       <Icon name="restore" />
                       {restoreBusyId === inactive.id ? "Restoring…" : "Restore"}
