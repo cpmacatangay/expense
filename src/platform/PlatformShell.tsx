@@ -1,5 +1,6 @@
 import { Suspense, useState } from "react";
 import { NavLink, Outlet, useLocation } from "react-router-dom";
+import { RouteErrorBoundary } from "@/app/RouteErrorBoundary";
 import { GroupSwitcher } from "@/features/groups/GroupSwitcher";
 import { useGroup } from "@/features/groups/groupContext";
 import { useOnlineStatus } from "@/features/realtime/useOnlineStatus";
@@ -81,15 +82,17 @@ export function PlatformShell() {
       </nav>
 
       <main className="app-main" id="main-content" tabIndex={-1}>
-        <Suspense
-          fallback={
-            <p className="panel-copy">
-              Loading the table…
-            </p>
-          }
-        >
-          <Outlet />
-        </Suspense>
+        <RouteErrorBoundary key={location.pathname}>
+          <Suspense
+            fallback={
+              <p className="panel-copy">
+                Loading the table…
+              </p>
+            }
+          >
+            <Outlet />
+          </Suspense>
+        </RouteErrorBoundary>
       </main>
 
       <GroupSwitcher open={switcherOpen} onClose={() => setSwitcherOpen(false)} />

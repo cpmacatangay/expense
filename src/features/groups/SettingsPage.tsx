@@ -23,7 +23,7 @@ import { listAllStudents, renameStudent, setStudentStatus } from "@/features/stu
 import { downloadBlob } from "@/lib/download";
 import { FileField } from "@/ui/primitives/FileField";
 import { Icon } from "@/ui/primitives/Icon";
-import { InstallHint } from "@/ui/primitives/InstallHint";
+import { InstallSection } from "@/features/pwa/InstallSection";
 import { useGroup } from "./groupContext";
 import { GroupSwitcher } from "./GroupSwitcher";
 import { getErrorMessage } from "@/lib/errors";
@@ -32,7 +32,7 @@ import { usePageTitle } from "@/lib/usePageTitle";
 import type { Invitation } from "./types";
 
 export function SettingsPage() {
-  const { profile, group, groups, adults, students, inviteAdult, createStudent, refresh } =
+  const { profile, group, groups, adults, students, inviteAdult, createStudent, refresh, selectGroup } =
     useGroup();
   const { signOut } = useAuth();
   const [switcherOpen, setSwitcherOpen] = useState(false);
@@ -451,13 +451,39 @@ export function SettingsPage() {
           {groups.length} {groups.length === 1 ? "table" : "tables"}. Switch tables or start a new
           one.
         </p>
+        <ul className="ledger-rows" role="list">
+          {groups.map((entry) => (
+            <li className="ledger-row" key={entry.id}>
+              <span className="row-main">
+                <span className="row-title">{entry.name}</span>
+                <span className="row-sub">
+                  {entry.id === group?.id ? "Current table" : "Switch to this table"}
+                </span>
+              </span>
+              {entry.id === group?.id ? (
+                <span className="status-chip status-chip--confirmed">Current</span>
+              ) : (
+                <button
+                  className="text-action"
+                  type="button"
+                  onClick={() => void selectGroup(entry.id)}
+                  aria-label={`Switch to ${entry.name}`}
+                >
+                  Switch
+                </button>
+              )}
+            </li>
+          ))}
+        </ul>
         <div className="export-actions">
           <button className="secondary-action" type="button" onClick={() => setSwitcherOpen(true)}>
             <Icon name="users" />
-            Switch or add a table
+            New or join a table
           </button>
         </div>
       </section>
+
+      <InstallSection />
 
       {isOwner ? (
         <section className="panel">
@@ -533,6 +559,7 @@ export function SettingsPage() {
                             type="button"
                             onClick={() => void handleRemoveAdult(adult.id)}
                             disabled={memberBusyId === adult.id}
+                            aria-label={`Remove ${adult.display_name}`}
                           >
                             <Icon name="trash" />
                             {memberBusyId === adult.id ? "Removing…" : "Remove"}
@@ -551,6 +578,7 @@ export function SettingsPage() {
                           className="text-action is-danger"
                           type="button"
                           onClick={() => setConfirmRemoveId(adult.id)}
+                          aria-label={`Remove ${adult.display_name}`}
                         >
                           <Icon name="trash" />
                           Remove
@@ -747,6 +775,7 @@ export function SettingsPage() {
                             setStudentEditName(student.name);
                             setRosterNotice(null);
                           }}
+                          aria-label={`Rename ${student.name}`}
                         >
                           <Icon name="pencil" />
                           Rename
@@ -755,6 +784,9 @@ export function SettingsPage() {
                           className="text-action"
                           type="button"
                           disabled={rosterBusyId === student.id}
+                          aria-label={`${
+                            student.status === "active" ? "Archive" : "Reactivate"
+                          } ${student.name}`}
                           onClick={() =>
                             void handleStudentStatus(
                               student.id,
@@ -859,7 +891,7 @@ export function SettingsPage() {
                   </select>
                 </label>
                 {transferConfirm ? (
-                  <div className="export-actions">
+                  <div className="form-actions">
                     <button
                       className="secondary-action"
                       type="button"
@@ -1056,7 +1088,7 @@ export function SettingsPage() {
               <p className="panel-copy">
                 Archive {group?.name}? Members lose access until you restore it.
               </p>
-              <div className="export-actions">
+              <div className="form-actions">
                 <button
                   className="secondary-action"
                   type="button"
@@ -1081,7 +1113,7 @@ export function SettingsPage() {
               <p className="panel-copy">
                 Delete {group?.name}? It hides for everyone and can be restored for 30 days.
               </p>
-              <div className="export-actions">
+              <div className="form-actions">
                 <button
                   className="secondary-action"
                   type="button"
@@ -1145,6 +1177,7 @@ export function SettingsPage() {
                       type="button"
                       onClick={() => void handleRestoreGroup(inactive.id)}
                       disabled={restoreBusyId === inactive.id}
+                      aria-label={`Restore ${inactive.name}`}
                     >
                       <Icon name="restore" />
                       {restoreBusyId === inactive.id ? "Restoring…" : "Restore"}
@@ -1156,8 +1189,6 @@ export function SettingsPage() {
           ) : null}
         </details>
       ) : null}
-
-      <InstallHint />
 
       <section className="panel panel--account">
         <h2 className="panel-title">{profile?.display_name}</h2>

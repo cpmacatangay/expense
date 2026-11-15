@@ -25,7 +25,7 @@ export function ExpensesPage() {
 
   usePageTitle("All expenses");
 
-  const { data, isLoading, error } = useQuery({
+  const { data, isLoading, error, refetch } = useQuery({
     queryKey: ["history", group?.id],
     queryFn: () => loadHistory(group?.id as string),
     enabled: Boolean(group?.id)
@@ -149,9 +149,15 @@ export function ExpensesPage() {
         {isLoading ? <p className="panel-copy">Loading expenses…</p> : null}
 
         {error ? (
-          <p className="form-error" role="alert">
-            {getErrorMessage(error, "Could not load expenses")}
-          </p>
+          <div className="error-row">
+            <p className="form-error" role="alert">
+              {getErrorMessage(error, "Could not load expenses")}
+            </p>
+            <button className="text-action" type="button" onClick={() => void refetch()}>
+              <Icon name="restore" />
+              Try again
+            </button>
+          </div>
         ) : null}
 
         {!isLoading && entries.length === 0 ? (

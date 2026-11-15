@@ -19,6 +19,7 @@
 
   /* Actions */
   --primary: #171512;
+  --primary-hover: #2b2823;
   --on-primary: #fcfaf4;
 
   /* Status */
@@ -121,6 +122,7 @@
     --accent-soft: #1b3326;
 
     --primary: #efeeea;
+    --primary-hover: #fbfaf6;
     --on-primary: #171512;
 
     --positive: #8fd6b4;

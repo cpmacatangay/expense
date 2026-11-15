@@ -8,6 +8,10 @@ export const supabase = isSupabaseConfigured
         autoRefreshToken: true,
         detectSessionInUrl: true,
         flowType: "pkce"
+      },
+      db: {
+        retry: false,
+        timeout: 10000
       }
     })
   : null;
