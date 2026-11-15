@@ -452,6 +452,35 @@ summary:focus-visible,
   margin: 0 auto;
 }
 
+.ledger-grid {
+  display: flex;
+  flex-direction: column;
+  gap: var(--section-gap);
+}
+
+.page--settings .form-actions {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+  justify-items: stretch;
+}
+
+.page--settings .form-actions > .primary-action,
+.page--settings .form-actions > .secondary-action,
+.page--settings .form-actions > .text-action {
+  width: 100%;
+  justify-self: stretch;
+}
+
+.page--settings .export-actions > .text-action {
+  width: 100%;
+  justify-self: stretch;
+}
+
+.page--settings .panel--account > .text-action {
+  width: 100%;
+}
+
 .section-head {
   display: flex;
   align-items: baseline;
@@ -1310,7 +1339,7 @@ summary:focus-visible,
 .home-grid {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: var(--section-gap);
 }
 
 .home-lead .primary-action {

@@ -73,6 +73,7 @@ of Material or iOS; it is one Salo language that adapts in width, not in persona
 
 Rules:
 - The accent is data, not chrome. It never fills a button, a nav row, or a heading.
+- The shipped app is **light only**: it sets `color-scheme: light` and does not follow the device dark preference. Dark tokens remain behind `data-theme="dark"` for a future switch.
 - Status pills are pale surface + dark ink of the same family; no saturated fill with white text.
 - The identity circles keep their pale adult colour from the database, with a constant dark ink in
   both themes.
@@ -226,7 +227,8 @@ as a detection flag.
 - **Onboarding:** paper ground, the S mark, a 28px title, one sentence, one primary. Shown inline on
   Home when the user has no table.
 - **Splash:** stone ground with the ink S and "Loading Salo…" in muted; the same splash is inlined in
-  `index.html` so the first paint matches the app in light and dark mode before React mounts.
+  `index.html` so the first paint matches the app before React mounts. The installed app icon is a
+  black tile with a white S.
 
 ## 7. States
 

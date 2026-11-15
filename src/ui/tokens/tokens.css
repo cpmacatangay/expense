@@ -1,5 +1,5 @@
 :root {
-  color-scheme: light dark;
+  color-scheme: light;
 
   /* Ground, ink, surfaces */
   --ground: #f2f1ed;
@@ -105,8 +105,7 @@
   }
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
+:root[data-theme="dark"] {
     --ground: #12100d;
     --surface: #191713;
     --raised: #211f1a;
@@ -140,7 +139,6 @@
     --grid: #332d24;
     --qr-ink: #5d554a;
     --scrim: rgba(0, 0, 0, 0.62);
-  }
 }
 
 @media (pointer: coarse) {
