@@ -23,7 +23,7 @@ import { listAllStudents, renameStudent, setStudentStatus } from "@/features/stu
 import { downloadBlob } from "@/lib/download";
 import { FileField } from "@/ui/primitives/FileField";
 import { Icon } from "@/ui/primitives/Icon";
-import { InstallHint } from "@/ui/primitives/InstallHint";
+import { InstallSection } from "@/features/pwa/InstallSection";
 import { useGroup } from "./groupContext";
 import { GroupSwitcher } from "./GroupSwitcher";
 import { getErrorMessage } from "@/lib/errors";
@@ -483,6 +483,8 @@ export function SettingsPage() {
         </div>
       </section>
 
+      <InstallSection />
+
       {isOwner ? (
         <section className="panel">
           <h2 className="panel-title">Members</h2>
@@ -889,7 +891,7 @@ export function SettingsPage() {
                   </select>
                 </label>
                 {transferConfirm ? (
-                  <div className="export-actions">
+                  <div className="form-actions">
                     <button
                       className="secondary-action"
                       type="button"
@@ -1086,7 +1088,7 @@ export function SettingsPage() {
               <p className="panel-copy">
                 Archive {group?.name}? Members lose access until you restore it.
               </p>
-              <div className="export-actions">
+              <div className="form-actions">
                 <button
                   className="secondary-action"
                   type="button"
@@ -1111,7 +1113,7 @@ export function SettingsPage() {
               <p className="panel-copy">
                 Delete {group?.name}? It hides for everyone and can be restored for 30 days.
               </p>
-              <div className="export-actions">
+              <div className="form-actions">
                 <button
                   className="secondary-action"
                   type="button"
@@ -1187,8 +1189,6 @@ export function SettingsPage() {
           ) : null}
         </details>
       ) : null}
-
-      <InstallHint />
 
       <section className="panel panel--account">
         <h2 className="panel-title">{profile?.display_name}</h2>
