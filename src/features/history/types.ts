@@ -1,7 +1,10 @@
+import type { OutingStatus } from "@/features/outings/types";
+
 export type HistoryEntry = {
   id: string;
   date: string;
   place: string | null;
+  status: OutingStatus;
   totalCentavos: number;
   payerAdultId: string | null;
   presentAdultIds: string[];

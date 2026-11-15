@@ -1,10 +1,9 @@
 import { lazy } from "react";
-import { Navigate, Route, Routes } from "react-router-dom";
+import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { AuthProvider } from "@/features/auth/AuthProvider";
 import { useAuth } from "@/features/auth/authContext";
 import { SignInPage } from "@/features/auth/SignInPage";
 import { GroupProvider } from "@/features/groups/GroupProvider";
-import { GroupSetupPage } from "@/features/groups/GroupSetupPage";
 import { useGroup } from "@/features/groups/groupContext";
 import { useGroupRealtime } from "@/features/realtime/useGroupRealtime";
 import { NotFoundPage } from "@/pages/NotFoundPage";
@@ -19,11 +18,8 @@ const HomePage = lazy(() =>
 const LedgerPage = lazy(() =>
   import("@/pages/LedgerPage").then((module) => ({ default: module.LedgerPage }))
 );
-const ActivityPage = lazy(() =>
-  import("@/pages/ActivityPage").then((module) => ({ default: module.ActivityPage }))
-);
-const HistoryPage = lazy(() =>
-  import("@/pages/HistoryPage").then((module) => ({ default: module.HistoryPage }))
+const ExpensesPage = lazy(() =>
+  import("@/pages/ExpensesPage").then((module) => ({ default: module.ExpensesPage }))
 );
 const SettingsPage = lazy(() =>
   import("@/features/groups/SettingsPage").then((module) => ({ default: module.SettingsPage }))
@@ -32,9 +28,6 @@ const OutingEditorPage = lazy(() =>
   import("@/features/outings/OutingEditorPage").then((module) => ({
     default: module.OutingEditorPage
   }))
-);
-const LocalDraftPage = lazy(() =>
-  import("@/pages/LocalDraftPage").then((module) => ({ default: module.LocalDraftPage }))
 );
 
 export function App() {
@@ -59,16 +52,17 @@ function AuthGate() {
 }
 
 function GroupGate() {
-  const { loading, group, error, refresh } = useGroup();
+  const { loading, group, groups, error, refresh } = useGroup();
+  const location = useLocation();
   useGroupRealtime(group?.id, refresh);
 
   if (loading) return <SplashScreen />;
 
-  if (error && !group) {
+  if (error && groups.length === 0) {
     return (
       <main className="onboarding">
         <BrandMark className="onboarding-mark" />
-        <h1 className="page-title">Could not load this table.</h1>
+        <h1 className="page-title">Could not load your tables.</h1>
         <p className="page-sub" role="alert">
           {error}
         </p>
@@ -80,7 +74,9 @@ function GroupGate() {
     );
   }
 
-  if (!group) return <GroupSetupPage />;
+  if (groups.length === 0 && location.pathname !== "/") {
+    return <Navigate to="/" replace />;
+  }
 
   return (
     <Routes>
@@ -88,12 +84,11 @@ function GroupGate() {
       <Route element={<PlatformShell />}>
         <Route index element={<HomePage />} />
         <Route path="ledger" element={<LedgerPage />} />
-        <Route path="activity" element={<ActivityPage />} />
-        <Route path="history" element={<HistoryPage />} />
+        <Route path="expenses" element={<ExpensesPage />} />
         <Route path="settings" element={<SettingsPage />} />
         <Route path="outings/:outingId" element={<OutingEditorPage />} />
-        <Route path="drafts/:draftId" element={<LocalDraftPage />} />
       </Route>
+      <Route path="history" element={<Navigate to="/expenses" replace />} />
       <Route path="*" element={<NotFoundPage />} />
     </Routes>
   );

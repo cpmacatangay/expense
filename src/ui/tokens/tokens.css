@@ -16,7 +16,6 @@
   /* The one hue: data, and at most one control */
   --accent: #1f5c45;
   --accent-soft: #dcebe1;
-  --brand-green: #1f5c45;
 
   /* Actions */
   --primary: #171512;
@@ -120,7 +119,6 @@
 
     --accent: #8fd6b4;
     --accent-soft: #1b3326;
-    --brand-green: #1f5c45;
 
     --primary: #efeeea;
     --on-primary: #171512;

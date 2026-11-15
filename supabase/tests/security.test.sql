@@ -1,6 +1,6 @@
 begin;
 
-select plan(21);
+select plan(19);
 
 -- Deterministic dummy principals.
 \set owner '00000000-0000-0000-0000-000000000001'
@@ -85,32 +85,23 @@ select is(
   'seeded personal emails are removed'
 );
 
--- Author creates a private draft and one item.
+-- Author creates a shared draft. Private drafts are retired.
 set local role authenticated;
 select set_config('request.jwt.claims', json_build_object('sub', :'author', 'role', 'authenticated')::text, true);
 
 insert into public.outings (group_id, author_profile_id, date, place, notes, status)
-values (:'group_id', :'author', current_date, 'Private place', 'Private notes', 'private_draft')
-returning id as private_outing_id \gset
+values (:'group_id', :'author', current_date, 'Shared place', 'Shared notes', 'draft')
+returning id as authored_outing_id \gset
 
-insert into public.items (outing_id, name, quantity, unit_amount_centavos, assignment_type)
-values (:'private_outing_id', 'Secret item', 1, 500, 'shared');
-
-select version as private_version from public.outings where id = :'private_outing_id' \gset
-
+select throws_ok(
+  format('insert into public.outings (group_id, author_profile_id, date, status) values (%L, %L, current_date, %L)', :'group_id', :'author', 'private_draft'),
+  'P0001',
+  'A new outing must start as a draft',
+  'private drafts cannot be created'
+);
 reset role;
 set local role authenticated;
 select set_config('request.jwt.claims', json_build_object('sub', :'member', 'role', 'authenticated')::text, true);
-select is(
-  (select count(*)::int from public.activity_events where entity_id = :'private_outing_id'),
-  0,
-  'private draft activity is not exposed to members'
-);
-select is(
-  (select count(*)::int from public.activity_events where after_json ->> 'outingId' = :'private_outing_id'),
-  0,
-  'private draft item activity is not exposed to members'
-);
 
 -- Member creates a shared draft; total_centavos is column-protected.
 insert into public.outings (group_id, author_profile_id, date, status)
@@ -153,15 +144,9 @@ reset role;
 set local role authenticated;
 select set_config('request.jwt.claims', json_build_object('sub', :'author', 'role', 'authenticated')::text, true);
 select is(
-  (select count(*)::int from public.outings where id = :'private_outing_id'),
+  (select count(*)::int from public.outings where id = :'authored_outing_id'),
   0,
   'removed author cannot read authored outing rows'
-);
-select throws_ok(
-  format('select public.publish_private_draft(%L, %s)', :'private_outing_id', :'private_version'),
-  'P0001',
-  'Only an active member can publish this draft',
-  'removed author cannot publish a private draft'
 );
 
 -- Removed adult QR write access must be denied.

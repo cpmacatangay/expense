@@ -574,9 +574,8 @@ export function LedgerPage() {
         </button>
       </section>
 
-      {showForm ? (
-        <form className="panel auth-form" onSubmit={(event) => void handleRecord(event)}>
-          <h2 className="panel-title">Record a payment</h2>
+      <Sheet open={showForm} onClose={closeRecord} title="Record a payment">
+        <form className="auth-form" onSubmit={(event) => void handleRecord(event)}>
           <p className="panel-copy">
             The recipient confirms before anything changes. Partial payments are fine.
           </p>
@@ -691,7 +690,7 @@ export function LedgerPage() {
             </button>
           </div>
         </form>
-      ) : null}
+      </Sheet>
     </div>
   );
 }

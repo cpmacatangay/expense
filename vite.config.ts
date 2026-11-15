@@ -30,7 +30,7 @@ export default defineConfig({
         short_name: "Salo",
         description: "One shared meal ledger for the table.",
         theme_color: "#F2F1ED",
-        background_color: "#1F5C45",
+        background_color: "#F2F1ED",
         display: "standalone",
         start_url: "/",
         scope: "/",

@@ -4,10 +4,12 @@ import type { Adult, Group, Invitation, Profile, Student } from "./types";
 export type GroupContextValue = {
   profile: Profile | null;
   group: Group | null;
+  groups: Group[];
   adults: Adult[];
   students: Student[];
   loading: boolean;
   error: string | null;
+  selectGroup: (groupId: string) => Promise<void>;
   createGroup: (name: string) => Promise<void>;
   joinGroup: (code: string) => Promise<void>;
   inviteAdult: (name: string, email: string) => Promise<Invitation>;

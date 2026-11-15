@@ -27,7 +27,6 @@ export function useGroupRealtime(
       ["outing"],
       ["ledger", groupId],
       ["history", groupId],
-      ["activity", groupId],
       ["settlements", groupId]
     ];
 
@@ -77,28 +76,11 @@ export function useGroupRealtime(
         {
           event: "*",
           schema: "public",
-          table: "activity_events",
-          filter: `group_id=eq.${groupId}`
-        },
-        () =>
-          invalidate([
-            ["activity", groupId],
-            ["ledger", groupId],
-            ["settlements", groupId],
-            ["history", groupId]
-          ])
-      )
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
           table: "group_adults",
           filter: `group_id=eq.${groupId}`
         },
         () => {
           invalidate([
-            ["activity", groupId],
             ["ledger", groupId],
             ["history", groupId],
             ["open-invitations", groupId]
@@ -115,11 +97,7 @@ export function useGroupRealtime(
           filter: `group_id=eq.${groupId}`
         },
         () => {
-          invalidate([
-            ["activity", groupId],
-            ["history", groupId],
-            ["students", groupId]
-          ]);
+          invalidate([["history", groupId], ["students", groupId]]);
           void refresh();
         }
       )
@@ -133,7 +111,6 @@ export function useGroupRealtime(
         },
         () =>
           invalidate([
-            ["activity", groupId],
             ["open-invitations", groupId]
           ])
       )

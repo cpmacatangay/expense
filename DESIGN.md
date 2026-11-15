@@ -31,13 +31,13 @@ of Material or iOS; it is one Salo language that adapts in width, not in persona
 - **The style's sparse density → calm Home, dense Ledger.** Two jobs, two densities.
 - **The dealt Manrope face → Geist + Geist Mono.** The style's own face is the mono figure; it is the
   product's ledger voice. Loaded locally, no network at runtime.
-- **The single-column phone shell → a responsive top nav.** Four tabs on a phone; the same four
+- **The single-column phone shell → a responsive top nav.** Three tabs on a phone; the same three
   destinations as text links on a wide screen. No sidebar, no floating pill bar.
 
 ## 2. Principles
 
-- **One question per screen.** The balance answers Home; who owes whom answers Ledger; what changed
-  answers Activity.
+- **One question per screen.** The balance answers Home; who owes whom answers Ledger; administration
+  answers Settings.
 - **The table is the product.** People, shares, and the exact split are the content; never generic
   finance tiles.
 - **Paper, not chrome.** Surfaces are flat, separated by one line or one tone step. No gradients,
@@ -113,12 +113,13 @@ Rules:
 **One shell.** `PlatformShell` renders the same markup on both platforms; `data-platform` remains only
 as a detection flag.
 
-- **Header (60px phone / 64px wide):** the S mark in ink, "Salo" at 16/600, the group name at 12 muted,
-  and the Manila date in mono on the right. No wordmark lockup; the splash carries the wordmark.
-- **Navigation:** four destinations — Home, Ledger, Activity, Settings — as 20px outline icons and 12px
+- **Header (60px phone / 64px wide):** the S mark in ink, "Salo" at 16/600, the table name at 12
+  muted (a button that opens the table switcher), and the Manila date in mono on the right. No
+  wordmark lockup; the splash carries the mark.
+- **Navigation:** three destinations — Home, Ledger, Settings — as 20px outline icons and 12px
   labels in a bottom bar on a phone (56px + safe area). At ≥760px the same nav becomes a text row under
   the header. Active: ink label/label weight and a 2px ink rule; never a coloured pill.
-- **Detail routes** (`/outings/:id`, `/drafts/:id`) hide the nav; the page carries a back link. The
+- **Detail routes** (`/outings/:id`, `/expenses`) hide the nav; the page carries a back link. The
   editor total is a fixed bottom bar on the surface with a 1px top rule.
 - **Widths:** the app frame is 960px; every page is a 760px column centered inside it, so the header
   brand, page title, panels, and nav all share one left edge. Editors use 720px; Settings and lists use
@@ -140,7 +141,7 @@ as a detection flag.
 - One horizontal band of segments sized by each adult's exact share, 10px tall with 2px seams.
 - The viewer's segment is the only green. Everyone else is ink at one of five fixed opacities, never a
   separate hue. The legend repeats the band's tones as 7px squares with name + mono amount.
-- Used on Home (last finalized meal) and on the outing/draft "Who pays what" panel. It replaces any
+- Used on Home (last finalized meal) and on the expense "Who pays what" panel. It replaces any
   share table; it is the product's signature.
 - A flat amount is never shown twice: the legend is the only list of shares.
 
@@ -209,22 +210,23 @@ as a detection flag.
 
 ## 6. Screens
 
-- **Home (calm):** greeting h1, group + attendance subline, the ticket balance with the last meal's
-  split, New outing (primary), private draft (text action), recent outings (4 rows + View all), private
-  drafts if present, and the table roster with each person's net. One column, 24px rhythm.
+- **Home (calm):** greeting h1, attendance subline, the ticket balance with the last meal's split,
+  New expense (primary), and recent expenses (4 rows + View all). Tables switch from the header. One
+  column, 24px rhythm.
 - **Ledger (dense):** a compact balance strip, then Balances, Who owes whom, Confirm payments, Payment
-  history. 44px rows, one-line sublines, one action per row.
-- **Activity:** filter chips (44px), the activity log with actor, relative time, tag, and a "Before and
-  after" disclosure. No tabs that pretend to be tabs.
-- **Settings:** a 760px column of titled panels in task order: group, members, invite, students,
-  ownership, payment QR, export, lifecycle, install, account. No eyebrow labels; every panel is named.
-- **Outing editor / draft:** back link, place and date, attendance toggles, a receipt of items with mono
+  history. 44px rows, one-line sublines, one action per row. Recording a payment opens a sheet.
+- **Settings:** a 760px column of titled panels in task order: table, tables, members, invite,
+  students, payment QR, export, install, account, with ownership and archive/delete under collapsed
+  Advanced sections. No eyebrow labels; every panel is named.
+- **Expense editor:** back link, place and date, attendance toggles, a receipt of items with mono
   amounts and a delete action, the table split, and a fixed total bar with the stamp or Finalize. Item
   deletion asks once inline before removing the line; Cancel is hidden while the bill is empty.
-- **History:** back link, date/adult/student filters, a count title, and outing rows.
-- **Onboarding:** paper ground, the S mark, a 28px title, one sentence, one primary. No shell.
-- **Splash:** Ledger Green with the white S and "Loading Salo…"; the same splash is inlined in
-  `index.html` so the first paint is green before React mounts.
+- **All expenses:** back link, a count title, a collapsed Filter control (date/adult/student), and
+  expense rows. No bottom tab.
+- **Onboarding:** paper ground, the S mark, a 28px title, one sentence, one primary. Shown inline on
+  Home when the user has no table.
+- **Splash:** stone ground with the ink S and "Loading Salo…" in muted; the same splash is inlined in
+  `index.html` so the first paint matches the app in light and dark mode before React mounts.
 
 ## 7. States
 
@@ -236,14 +238,15 @@ as a detection flag.
   throws, a paper error surface offers Reload Salo; a group-load failure offers Try again instead of
   inviting a duplicate group.
 - **Success:** role="status"; brief, no toast layer.
-- **Offline:** a 13px warning strip under the header; shared writes disabled with the reason.
+- **Offline:** a 13px warning strip under the header; shared writes are disabled and no stale data is
+  shown.
 - Missing value: a muted dash. A real zero prints as `₱0.00`.
-- Private drafts are filtered by their author; signing out clears the React Query cache.
+- Signing out clears the React Query cache and the selected table.
 
 ## 8. Motion and accessibility
 
 - Motion is feedback, not entrance choreography: press scale 0.99 on buttons, 0.97 on tabs, the sheet's
-  14px rise, the activity chevron. No page-load animations.
+  14px rise, the Advanced chevron. No page-load animations.
 - `prefers-reduced-motion` removes press scales, chevron rotation, and sheet animation while keeping
   state changes.
 - 44px targets (48px on coarse pointers); visible 2px accent focus rings; skip link; one h1 and section

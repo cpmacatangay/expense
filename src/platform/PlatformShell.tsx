@@ -1,5 +1,6 @@
-import { Suspense } from "react";
+import { Suspense, useState } from "react";
 import { NavLink, Outlet, useLocation } from "react-router-dom";
+import { GroupSwitcher } from "@/features/groups/GroupSwitcher";
 import { useGroup } from "@/features/groups/groupContext";
 import { useOnlineStatus } from "@/features/realtime/useOnlineStatus";
 import { BrandMark } from "@/ui/primitives/BrandMark";
@@ -18,8 +19,8 @@ export function PlatformShell() {
   const { group, error, refresh } = useGroup();
   const location = useLocation();
   const online = useOnlineStatus();
-  const isDetail =
-    location.pathname.startsWith("/outings/") || location.pathname.startsWith("/drafts/");
+  const [switcherOpen, setSwitcherOpen] = useState(false);
+  const isDetail = location.pathname.startsWith("/outings/");
 
   return (
     <div className={`app${isDetail ? " is-detail" : ""}`}>
@@ -32,7 +33,19 @@ export function PlatformShell() {
           <BrandMark />
           <div className="app-brand-copy">
             <span className="app-name">Salo</span>
-            <span className="app-group">{group?.name ?? "Shared table"}</span>
+            {group ? (
+              <button
+                className="app-group app-group-button"
+                type="button"
+                onClick={() => setSwitcherOpen(true)}
+                aria-label={`Switch table. Current table: ${group.name}`}
+              >
+                <span className="app-group-name">{group.name}</span>
+                <Icon name="chevron-down" size={12} />
+              </button>
+            ) : (
+              <span className="app-group">No table yet</span>
+            )}
           </div>
         </div>
         <span className="app-head-meta">{online ? todayLabel() : "Offline"}</span>
@@ -40,20 +53,20 @@ export function PlatformShell() {
 
       {!online ? (
         <div className="offline-banner" role="status">
-          Offline. Reads stay; shared changes need a connection.
+          No connection. Changes need a connection.
         </div>
       ) : null}
 
       {error && group && online ? (
         <div className="refresh-banner" role="status">
-          <span>Could not refresh. Showing the last copy.</span>
+          <span>Could not refresh. Try again.</span>
           <button className="text-action" type="button" onClick={() => void refresh()}>
             Try again
           </button>
         </div>
       ) : null}
 
-      <nav className="app-nav" aria-label="Main" hidden={isDetail}>
+      <nav className="app-nav" aria-label="Main" hidden={isDetail || !group}>
         {tabItems.map((item) => (
           <NavLink
             key={item.to}
@@ -78,6 +91,8 @@ export function PlatformShell() {
           <Outlet />
         </Suspense>
       </main>
+
+      <GroupSwitcher open={switcherOpen} onClose={() => setSwitcherOpen(false)} />
     </div>
   );
 }

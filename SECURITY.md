@@ -33,21 +33,20 @@ exists.
   present adults, payer, total, and share sum.
 - Settlements are RPC-only. Only confirmed settlements affect the ledger.
 - Removed adults and archived/deleted groups are rejected by outing status transitions, settlement
-  decisions, private-draft publication, participant writes, and payment-QR metadata writes.
+  decisions, participant writes, and payment-QR metadata writes.
 - Historical finalized shares remain readable; removed or archived identities cannot be added to new
   or reopened attendance, assignments, or finalization.
 
 ## Browser and local state
 
 - The Supabase client uses PKCE (`flowType: "pkce"`).
-- Sign-out and any auth user-id change clear the React Query cache, the persisted query cache, the
-  group snapshot, and local drafts.
-- The offline snapshot is accepted only when its profile id matches the signed-in user.
+- Sign-out and any auth user-id change clear the React Query cache and the saved table selection.
+- There are no offline reads, local drafts, persisted query caches, or group snapshots.
 - The app does not use `dangerouslySetInnerHTML`, `innerHTML`, `eval`, or dynamic code execution.
 
 ## Deployment checklist
 
-1. Apply migrations through `0030_bind_invite_claim_email.sql`.
+1. Apply migrations through `0032_retire_drafts.sql`.
    If the hosted project predates the numbered migration history, reconcile it first with
    `supabase migration repair`; pushing numbered migrations onto an already-migrated database fails.
 2. Disable self-service sign-up in the hosted Auth settings and deploy the `invite-adult` function with
@@ -70,9 +69,10 @@ npm run test
 npm run build
 ```
 
-`supabase/tests/security.test.sql` covers column privileges, private-draft activity redaction,
-removed-author reads and publishes, revoked QR metadata, removed-recipient settlement decisions,
-participant lifecycle checks, and fail-closed child writes after finalization.
+`supabase/tests/security.test.sql` covers column privileges, removed-author reads, revoked QR
+metadata, removed-recipient settlement decisions, participant lifecycle checks, private-draft
+rejection, and fail-closed child writes after finalization. `supabase/tests/multi_group.test.sql`
+covers the owned-group cap and cross-group read isolation.
 
 ## Data hygiene
 

@@ -5,8 +5,8 @@ Android. A group records an outing, marks which adults and students attended, ch
 person or people who consumed it, and keeps a running ledger of who owes whom until it is settled.
 
 The item sum is the bill. A typed total is an explicit override. Settlements are recorded by the payer
-and confirmed by the recipient. Groups, invitations, present adults, live activity, and private
-offline drafts are part of the shared product.
+and confirmed by the recipient. Groups, invitations, present adults, and the running ledger are part
+of the shared product.
 
 ## Status
 
@@ -21,15 +21,14 @@ joining, students, the M2 schema, outing drafts, attendance, items, live share p
 owner-only server-side finalization through an Edge Function that writes immutable shares and an
 activity event atomically, the shared ledger with exact balances, who-owes-whom transfers, and
 two-sided settlement record/confirm/decline/void, owner-only reopening with a fixed total, the full
-activity feed with actor and before/after details, owner and member exports as JSON or zipped CSV,
-text plus portrait-image recaps, date/adult/student history filters, private per-adult payment QR
-images with short-lived signed links, member removal/restore, ownership transfer, group
-archive/delete/restore, live cross-device refresh, an offline state banner, pending-adult re-invites
-and revokes, a student roster with rename/archive/reactivate, offline reads from a local cache, local
-private drafts that publish or share with the owner idempotently, install guidance, a skip link, 44px
-touch targets, and visible focus states. Next: device matrices and Lighthouse, then the remaining QA
-passes. The old local database is kept as an unlisted backup; there is no migration into the shared
-product.
+server-side audit trail, owner and member exports as JSON or zipped CSV, text plus portrait-image
+recaps, date/adult/student expense filters, private per-adult payment QR images with short-lived
+signed links, member removal/restore, ownership transfer, group archive/delete/restore, live
+cross-device refresh, pending-adult re-invites and revokes, a student roster with
+rename/archive/reactivate, a group switcher for users with several tables, install guidance, a skip
+link, 44px touch targets, and visible focus states. Next: device matrices and Lighthouse, then the
+remaining QA passes. The old local database is kept as an unlisted backup; there is no migration into
+the shared product.
 
 ## Product decisions
 
@@ -41,19 +40,20 @@ product.
   disabled. Every adult has an account; students do not. Pending adults are allowed until they join.
 - **Homepage nickname**: an explicit, owner-managed nickname lookup. No personal email or name seed is
   stored in the repository. Every money surface keeps the exact `display_name`.
-- **Groups**: 2–12 adults; one owner per group; owner is the only admin in v1. A user may own one
-  group and join many. Group switcher on Home.
+- **Groups**: 2–12 adults; one owner per group; owner is the only admin in v1. A user may own up to
+  five groups and join many. The header table name opens a switcher.
 - **Invitations**: bound to the invited email and a pending adult, with an eight-character code,
   seven-day expiry, revocation, and bounded claim attempts.
-- **Money**: present adults and students per outing; one present payer; item-sum rule; Auto/Manual/
+- **Money**: present adults and students per expense; one present payer; item-sum rule; Auto/Manual/
   Fixed total; no tax, service charge, discount, or printed-receipt reconciliation.
 - **Settlements**: payer records; recipient confirms or declines with a note; only confirmed amounts
   affect balances.
-- **Payment QR**: one private QR per group adult, shown on Home, Ledger, and finalized outings for
+- **Payment QR**: one private QR per group adult, shown on Home, Ledger, and finalized expenses for
   scanning with the member's banking app; display-only, never in recaps or exports.
-- **Collaboration**: live updates; shared edits require connectivity; stale writes are rejected.
-  Private drafts are local-first and visible only to the author and owner until published.
-- **Activity**: full activity feed with actor and before/after values for sensitive changes.
+- **Collaboration**: live updates; shared edits require connectivity; stale writes are rejected. There
+  are no offline reads or local drafts.
+- **Audit**: sensitive changes are recorded server-side for the owner and members with access; there is
+  no separate activity screen.
 - **Export**: owner exports the full group; a member exports their own data.
 - **Students**: owner manages the roster; members mark present and set coverage.
 - **Recap**: text plus a portrait image; no invite link or QR code.
@@ -73,7 +73,7 @@ product.
   compact text actions, the shared file field, and a native dialog payment QR sheet.
 - **Implemented**: S mark header, one responsive shell (bottom tabs on a phone, a text nav on wide
   screens), confirm/record settlement split, permission-aware payment QR, item and review panels,
-  onboarding, offline/stale/declined/empty states, recap/export/QR management, and class-based motion
+  onboarding, stale/declined/empty states, recap/export/QR management, and class-based motion
   with reduced-motion support.
 - **Legacy prototypes**: the earlier iPhone and Material 3 experiments remain in `design/` for
   reference; they are not the current system.
@@ -98,6 +98,7 @@ npm run dev
 **Status**: the shared PWA is implemented; see Status above. The design system is in `DESIGN.md`.
 
 Commands: `npm run typecheck`, `npm run lint`, `npm run test`, `npm run test:e2e`, `npm run build`.
+Icons: `npm run generate:icons`.
 Database checks: `npx supabase start`, `npx supabase test db`.
 
 Security model and hosted setup: [`SECURITY.md`](SECURITY.md).
@@ -106,8 +107,7 @@ Security model and hosted setup: [`SECURITY.md`](SECURITY.md).
 
 - Vite + React + TypeScript PWA.
 - Supabase Auth, Postgres, Row-Level Security, Realtime, and Edge Functions.
-- Dexie/IndexedDB for cached reads and private drafts.
-- `vite-plugin-pwa` and Workbox for the installable shell.
+- `vite-plugin-pwa` and Workbox for the installable shell; shared data is online-only.
 - Vercel free tier with a `*.vercel.app` subdomain.
 - Resend free tier as custom SMTP for email one-time codes.
 - Pure TypeScript money engine shared by the client preview and the server finalization function.

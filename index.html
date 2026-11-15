@@ -19,10 +19,11 @@
     <style>
       html {
         background: #f2f1ed;
+        color-scheme: light dark;
       }
       body {
         margin: 0;
-        background: #1f5c45;
+        background: #f2f1ed;
       }
       .boot {
         min-height: 100dvh;
@@ -31,8 +32,8 @@
         align-items: center;
         justify-content: center;
         gap: 14px;
-        background: #1f5c45;
-        color: rgba(255, 255, 255, 0.82);
+        background: #f2f1ed;
+        color: #625e55;
         font-family:
           system-ui,
           -apple-system,
@@ -41,12 +42,37 @@
         font-size: 14px;
         font-weight: 500;
       }
+      .boot svg {
+        width: 56px;
+        height: 56px;
+        color: #171512;
+      }
+      @media (prefers-color-scheme: dark) {
+        html,
+        body {
+          background: #12100d;
+        }
+        .boot {
+          background: #12100d;
+          color: #b4b2ac;
+        }
+        .boot svg {
+          color: #f2f2f2;
+        }
+      }
     </style>
   </head>
   <body>
     <div id="root">
       <div class="boot" aria-busy="true">
-        <img src="/brand/salo-symbol-white.svg" width="56" height="56" alt="" />
+        <svg viewBox="0 0 256 256" aria-hidden="true">
+          <g transform="translate(128 128) scale(1.35) translate(-128 -120)">
+            <path
+              fill="currentColor"
+              d="M184 50 L104 50 A42 42 0 0 0 104 134 L152 134 A14 14 0 0 1 152 162 L72 162 A14 14 0 0 0 72 190 L152 190 A42 42 0 0 0 152 106 L104 106 A14 14 0 0 1 104 78 L184 78 A14 14 0 0 0 184 50 Z"
+            />
+          </g>
+        </svg>
         <span>Loading Salo…</span>
       </div>
     </div>

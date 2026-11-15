@@ -48,8 +48,7 @@ receives the money.
 ## Operating Context
 
 - Used one-handed on a phone, at the table, often with poor signal.
-- One person records the meal; the owner finalizes; everyone can see the draft and the result.
-- A private draft can be prepared offline and published when the connection returns.
+- One person records the meal; the owner finalizes; everyone can see the open expense and the result.
 - Payment happens outside the app (cash, transfer). The app records a settlement and the recipient
   confirms it.
 - Recaps leave the app through the web share sheet or a download.
@@ -64,7 +63,7 @@ receives the money.
 - **Accounts for every adult**: Google OAuth or email one-time code. No Sign in with Apple in v1.
   Students never have accounts. Pending adults are allowed until they join.
 - **Shared groups of 2–12 adults**: one owner per group; the owner is the only admin in v1. A user may
-  own one group and join many; a group switcher lives on Home.
+  own up to five groups and join many; the header table name opens a switcher.
 - **Invitations**: share link and short code, bound to a pending adult, revocable and expiring.
 - **Present adults and students per outing**: shared items and the per-head fallback split across the
   people who attended; student shares go to their covering adult.
@@ -76,10 +75,10 @@ receives the money.
 - **Payment QR**: each group adult may add one private payment QR and label. Members can open the
   payee's QR from Home, Ledger, or the finalized outing and scan it with their banking app. Salo never
   scans the code, and the QR never appears in a recap or export.
-- **Live activity**: outings, items, shares, settlements, and membership update in real time when
-  connected. A full activity feed records who changed what.
-- **Offline reads and private drafts**: shared writes require connectivity; cached reads and private
-  drafts keep the table-side flow.
+- **Live ledger**: expenses, items, shares, settlements, and membership update in real time when
+  connected. Sensitive changes are recorded server-side for audit.
+- **Connected edits**: shared writes require connectivity. There are no offline reads, local drafts,
+  or queued writes.
 - **Owner controls**: invite, remove, manage students, finalize, reopen, transfer ownership, archive,
   soft-delete, and export the full group. A member can export their own data.
 - **No OCR or LLM**: manual entry only. No receipt images, no external recognition.
@@ -124,8 +123,7 @@ receives the money.
 5. **Confirmed money.** A settlement changes a balance only after the recipient confirms it.
 6. **Native on both phones.** The PWA should feel like an iPhone app on iOS and a Material app on
    Android, without two codebases.
-7. **The table beats the network.** Cached reads and private drafts keep the flow alive when the
-   signal drops.
+7. **The table is live.** Everyone sees the same ledger when connected; no one edits a stale copy.
 
 ## Accessibility & Inclusion
 

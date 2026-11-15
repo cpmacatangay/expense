@@ -14,9 +14,8 @@ export async function loadHistory(
   const outings = await fetchAllRows(async (from, to) => {
     const { data, error } = await client
       .from("outings")
-      .select("id, date, place, payer_adult_id, total_centavos")
+      .select("id, date, place, payer_adult_id, total_centavos, status")
       .eq("group_id", groupId)
-      .eq("status", "finalized")
       .order("date", { ascending: false })
       .order("created_at", { ascending: false })
       .range(from, to);
@@ -27,6 +26,7 @@ export async function loadHistory(
       place: string | null;
       payer_adult_id: string | null;
       total_centavos: number;
+      status: "draft" | "private_draft" | "finalized" | "reopened";
     }[];
   });
 
@@ -88,6 +88,7 @@ export async function loadHistory(
       id: outing.id,
       date: outing.date,
       place: outing.place,
+      status: outing.status,
       totalCentavos: outing.total_centavos,
       payerAdultId: outing.payer_adult_id,
       presentAdultIds: adultsByOuting.get(outing.id) ?? [],

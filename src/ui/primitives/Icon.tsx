@@ -8,6 +8,7 @@ export type IconName =
   | "x"
   | "chevron-left"
   | "chevron-right"
+  | "chevron-down"
   | "arrow-right"
   | "upload"
   | "download"
@@ -35,6 +36,7 @@ const paths: Record<IconName, string> = {
   x: "m6 6 12 12M18 6 6 18",
   "chevron-left": "m14.5 5-7 7 7 7",
   "chevron-right": "m9.5 5 7 7-7 7",
+  "chevron-down": "m5 9 7 7 7-7",
   "arrow-right": "M4 12h15m-5-5 5 5-5 5",
   upload:
     "M12 16V4m0 0L7 9m5-5 5 5M4 17v2a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-2",

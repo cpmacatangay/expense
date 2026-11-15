@@ -1,9 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/data/supabase/client";
-import { queryStorage } from "@/data/cache/queryStorage";
-import { clearGroupSnapshot } from "@/data/cache/groupSnapshot";
-import { db } from "@/data/cache/db";
 import { AuthContext, type AuthContextValue } from "./authContext";
 import type { Session } from "@supabase/supabase-js";
 
@@ -15,9 +12,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const clearLocalAccountState = useCallback(async () => {
     queryClient.clear();
-    await queryStorage.removeItem("salo-query-cache");
-    await clearGroupSnapshot();
-    await db.drafts.clear();
+    try {
+      localStorage.removeItem("salo-query-cache");
+      for (let index = localStorage.length - 1; index >= 0; index -= 1) {
+        const key = localStorage.key(index);
+        if (key?.startsWith("salo.selected-group.")) localStorage.removeItem(key);
+      }
+    } catch {
+      // A blocked storage should not stop sign-out.
+    }
   }, [queryClient]);
 
   useEffect(() => {
@@ -74,8 +77,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           email,
           options: {
             shouldCreateUser: false,
-            emailRedirectTo: `${window.location.origin}/`,
-            data: { salo_signup: "otp" }
+            emailRedirectTo: `${window.location.origin}/`
           }
         });
         if (error) throw error;
