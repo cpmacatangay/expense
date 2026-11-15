@@ -9,7 +9,7 @@ const adults: Adult[] = [
   {
     id: "a1",
     profile_id: "p1",
-    display_name: "[redacted-name]",
+    display_name: "Test Person",
     status: "active",
     color: "#1F5C45",
     payment_qr_path: null,
