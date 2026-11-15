@@ -110,6 +110,12 @@ export function LedgerPage() {
     return adult.status !== "removed" || net !== 0;
   });
   const qrTargetInfo = qrTarget ? qrFor(qrTarget.toAdultId) : null;
+  const visibleTransfers = (ledger?.transfers ?? []).filter((transfer) => {
+    const from = adultById.get(transfer.fromAdultId);
+    const to = adultById.get(transfer.toAdultId);
+    return from?.status !== "removed" && to?.status !== "removed";
+  });
+  const hiddenRemovedTransfers = (ledger?.transfers.length ?? 0) - visibleTransfers.length;
 
   async function refresh() {
     if (!group) return;
@@ -368,14 +374,23 @@ export function LedgerPage() {
         </section>
 
         <section className="panel">
-          <h2 className="panel-title">Who owes whom</h2>
+          <h2 className="panel-title">Settle up</h2>
+          <p className="panel-copy">The fewest payments that clear every balance.</p>
           {isLoading ? <p className="panel-copy">Loading payments…</p> : null}
           {!isLoading && (ledger?.transfers.length ?? 0) === 0 ? (
             <p className="panel-copy">Everyone is square.</p>
           ) : null}
+          {!isLoading && visibleTransfers.length === 0 && hiddenRemovedTransfers > 0 ? (
+            <p className="panel-copy">
+              The remaining balances belong to removed adults. Restore them in Settings to settle.
+            </p>
+          ) : null}
           <ul className="ledger-rows" role="list">
-            {ledger?.transfers.map((transfer) => {
+            {visibleTransfers.map((transfer) => {
               const mine = transfer.fromAdultId === myAdult?.id;
+              const fromAdult = adultById.get(transfer.fromAdultId);
+              const toAdult = adultById.get(transfer.toAdultId);
+              const pending = fromAdult?.status === "pending" || toAdult?.status === "pending";
               return (
                 <li
                   className="ledger-row"
@@ -398,6 +413,12 @@ export function LedgerPage() {
                     <span className="row-title">{nameOf(transfer.toAdultId)}</span>
                     <span className="row-sub">
                       {mine ? "Your payment" : `From ${nameOf(transfer.fromAdultId)}`}
+                      {pending ? (
+                        <>
+                          {" · "}
+                          <span className="member-status">Pending</span>
+                        </>
+                      ) : null}
                     </span>
                   </span>
                   <span className="amount">{formatPeso(transfer.amountCentavos)}</span>
@@ -432,6 +453,11 @@ export function LedgerPage() {
               );
             })}
           </ul>
+          {!isLoading && hiddenRemovedTransfers > 0 && visibleTransfers.length > 0 ? (
+            <p className="panel-copy">
+              Balances for removed adults are left out. Restore them in Settings to include them.
+            </p>
+          ) : null}
         </section>
       </div>
 
