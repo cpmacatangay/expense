@@ -1,32 +1,39 @@
 import { useState, type FormEvent } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/features/auth/authContext";
-import { listInactiveOwnedGroups, restoreGroup } from "./lifecycle";
-import { useGroup } from "./groupContext";
-import { formatDate } from "@/lib/dates";
+import { listInactiveOwnedGroups, restoreGroup } from "@/features/groups/lifecycle";
 import { getErrorMessage } from "@/lib/errors";
-import { usePageTitle } from "@/lib/usePageTitle";
-import { BrandMark } from "@/ui/primitives/BrandMark";
 import { Icon } from "@/ui/primitives/Icon";
+import { useGroup } from "./groupContext";
 
-export function GroupSetupPage() {
+export function FirstRunPanel() {
   const { profile, createGroup, joinGroup, refresh } = useGroup();
-  const { user, signOut } = useAuth();
-  const queryClient = useQueryClient();
+  const { signOut } = useAuth();
   const [name, setName] = useState("");
   const [code, setCode] = useState("");
   const [busy, setBusy] = useState<"create" | "join" | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [restoreBusy, setRestoreBusy] = useState<string | null>(null);
+  const [restoreBusyId, setRestoreBusyId] = useState<string | null>(null);
   const [restoreError, setRestoreError] = useState<string | null>(null);
 
-  usePageTitle("Start or join a table");
-
   const { data: inactiveGroups } = useQuery({
-    queryKey: ["inactive-groups", user?.id],
+    queryKey: ["inactive-groups", profile?.id],
     queryFn: listInactiveOwnedGroups,
-    enabled: Boolean(user)
+    enabled: Boolean(profile)
   });
+
+  async function handleRestore(groupId: string) {
+    setRestoreBusyId(groupId);
+    setRestoreError(null);
+    try {
+      await restoreGroup(groupId);
+      await refresh();
+    } catch (caught) {
+      setRestoreError(getErrorMessage(caught, "Could not restore the table"));
+    } finally {
+      setRestoreBusyId(null);
+    }
+  }
 
   async function handleCreate(event: FormEvent) {
     event.preventDefault();
@@ -35,7 +42,7 @@ export function GroupSetupPage() {
     try {
       await createGroup(name.trim());
     } catch (caught) {
-      setError(getErrorMessage(caught, "Could not create the group"));
+      setError(getErrorMessage(caught, "Could not create the table"));
       setBusy(null);
     }
   }
@@ -47,48 +54,34 @@ export function GroupSetupPage() {
     try {
       await joinGroup(code.trim().toUpperCase());
     } catch (caught) {
-      setError(getErrorMessage(caught, "Could not join the group"));
+      setError(getErrorMessage(caught, "Could not join the table"));
       setBusy(null);
     }
   }
 
-  async function handleRestoreGroup(groupId: string) {
-    setRestoreBusy(groupId);
-    setRestoreError(null);
-    try {
-      await restoreGroup(groupId);
-      await queryClient.invalidateQueries({ queryKey: ["inactive-groups", user?.id] });
-      await refresh();
-    } catch (caught) {
-      setRestoreError(getErrorMessage(caught, "Could not restore the group"));
-    } finally {
-      setRestoreBusy(null);
-    }
-  }
-
   return (
-    <main className="onboarding onboarding--stack">
-      <BrandMark className="onboarding-mark" />
+    <div className="page">
       <header className="page-head">
-        <h1 className="page-title">Start or join a table</h1>
+        <h1 className="page-title">Start a table</h1>
         <p className="page-sub">
-          Signed in as {profile?.display_name ?? "your account"}. Groups are 2 to 12 adults.
+          Signed in as {profile?.display_name ?? "your account"}. A table keeps one shared ledger
+          for 2 to 12 adults.
         </p>
       </header>
 
       {error ? (
-        <p className="form-error" role="alert" id="group-error">
+        <p className="form-error" role="alert">
           {error}
         </p>
       ) : null}
 
       <section className="panel">
-        <h2 className="panel-title">Start a group</h2>
-        <form className="auth-form" onSubmit={handleCreate} aria-labelledby="start-group-title">
-          <label className="field" htmlFor="group-name">
-            <span>Group name</span>
+        <h2 className="panel-title">New table</h2>
+        <form className="auth-form" onSubmit={handleCreate}>
+          <label className="field" htmlFor="first-run-name">
+            <span>Table name</span>
             <input
-              id="group-name"
+              id="first-run-name"
               name="groupName"
               type="text"
               value={name}
@@ -101,14 +94,12 @@ export function GroupSetupPage() {
               maxLength={60}
               autoComplete="organization"
               enterKeyHint="done"
-              aria-invalid={Boolean(error)}
-              aria-describedby={error ? "group-error" : undefined}
               required
             />
           </label>
           <button className="primary-action" type="submit" disabled={busy !== null}>
             <Icon name="plus" />
-            Create group
+            {busy === "create" ? "Creating…" : "Create table"}
           </button>
         </form>
       </section>
@@ -116,10 +107,10 @@ export function GroupSetupPage() {
       <section className="panel">
         <h2 className="panel-title">I have an invite</h2>
         <form className="auth-form" onSubmit={handleJoin}>
-          <label className="field" htmlFor="group-code">
+          <label className="field" htmlFor="first-run-code">
             <span>Six- or eight-character code</span>
             <input
-              id="group-code"
+              id="first-run-code"
               name="inviteCode"
               type="text"
               value={code}
@@ -135,50 +126,42 @@ export function GroupSetupPage() {
               enterKeyHint="go"
               pattern="[A-Za-z0-9]{6,8}"
               maxLength={8}
-              aria-invalid={Boolean(error)}
-              aria-describedby={error ? "group-error" : undefined}
               required
             />
           </label>
           <button className="secondary-action" type="submit" disabled={busy !== null}>
             <Icon name="log-in" />
-            Join group
+            {busy === "join" ? "Joining…" : "Join table"}
           </button>
         </form>
       </section>
 
       {inactiveGroups && inactiveGroups.length > 0 ? (
         <section className="panel">
-          <h2 className="panel-title">Archived and deleted</h2>
-          <p className="panel-copy">Restore a group to bring it back for every member.</p>
+          <h2 className="panel-title">Archived tables</h2>
+          <p className="panel-copy">Restore a table to bring it back for every member.</p>
           {restoreError ? (
             <p className="form-error" role="alert">
               {restoreError}
             </p>
           ) : null}
-          <ul className="ledger-rows">
+          <ul className="ledger-rows" role="list">
             {inactiveGroups.map((inactive) => (
               <li className="ledger-row" key={inactive.id}>
                 <div className="row-main">
                   <span className="row-title">{inactive.name}</span>
                   <span className="row-sub">
-                    {inactive.status === "archived"
-                      ? "Archived"
-                      : `Deleted${
-                          inactive.deleted_at
-                            ? ` ${formatDate(inactive.deleted_at.slice(0, 10))}`
-                            : ""
-                        }`}
+                    {inactive.status === "archived" ? "Archived" : "Deleted"}
                   </span>
                 </div>
                 <button
                   className="text-action"
                   type="button"
-                  onClick={() => void handleRestoreGroup(inactive.id)}
-                  disabled={restoreBusy === inactive.id}
+                  onClick={() => void handleRestore(inactive.id)}
+                  disabled={restoreBusyId === inactive.id}
                 >
                   <Icon name="restore" />
-                  {restoreBusy === inactive.id ? "Restoring…" : "Restore"}
+                  {restoreBusyId === inactive.id ? "Restoring…" : "Restore"}
                 </button>
               </li>
             ))}
@@ -190,6 +173,6 @@ export function GroupSetupPage() {
         <Icon name="log-out" />
         Sign out
       </button>
-    </main>
+    </div>
   );
 }

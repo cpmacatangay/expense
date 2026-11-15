@@ -1,18 +1,40 @@
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
-import {
-  clearGroupSnapshot,
-  loadGroupSnapshot,
-  saveGroupSnapshot
-} from "@/data/cache/groupSnapshot";
 import { requireSupabase } from "@/data/supabase/client";
 import { useAuth } from "@/features/auth/authContext";
 import { GroupContext, type GroupContextValue } from "./groupContext";
 import { getErrorMessage } from "@/lib/errors";
 import type { Adult, Group, Invitation, Profile, Student } from "./types";
 
+type MembershipRow = {
+  group_id: string;
+  groups: Group | Group[] | null;
+};
+
+function selectedGroupKey(userId: string) {
+  return `salo.selected-group.${userId}`;
+}
+
+function readSelectedGroup(userId: string) {
+  try {
+    return localStorage.getItem(selectedGroupKey(userId));
+  } catch {
+    return null;
+  }
+}
+
+function writeSelectedGroup(userId: string, groupId: string | null) {
+  try {
+    if (groupId) localStorage.setItem(selectedGroupKey(userId), groupId);
+    else localStorage.removeItem(selectedGroupKey(userId));
+  } catch {
+    // A blocked storage should not stop the app.
+  }
+}
+
 export function GroupProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
   const [profile, setProfile] = useState<Profile | null>(null);
+  const [groups, setGroups] = useState<Group[]>([]);
   const [group, setGroup] = useState<Group | null>(null);
   const [adults, setAdults] = useState<Adult[]>([]);
   const [students, setStudents] = useState<Student[]>([]);
@@ -23,11 +45,11 @@ export function GroupProvider({ children }: { children: ReactNode }) {
     async (showLoading = false) => {
       if (!user) {
         setProfile(null);
+        setGroups([]);
         setGroup(null);
         setAdults([]);
         setStudents([]);
         setLoading(false);
-        void clearGroupSnapshot();
         return;
       }
 
@@ -40,18 +62,27 @@ export function GroupProvider({ children }: { children: ReactNode }) {
         if (profileError) throw profileError;
         const nextProfile = profileData as Profile;
 
-        const { data: membership, error: membershipError } = await client
+        const { data: membershipRows, error: membershipError } = await client
           .from("group_adults")
           .select("group_id, groups!inner(id, name, owner_id, status)")
           .eq("profile_id", user.id)
           .eq("status", "active")
           .eq("groups.status", "active")
-          .limit(1)
-          .maybeSingle();
+          .order("created_at", { ascending: true });
 
         if (membershipError) throw membershipError;
 
-        const nextGroup = membership ? (membership.groups as unknown as Group) : null;
+        const nextGroups: Group[] = [];
+        for (const row of (membershipRows ?? []) as MembershipRow[]) {
+          const candidate = Array.isArray(row.groups) ? row.groups[0] : row.groups;
+          if (candidate && !nextGroups.some((entry) => entry.id === candidate.id)) {
+            nextGroups.push(candidate);
+          }
+        }
+
+        const stored = readSelectedGroup(user.id);
+        const nextGroup =
+          nextGroups.find((entry) => entry.id === stored) ?? nextGroups[0] ?? null;
 
         let nextAdults: Adult[] = [];
         let nextStudents: Student[] = [];
@@ -80,40 +111,16 @@ export function GroupProvider({ children }: { children: ReactNode }) {
           nextStudents = (studentRows ?? []) as Student[];
         }
 
+        if (nextGroup) writeSelectedGroup(user.id, nextGroup.id);
+        else writeSelectedGroup(user.id, null);
+
         setProfile(nextProfile);
+        setGroups(nextGroups);
         setGroup(nextGroup);
         setAdults(nextAdults);
         setStudents(nextStudents);
-
-        if (nextGroup) {
-          await saveGroupSnapshot({
-            profile: nextProfile,
-            group: nextGroup,
-            adults: nextAdults,
-            students: nextStudents
-          });
-        } else {
-          await clearGroupSnapshot();
-        }
       } catch (caught) {
-        const message = getErrorMessage(caught, "Could not load your group");
-        const networkFailure =
-          (typeof navigator !== "undefined" && !navigator.onLine) ||
-          /fetch|network|load failed|timeout/i.test(message);
-
-        if (networkFailure) {
-          const snapshot = await loadGroupSnapshot();
-          if (snapshot && snapshot.profile.id === user.id) {
-            setProfile(snapshot.profile);
-            setGroup(snapshot.group);
-            setAdults(snapshot.adults);
-            setStudents(snapshot.students);
-            setError(null);
-            return;
-          }
-        }
-
-        setError(message);
+        setError(getErrorMessage(caught, "Could not load your tables"));
       } finally {
         setLoading(false);
       }
@@ -125,27 +132,44 @@ export function GroupProvider({ children }: { children: ReactNode }) {
     void load(true);
   }, [load]);
 
+  const selectGroup = useCallback(
+    async (groupId: string) => {
+      if (!user) return;
+      writeSelectedGroup(user.id, groupId);
+      await load(false);
+    },
+    [load, user]
+  );
+
   const createGroup = useCallback(
     async (name: string) => {
+      if (!user) throw new Error("Not signed in");
       const client = requireSupabase();
-      const { error: rpcError } = await client.rpc("create_group", { group_name: name });
+      const { data, error: rpcError } = await client.rpc("create_group", { group_name: name });
       if (rpcError) throw rpcError;
-      await load();
+      if (typeof data === "string") {
+        writeSelectedGroup(user.id, data);
+      }
+      await load(false);
     },
-    [load]
+    [load, user]
   );
 
   const joinGroup = useCallback(
     async (code: string) => {
+      if (!user) throw new Error("Not signed in");
       const client = requireSupabase();
       const { data, error: rpcError } = await client.rpc("join_group_with_code", {
         invite_code: code
       });
       if (rpcError) throw rpcError;
       if (!data) throw new Error("Invitation not found or expired");
-      await load();
+      if (typeof data === "string") {
+        writeSelectedGroup(user.id, data);
+      }
+      await load(false);
     },
-    [load]
+    [load, user]
   );
 
   const inviteAdult = useCallback(
@@ -178,10 +202,12 @@ export function GroupProvider({ children }: { children: ReactNode }) {
     () => ({
       profile,
       group,
+      groups,
       adults,
       students,
       loading,
       error,
+      selectGroup,
       createGroup,
       joinGroup,
       inviteAdult,
@@ -191,10 +217,12 @@ export function GroupProvider({ children }: { children: ReactNode }) {
     [
       profile,
       group,
+      groups,
       adults,
       students,
       loading,
       error,
+      selectGroup,
       createGroup,
       joinGroup,
       inviteAdult,

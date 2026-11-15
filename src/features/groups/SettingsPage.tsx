@@ -5,8 +5,10 @@ import { buildCsvFiles, exportBaseName, zipCsvFiles } from "@/features/export/cs
 import { loadGroupExport, loadMemberExport } from "@/features/export/load";
 import {
   archiveGroup,
+  listInactiveOwnedGroups,
   removeAdult,
   restoreAdult,
+  restoreGroup,
   softDeleteGroup,
   transferOwnership
 } from "@/features/groups/lifecycle";
@@ -23,14 +25,19 @@ import { FileField } from "@/ui/primitives/FileField";
 import { Icon } from "@/ui/primitives/Icon";
 import { InstallHint } from "@/ui/primitives/InstallHint";
 import { useGroup } from "./groupContext";
+import { GroupSwitcher } from "./GroupSwitcher";
 import { getErrorMessage } from "@/lib/errors";
 import { initials } from "@/lib/names";
 import { usePageTitle } from "@/lib/usePageTitle";
 import type { Invitation } from "./types";
 
 export function SettingsPage() {
-  const { profile, group, adults, students, inviteAdult, createStudent, refresh } = useGroup();
+  const { profile, group, groups, adults, students, inviteAdult, createStudent, refresh } =
+    useGroup();
   const { signOut } = useAuth();
+  const [switcherOpen, setSwitcherOpen] = useState(false);
+  const [restoreBusyId, setRestoreBusyId] = useState<string | null>(null);
+  const [restoreError, setRestoreError] = useState<string | null>(null);
   const [name, setName] = useState("");
   const [inviteEmail, setInviteEmail] = useState("");
   const [invitation, setInvitation] = useState<Invitation | null>(null);
@@ -88,6 +95,12 @@ export function SettingsPage() {
     queryKey: ["open-invitations", group?.id],
     queryFn: () => listOpenInvitations(group?.id as string),
     enabled: isOwner && Boolean(group?.id)
+  });
+
+  const { data: inactiveGroups } = useQuery({
+    queryKey: ["inactive-groups", profile?.id],
+    queryFn: listInactiveOwnedGroups,
+    enabled: isOwner
   });
 
   const openInviteIds = new Set((openInvitations ?? []).map((invite) => invite.adult_id));
@@ -298,7 +311,6 @@ export function SettingsPage() {
       await renameStudent(studentId, nextName);
       await refresh();
       await queryClient.invalidateQueries({ queryKey: ["students", group.id] });
-      await queryClient.invalidateQueries({ queryKey: ["activity", group.id] });
       await queryClient.invalidateQueries({ queryKey: ["history", group.id] });
       setEditingStudentId(null);
       setRosterNotice("Student renamed.");
@@ -318,7 +330,6 @@ export function SettingsPage() {
       await setStudentStatus(studentId, status);
       await refresh();
       await queryClient.invalidateQueries({ queryKey: ["students", group.id] });
-      await queryClient.invalidateQueries({ queryKey: ["activity", group.id] });
       await queryClient.invalidateQueries({ queryKey: ["history", group.id] });
       setRosterNotice(status === "active" ? "Student reactivated." : "Student archived.");
     } catch (caught) {
@@ -375,6 +386,20 @@ export function SettingsPage() {
     }
   }
 
+  async function handleRestoreGroup(groupId: string) {
+    setRestoreBusyId(groupId);
+    setRestoreError(null);
+    try {
+      await restoreGroup(groupId);
+      await queryClient.invalidateQueries({ queryKey: ["inactive-groups", profile?.id] });
+      await refresh();
+    } catch (caught) {
+      setRestoreError(getErrorMessage(caught, "Could not restore the group"));
+    } finally {
+      setRestoreBusyId(null);
+    }
+  }
+
   async function handleArchiveGroup() {
     if (!group) return;
     setLifecycleBusy("archive");
@@ -407,7 +432,7 @@ export function SettingsPage() {
     <div className="page page--settings">
       <header className="page-head">
         <h1 className="page-title">Settings</h1>
-        <p className="page-sub">Members, students, and account.</p>
+        <p className="page-sub">Tables, members, students, and account.</p>
       </header>
 
       <section className="panel">
@@ -418,6 +443,20 @@ export function SettingsPage() {
             ? ` · ${pendingAdults.length} pending ${pendingAdults.length === 1 ? "adult" : "adults"}`
             : ""}
         </p>
+      </section>
+
+      <section className="panel">
+        <h2 className="panel-title">Tables</h2>
+        <p className="panel-copy">
+          {groups.length} {groups.length === 1 ? "table" : "tables"}. Switch tables or start a new
+          one.
+        </p>
+        <div className="export-actions">
+          <button className="secondary-action" type="button" onClick={() => setSwitcherOpen(true)}>
+            <Icon name="users" />
+            Switch or add a table
+          </button>
+        </div>
       </section>
 
       {isOwner ? (
@@ -772,8 +811,11 @@ export function SettingsPage() {
       ) : null}
 
       {isOwner ? (
-        <section className="panel">
-          <h2 className="panel-title">Transfer ownership</h2>
+        <details className="panel advanced-panel">
+          <summary className="panel-title">
+            <span>Advanced: transfer ownership</span>
+            <Icon name="chevron-down" size={16} />
+          </summary>
           <p className="panel-copy">
             The new owner finalizes, reopens, invites, and manages members. You stay a member.
           </p>
@@ -847,7 +889,7 @@ export function SettingsPage() {
               </form>
             </>
           )}
-        </section>
+        </details>
       ) : null}
 
       {myAdult ? (
@@ -958,7 +1000,7 @@ export function SettingsPage() {
         <h2 className="panel-title">{isOwner ? "Export the group" : "Export your data"}</h2>
         <p className="panel-copy">
           {isOwner
-            ? "Every outing, item, share, settlement, and activity event, plus adults and students. Payment QR images are never included."
+            ? "Every expense, item, share, settlement, and activity event, plus adults and students. Payment QR images are never included."
             : "Only your shares, settlements, and activity, plus the outings they belong to. No one else's data is included."}
         </p>
         {exportError ? (
@@ -994,8 +1036,11 @@ export function SettingsPage() {
       </section>
 
       {isOwner ? (
-        <section className="panel">
-          <h2 className="panel-title">Archive or delete</h2>
+        <details className="panel advanced-panel">
+          <summary className="panel-title">
+            <span>Advanced: archive or delete</span>
+            <Icon name="chevron-down" size={16} />
+          </summary>
           <p className="panel-copy">
             Archiving hides the group from every member. Deleting keeps the data restorable for 30
             days.
@@ -1076,7 +1121,40 @@ export function SettingsPage() {
               </button>
             </div>
           )}
-        </section>
+
+          {inactiveGroups && inactiveGroups.length > 0 ? (
+            <div>
+              <h3 className="panel-title">Archived and deleted</h3>
+              <p className="panel-copy">Restore a table to bring it back for every member.</p>
+              {restoreError ? (
+                <p className="form-error" role="alert">
+                  {restoreError}
+                </p>
+              ) : null}
+              <ul className="ledger-rows" role="list">
+                {inactiveGroups.map((inactive) => (
+                  <li className="ledger-row" key={inactive.id}>
+                    <div className="row-main">
+                      <span className="row-title">{inactive.name}</span>
+                      <span className="row-sub">
+                        {inactive.status === "archived" ? "Archived" : "Deleted"}
+                      </span>
+                    </div>
+                    <button
+                      className="text-action"
+                      type="button"
+                      onClick={() => void handleRestoreGroup(inactive.id)}
+                      disabled={restoreBusyId === inactive.id}
+                    >
+                      <Icon name="restore" />
+                      {restoreBusyId === inactive.id ? "Restoring…" : "Restore"}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
+        </details>
       ) : null}
 
       <InstallHint />
@@ -1089,6 +1167,8 @@ export function SettingsPage() {
           Sign out
         </button>
       </section>
+
+      <GroupSwitcher open={switcherOpen} onClose={() => setSwitcherOpen(false)} />
     </div>
   );
 }

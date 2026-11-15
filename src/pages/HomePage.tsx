@@ -3,22 +3,21 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useNavigate } from "react-router-dom";
 import { formatPeso } from "@/domain/money/format";
 import { useAuth } from "@/features/auth/authContext";
-import { listLocalDrafts, saveLocalDraft } from "@/features/drafts/api";
-import { createLocalDraft } from "@/features/drafts/types";
+import { FirstRunPanel } from "@/features/groups/FirstRunPanel";
 import { useGroup } from "@/features/groups/groupContext";
 import { useLedgerView } from "@/features/ledger/useLedger";
 import { createOuting, getOuting, listOutings, todayInManila } from "@/features/outings/api";
 import { useOnlineStatus } from "@/features/realtime/useOnlineStatus";
 import { formatDate } from "@/lib/dates";
 import { getErrorMessage } from "@/lib/errors";
-import { greetingName, initials } from "@/lib/names";
+import { greetingName } from "@/lib/names";
 import { usePageTitle } from "@/lib/usePageTitle";
 import { Icon } from "@/ui/primitives/Icon";
 import { ShareBand, type ShareSlice } from "@/ui/primitives/ShareBand";
 
 export function HomePage() {
   const { user } = useAuth();
-  const { profile, group, adults } = useGroup();
+  const { profile, group, groups, adults } = useGroup();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const online = useOnlineStatus();
@@ -33,17 +32,8 @@ export function HomePage() {
     enabled: Boolean(group?.id)
   });
 
-  const { data: localDrafts } = useQuery({
-    queryKey: ["local-drafts", group?.id, profile?.id],
-    queryFn: () => listLocalDrafts(group?.id as string, profile?.id as string),
-    enabled: Boolean(group?.id && profile?.id),
-    staleTime: 0,
-    networkMode: "always"
-  });
-
   const greeting = greetingName(profile, user?.email);
   const activeAdults = adults.filter((adult) => adult.status === "active");
-  const pendingAdults = adults.filter((adult) => adult.status === "pending");
   const { data: ledgerData, ledger, isLoading: ledgerLoading } = useLedgerView(group?.id, adults);
   const myAdult = activeAdults.find((adult) => adult.profile_id === profile?.id) ?? null;
   const myNet = myAdult && ledger ? (ledger.netByAdult[myAdult.id] ?? 0) : 0;
@@ -84,10 +74,14 @@ export function HomePage() {
       }));
   }, [lastDetail, adults]);
 
-  async function handleNewOuting() {
+  if (groups.length === 0) {
+    return <FirstRunPanel />;
+  }
+
+  async function handleNewExpense() {
     if (!group || !profile) return;
     if (!online) {
-      setError("Connect to start a shared outing. You can still start a private draft.");
+      setError("Connect to start an expense.");
       return;
     }
     setCreating(true);
@@ -102,27 +96,7 @@ export function HomePage() {
       await queryClient.invalidateQueries({ queryKey: ["outings", group.id] });
       navigate(`/outings/${outing.id}`);
     } catch (caught) {
-      setError(getErrorMessage(caught, "Could not start the outing"));
-      setCreating(false);
-    }
-  }
-
-  async function handleNewLocalDraft() {
-    if (!group || !profile) return;
-    setCreating(true);
-    setError(null);
-    try {
-      const draft = createLocalDraft({
-        groupId: group.id,
-        authorProfileId: profile.id,
-        date: todayInManila(),
-        presentAdultIds: activeAdults.map((adult) => adult.id)
-      });
-      await saveLocalDraft(draft);
-      await queryClient.invalidateQueries({ queryKey: ["local-drafts", group.id] });
-      navigate(`/drafts/${draft.id}`);
-    } catch (caught) {
-      setError(getErrorMessage(caught, "Could not start the private draft"));
+      setError(getErrorMessage(caught, "Could not start the expense"));
       setCreating(false);
     }
   }
@@ -142,15 +116,13 @@ export function HomePage() {
         ? "Waiting for the table to settle."
         : hasFinalizedOuting
           ? "All square."
-          : "No finalized outings yet.";
+          : "No finalized expenses yet.";
 
   return (
     <div className="page">
       <header className="page-head">
         <h1 className="page-title">Hi, {greeting}</h1>
-        <p className="page-sub">
-          {group?.name ?? "Salo"} · {activeAdults.length} at the table
-        </p>
+        <p className="page-sub">{activeAdults.length} at the table</p>
       </header>
 
       {error ? (
@@ -181,7 +153,7 @@ export function HomePage() {
                 <ShareBand
                   slices={lastSlices}
                   youId={myAdult?.id}
-                  label={`Last meal · ${lastFinalized?.place || "Untitled outing"}`}
+                  label={`Last expense · ${lastFinalized?.place || "Untitled expense"}`}
                 />
               </>
             ) : null}
@@ -195,163 +167,55 @@ export function HomePage() {
           <button
             className="primary-action"
             type="button"
-            onClick={() => void handleNewOuting()}
+            onClick={() => void handleNewExpense()}
             disabled={creating || !online}
-            title={!online ? "Connect to start a shared outing" : undefined}
+            title={!online ? "Connect to start an expense" : undefined}
           >
             <Icon name="plus" />
-            {creating ? "Starting…" : "New outing"}
-          </button>
-          <button
-            className="text-action home-private-draft"
-            type="button"
-            onClick={() => void handleNewLocalDraft()}
-            disabled={creating}
-          >
-            <Icon name="plus" />
-            Start a private draft
+            {creating ? "Starting…" : "New expense"}
           </button>
         </div>
 
-      <section className="panel">
-        <div className="section-head">
-          <h2 className="panel-title">Recent outings</h2>
-          <Link className="text-link" to="/history">
-            View all
-          </Link>
-        </div>
-        {isLoading ? <p className="panel-copy">Loading outings…</p> : null}
-        {!isLoading && outings?.length === 0 ? (
-          <p className="panel-copy">No outings yet. Start the first shared meal.</p>
-        ) : null}
-        <ul className="outing-list" role="list">
-          {outings?.slice(0, 4).map((outing) => {
-            const payer = outing.payer_adult_id
-              ? adults.find((adult) => adult.id === outing.payer_adult_id)
-              : null;
-            const draftLabel =
-              outing.status === "private_draft"
-                ? "Private"
-                : outing.status === "reopened"
-                  ? "Reopened"
-                  : "Draft";
-
-            return (
-              <li key={outing.id}>
-                <Link className="outing-link" to={`/outings/${outing.id}`}>
-                  <span>
-                    <span className="row-title">{outing.place || "Untitled outing"}</span>
-                    <span className="row-sub">
-                      {formatDate(outing.date)}
-                      {payer ? ` · ${payer.display_name}` : ""}
-                    </span>
-                  </span>
-                  {outing.status === "finalized" ? (
-                    <span className="amount">{formatPeso(outing.total_centavos)}</span>
-                  ) : (
-                    <span className="status-chip status-chip--pending">{draftLabel}</span>
-                  )}
-                </Link>
-              </li>
-            );
-          })}
-        </ul>
-      </section>
-      </div>
-
-      {localDrafts && localDrafts.length > 0 ? (
         <section className="panel">
-          <h2 className="panel-title">Private drafts</h2>
-          <p className="panel-copy">
-            Saved on this device. Publish or share them when you are connected.
-          </p>
+          <div className="section-head">
+            <h2 className="panel-title">Recent expenses</h2>
+            <Link className="text-link" to="/expenses">
+              View all
+            </Link>
+          </div>
+          {isLoading ? <p className="panel-copy">Loading expenses…</p> : null}
+          {!isLoading && outings?.length === 0 ? (
+            <p className="panel-copy">No expenses yet. Start the first one.</p>
+          ) : null}
           <ul className="outing-list" role="list">
-            {localDrafts.map((draft) => {
-              const total = draft.items.reduce(
-                (sum, item) => sum + item.quantity * item.unitAmountCentavos,
-                0
-              );
+            {outings?.slice(0, 4).map((outing) => {
+              const payer = outing.payer_adult_id
+                ? adults.find((adult) => adult.id === outing.payer_adult_id)
+                : null;
+              const draftLabel = outing.status === "reopened" ? "Reopened" : "Draft";
+
               return (
-                <li key={draft.id}>
-                  <Link className="outing-link" to={`/drafts/${draft.id}`}>
+                <li key={outing.id}>
+                  <Link className="outing-link" to={`/outings/${outing.id}`}>
                     <span>
-                      <span className="row-title">{draft.place || "Untitled draft"}</span>
+                      <span className="row-title">{outing.place || "Untitled expense"}</span>
                       <span className="row-sub">
-                        {formatDate(draft.date)} · {draft.items.length}{" "}
-                        {draft.items.length === 1 ? "item" : "items"} · saved locally
+                        {formatDate(outing.date)}
+                        {payer ? ` · ${payer.display_name}` : ""}
                       </span>
                     </span>
-                    <span className="amount">{formatPeso(total)}</span>
+                    {outing.status === "finalized" ? (
+                      <span className="amount">{formatPeso(outing.total_centavos)}</span>
+                    ) : (
+                      <span className="status-chip status-chip--pending">{draftLabel}</span>
+                    )}
                   </Link>
                 </li>
               );
             })}
           </ul>
         </section>
-      ) : null}
-
-      <section className="panel">
-        <div className="section-head">
-          <h2 className="panel-title">Your table</h2>
-          <Link className="text-link" to="/settings">
-            Manage
-          </Link>
-        </div>
-        <ul className="ledger-rows" role="list">
-          {adults
-            .filter((adult) => adult.status !== "removed")
-            .map((adult) => {
-              const net = ledger?.netByAdult[adult.id] ?? 0;
-              const pending = adult.status === "pending";
-              return (
-                <li className="ledger-row" key={adult.id}>
-                  <span className="member-initials" style={{ background: adult.color }}>
-                    {initials(adult.display_name)}
-                  </span>
-                  <span className="ledger-name ledger-name--stacked">
-                    <span className="ledger-name-line">
-                      {adult.display_name}
-                      {adult.id === myAdult?.id ? <span className="ledger-you">You</span> : null}
-                      {pending ? <span className="member-status">Pending</span> : null}
-                    </span>
-                    <span
-                      className={`ledger-sub ${
-                        ledgerLoading || pending ? "" : net < 0 ? "owes" : net > 0 ? "is-owed" : ""
-                      }`}
-                    >
-                      {pending
-                        ? "No balance yet"
-                        : ledgerLoading
-                          ? "—"
-                          : net < 0
-                            ? "owes"
-                            : net > 0
-                              ? "is owed"
-                              : "even"}
-                    </span>
-                  </span>
-                  {pending ? (
-                    <span className="ledger-net">—</span>
-                  ) : (
-                    <span
-                      className={`ledger-net ${
-                        ledgerLoading ? "" : net < 0 ? "owes" : net > 0 ? "is-owed" : ""
-                      }`}
-                    >
-                      {ledgerLoading ? "—" : formatPeso(Math.abs(net))}
-                    </span>
-                  )}
-                </li>
-              );
-            })}
-        </ul>
-        {pendingAdults.length > 0 ? (
-          <p className="panel-copy">
-            {pendingAdults.length} {pendingAdults.length === 1 ? "adult is" : "adults are"} still
-            pending.
-          </p>
-        ) : null}
-      </section>
+      </div>
     </div>
   );
 }

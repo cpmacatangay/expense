@@ -9,7 +9,6 @@ import {
   deleteItem,
   finalizeOuting,
   getOuting,
-  publishPrivateDraft,
   reopenOuting,
   setAdultPresent,
   setOutingTotalMode,
@@ -30,7 +29,7 @@ export function OutingEditorPage() {
   const { outingId } = useParams();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const { group, profile, adults: groupAdults, students: groupStudents } = useGroup();
+  const { group, profile, adults: groupAdults, students: groupStudents, selectGroup } = useGroup();
 
   const { data, isLoading, error } = useQuery({
     queryKey: ["outing", outingId],
@@ -38,7 +37,13 @@ export function OutingEditorPage() {
     enabled: Boolean(outingId)
   });
 
-  usePageTitle(data?.outing.place || "Outing");
+  usePageTitle(data?.outing.place || "Expense");
+
+  useEffect(() => {
+    if (!data) return;
+    if (group?.id === data.outing.group_id) return;
+    void selectGroup(data.outing.group_id);
+  }, [data, group?.id, selectGroup]);
 
   const { data: ledgerData } = useLedger(group?.id);
   const recapShares = useMemo(() => {
@@ -68,7 +73,6 @@ export function OutingEditorPage() {
   } | null>(null);
   const [showReopen, setShowReopen] = useState(false);
   const [reopenState, setReopenState] = useState<"idle" | "saving">("idle");
-  const [publishState, setPublishState] = useState<"idle" | "saving">("idle");
   const [showItemForm, setShowItemForm] = useState(true);
   const [deletingItemId, setDeletingItemId] = useState<string | null>(null);
 
@@ -178,7 +182,7 @@ export function OutingEditorPage() {
       setSaveState("saved");
     } catch (caught) {
       setSaveState("idle");
-      setActionError(getErrorMessage(caught, "Could not save the outing"));
+      setActionError(getErrorMessage(caught, "Could not save the expense"));
     }
   }
 
@@ -212,7 +216,7 @@ export function OutingEditorPage() {
     } catch (caught) {
       setFinalizeMessage({
         kind: "error",
-        text: getErrorMessage(caught, "Could not finalize the outing")
+        text: getErrorMessage(caught, "Could not finalize the expense")
       });
     } finally {
       setFinalizeState("idle");
@@ -234,7 +238,7 @@ export function OutingEditorPage() {
         text: "Reopened. Adjust the items, then finalize again."
       });
     } catch (caught) {
-      setActionError(getErrorMessage(caught, "Could not reopen the outing"));
+      setActionError(getErrorMessage(caught, "Could not reopen the expense"));
     } finally {
       setReopenState("idle");
     }
@@ -252,30 +256,6 @@ export function OutingEditorPage() {
       });
     } catch (caught) {
       setActionError(getErrorMessage(caught, "Could not change the total mode"));
-    }
-  }
-
-  async function handlePublishDraft() {
-    if (!data) return;
-    setPublishState("saving");
-    setActionError(null);
-    setFinalizeMessage(null);
-    try {
-      await publishPrivateDraft(data.outing.id, data.outing.version);
-      await refresh();
-      if (group) {
-        await queryClient.invalidateQueries({ queryKey: ["outings", group.id] });
-        await queryClient.invalidateQueries({ queryKey: ["ledger", group.id] });
-        await queryClient.invalidateQueries({ queryKey: ["activity", group.id] });
-      }
-      setFinalizeMessage({
-        kind: "notice",
-        text: "Published. The whole table can see this outing now."
-      });
-    } catch (caught) {
-      setActionError(getErrorMessage(caught, "Could not publish the draft"));
-    } finally {
-      setPublishState("idle");
     }
   }
 
@@ -356,13 +336,13 @@ export function OutingEditorPage() {
   }
 
   if (isLoading) {
-    return <p className="panel-copy">Loading outing…</p>;
+    return <p className="panel-copy">Loading expense…</p>;
   }
 
   if (error || !data) {
     return (
       <section className="panel">
-        <h2 className="panel-title">Outing not found</h2>
+        <h2 className="panel-title">Expense not found</h2>
         <p className="panel-copy">{error instanceof Error ? error.message : "Try again."}</p>
         <Link className="primary-action" to="/">
           <Icon name="chevron-left" />
@@ -370,6 +350,10 @@ export function OutingEditorPage() {
         </Link>
       </section>
     );
+  }
+
+  if (!group || data.outing.group_id !== group.id) {
+    return <p className="panel-copy">Switching table…</p>;
   }
 
   const isEditable = data.outing.status !== "finalized";
@@ -385,9 +369,6 @@ export function OutingEditorPage() {
     presentAdultIds.includes(payerAdultId) &&
     presentAdultIds.length >= 2 &&
     finalizeState !== "saving";
-  const canPublishDraft =
-    data.outing.status === "private_draft" &&
-    (isOwner || data.outing.author_profile_id === profile?.id);
 
   return (
     <div className="page page--editor">
@@ -397,25 +378,24 @@ export function OutingEditorPage() {
           Back
         </button>
         <header className="page-head">
-          <h1 className="page-title">{data.outing.place || "New outing"}</h1>
+          <h1 className="page-title">{data.outing.place || "New expense"}</h1>
           <p className="page-sub">
-            {formatDate(data.outing.date)} ·{" "}
-            {data.outing.status === "private_draft" ? "private draft" : data.outing.status}
+            {formatDate(data.outing.date)} · {data.outing.status}
           </p>
         </header>
         {isOwner && data.outing.status === "finalized" ? (
           <button className="text-action" type="button" onClick={() => setShowReopen(true)}>
             <Icon name="restore" />
-            Reopen this outing
+            Reopen this expense
           </button>
         ) : null}
       </div>
 
       {showReopen ? (
-        <section className="panel editor-confirm" aria-label="Reopen outing">
+        <section className="panel editor-confirm" aria-label="Reopen expense">
           <h2 className="panel-title">Clear the finalized shares?</h2>
           <p className="panel-copy">
-            This outing becomes editable again. Its share snapshot is cleared, so it leaves the
+            This expense becomes editable again. Its share snapshot is cleared, so it leaves the
             ledger until you finalize it again. The saved total stays fixed.
           </p>
           {affectedSettlements > 0 ? (
@@ -437,7 +417,7 @@ export function OutingEditorPage() {
               disabled={reopenState === "saving"}
             >
               <Icon name="restore" />
-              {reopenState === "saving" ? "Reopening…" : "Reopen outing"}
+              {reopenState === "saving" ? "Reopening…" : "Reopen expense"}
             </button>
           </div>
         </section>
@@ -449,7 +429,7 @@ export function OutingEditorPage() {
         </p>
       ) : null}
 
-      <form className="panel auth-form" onSubmit={saveDetails} aria-label="Outing details">
+      <form className="panel auth-form" onSubmit={saveDetails} aria-label="Expense details">
         <div className="field-pair">
           <label className="field" htmlFor="outing-date">
             <span>Date</span>
@@ -615,7 +595,7 @@ export function OutingEditorPage() {
           data.outing.total_mode === "fixed" ? (
             <div className="reopened-note">
               <p className="panel-copy">
-                Reopened outings keep the saved total, even when items change.
+                Reopened expenses keep the saved total, even when items change.
               </p>
               {isOwner ? (
                 <button
@@ -629,7 +609,7 @@ export function OutingEditorPage() {
               ) : null}
             </div>
           ) : (
-            <p className="panel-copy">This outing follows the item sum again.</p>
+            <p className="panel-copy">This expense follows the item sum again.</p>
           )
         ) : null}
 
@@ -829,11 +809,7 @@ export function OutingEditorPage() {
           </p>
         ) : null}
         {!isOwner ? (
-          <p className="panel-copy">
-            {data.outing.status === "private_draft"
-              ? "Publish this draft when it is ready. The owner finalizes."
-              : "Only the owner can finalize."}
-          </p>
+          <p className="panel-copy">Only the owner can finalize.</p>
         ) : null}
         {finalizeMessage ? (
           <p
@@ -863,17 +839,7 @@ export function OutingEditorPage() {
           </div>
           <div className="total-amount">{preview ? formatPeso(preview.totalCentavos) : "—"}</div>
         </div>
-        {data.outing.status === "private_draft" ? (
-          <button
-            className="primary-action"
-            type="button"
-            onClick={() => void handlePublishDraft()}
-            disabled={!canPublishDraft || publishState === "saving"}
-          >
-            <Icon name="upload" />
-            {publishState === "saving" ? "Publishing…" : "Publish draft"}
-          </button>
-        ) : data.outing.status === "finalized" ? (
+        {data.outing.status === "finalized" ? (
           <span className="stamp">Finalized</span>
         ) : (
           <button
