@@ -1333,7 +1333,7 @@ summary:focus-visible,
 .home-lead {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: var(--section-gap);
 }
 
 .home-grid {

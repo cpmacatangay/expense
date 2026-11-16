@@ -106,7 +106,8 @@ Rules:
 
 ### Spacing, shape, and depth
 
-- One 4px base; screen gutters 16px on a phone, 24px on a wide screen; section gap 24–28px.
+- One 4px base; screen gutters 16px on a phone, 24px on a wide screen; section gap 12px, the
+  balance-to-action rhythm on Home.
 - Panel padding 16px (20px at ≥760), card gap 16px.
 - Radii: panel/ticket 8px, control 6px, chip 4px, sheet 12px. No 9–16px middle values elsewhere.
 - No shadows at rest. A sheet is the only floating surface, with a soft shadow and a scrim.
