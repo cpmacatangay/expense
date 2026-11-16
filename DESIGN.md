@@ -100,6 +100,9 @@ Rules:
 - `font-variant-numeric: tabular-nums` everywhere a figure updates.
 - No display type: the title stays at 24–26, the balance at 34, nothing at 48.
 - Sentence case. No tracked uppercase, no eyebrow labels above headings.
+- Every size resolves from a `--fs-*` role token in `tokens.css` (`title`, `title-wide`,
+  `onboarding`, `section`, `kpi`, `kpi-small`, `total`, `code`, `sheet`, `body`, `small`, `micro`,
+  `pill`, `initials`, `control`). Component CSS must not set a literal font size.
 
 ### Spacing, shape, and depth
 

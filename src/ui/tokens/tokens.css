@@ -61,11 +61,20 @@
   --font-sans: "Geist", system-ui, -apple-system, "Segoe UI", sans-serif;
   --font-mono: "Geist Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
   --fs-title: 24px;
+  --fs-title-wide: 26px;
+  --fs-onboarding: 28px;
   --fs-section: 16px;
   --fs-kpi: 34px;
+  --fs-kpi-small: 24px;
+  --fs-total: 22px;
+  --fs-code: 26px;
+  --fs-sheet: 18px;
   --fs-body: 14px;
   --fs-small: 13px;
   --fs-micro: 12px;
+  --fs-pill: 11px;
+  --fs-initials: 10px;
+  --fs-control: 16px;
 
   /* Motion */
   --ease: cubic-bezier(0.16, 1, 0.3, 1);
