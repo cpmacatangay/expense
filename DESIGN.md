@@ -170,9 +170,10 @@ as a detection flag.
 - **Primary:** 44px, 6px radius, ink fill, warm-white label, 16px icon. One per screen. The only
   exception is the dark theme's inverted light fill.
 - **Secondary:** 44px, transparent, 1px control border, ink label.
-- **Text action:** 44px on phone / 34px on wide, transparent, 1px border, 4px radius, 13/500. A command
+- **Text action:** 44px on phone / 34px on wide, transparent, 1px border, 4px radius, 14/500. A command
   is never styled as bare underlined text. Destructive: red text with the same neutral border; only the
-  hover state earns a red edge.
+  hover state earns a red edge. Card-level text actions in Settings use the 6px control radius and fill
+  the panel width.
 - **Icon action:** 44px phone / 36px wide, 1px border, 16px icon, accessible name + title.
 - **Text link:** navigation only, 44px hit area, 13/500 ink, trailing arrow; underline on hover. Never
   use it for a command.

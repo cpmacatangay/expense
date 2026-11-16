@@ -472,9 +472,15 @@ summary:focus-visible,
   justify-self: stretch;
 }
 
-.page--settings .export-actions > .text-action {
+.page--settings .export-actions > .text-action,
+.page--settings .form-actions > .text-action,
+.page--settings .panel > .text-action {
+  min-height: var(--control-height);
+  padding: 0 16px;
+  border-radius: var(--radius-control);
   width: 100%;
   justify-self: stretch;
+  font-size: var(--fs-body);
 }
 
 .page--settings .panel--account > .text-action {
@@ -982,12 +988,12 @@ summary:focus-visible,
   width: auto;
   min-height: 44px;
   padding: 0 14px;
-  font-size: var(--fs-small);
+  font-size: var(--fs-body);
 }
 
 .ledger-actions .text-action {
   min-height: 44px;
-  font-size: var(--fs-small);
+  font-size: var(--fs-body);
 }
 
 .ledger-decline {
@@ -1070,14 +1076,14 @@ summary:focus-visible,
 .student-actions .text-action {
   min-height: 44px;
   padding: 0 10px;
-  font-size: var(--fs-small);
+  font-size: var(--fs-body);
 }
 
 .member-actions .secondary-action {
   width: auto;
   min-height: 44px;
   padding: 0 10px;
-  font-size: var(--fs-small);
+  font-size: var(--fs-body);
 }
 
 /* ---------- Actions ---------- */
@@ -1156,7 +1162,7 @@ summary:focus-visible,
   border-radius: var(--radius-chip);
   background: transparent;
   color: var(--text);
-  font-size: var(--fs-small);
+  font-size: var(--fs-body);
   font-weight: 500;
   line-height: 1.2;
   text-align: center;
@@ -1725,7 +1731,7 @@ summary:focus-visible,
   border-radius: var(--radius-control);
   background: var(--surface);
   color: var(--text);
-  font-size: var(--fs-small);
+  font-size: var(--fs-body);
   font-weight: 500;
   text-align: left;
 }
