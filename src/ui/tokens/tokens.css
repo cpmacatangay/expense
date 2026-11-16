@@ -52,7 +52,7 @@
   --gap: 12px;
   --card-pad: 16px;
   --pad: 16px;
-  --section-gap: 24px;
+  --section-gap: var(--gap);
   --row-height: 44px;
   --control-height: 44px;
   --nav-row: 44px;
@@ -110,7 +110,6 @@
   :root {
     --card-pad: 20px;
     --pad: 24px;
-    --section-gap: 28px;
   }
 }
 
