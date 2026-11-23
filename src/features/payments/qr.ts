@@ -6,8 +6,9 @@ export const MAX_PAYMENT_QR_BYTES = 2 * 1024 * 1024;
 const allowedTypes = ["image/png", "image/jpeg"];
 
 export type PaymentQrState = {
-  payment_qr_path: string | null;
-  payment_qr_label: string | null;
+  id: string;
+  paymentQrLabel: string | null;
+  hasQr: boolean;
 };
 
 export function validatePaymentQrFile(file: File) {
@@ -59,8 +60,7 @@ async function preparePaymentQrFile(file: File): Promise<File> {
 }
 
 export async function uploadPaymentQr(input: {
-  groupId: string;
-  adultId: string;
+  personId: string;
   file: File;
   label: string;
   previousPath: string | null;
@@ -75,7 +75,7 @@ export async function uploadPaymentQr(input: {
   }
 
   const client = requireSupabase();
-  const path = `${input.groupId}/${input.adultId}/${Date.now()}.png`;
+  const path = `${input.personId}/${Date.now()}.png`;
 
   const { error: uploadError } = await client.storage
     .from(PAYMENT_QR_BUCKET)
@@ -87,7 +87,6 @@ export async function uploadPaymentQr(input: {
   if (uploadError) throw uploadError;
 
   const { data, error } = await client.rpc("set_payment_qr", {
-    p_adult_id: input.adultId,
     p_path: path,
     p_label: input.label.trim() || null
   });
@@ -105,13 +104,11 @@ export async function uploadPaymentQr(input: {
 }
 
 export async function clearPaymentQr(
-  adultId: string,
+  _personId: string,
   path: string | null
 ): Promise<PaymentQrState> {
   const client = requireSupabase();
-  const { data, error } = await client.rpc("clear_payment_qr", {
-    p_adult_id: adultId
-  });
+  const { data, error } = await client.rpc("clear_payment_qr");
 
   if (error) throw error;
 
@@ -125,7 +122,7 @@ export async function clearPaymentQr(
 export async function getPaymentQrUrl(path: string): Promise<string> {
   const { data, error } = await requireSupabase()
     .storage.from(PAYMENT_QR_BUCKET)
-    .createSignedUrl(path, 300);
+    .createSignedUrl(path, 60);
 
   if (error) throw error;
   return data.signedUrl;

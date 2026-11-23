@@ -11,6 +11,10 @@ export function cleanupLegacyStorage() {
     if (localStorage.getItem(CLEANUP_KEY)) return;
     localStorage.setItem(CLEANUP_KEY, "1");
     localStorage.removeItem("salo-query-cache");
+    for (let index = localStorage.length - 1; index >= 0; index -= 1) {
+      const key = localStorage.key(index);
+      if (key?.startsWith("salo.selected-group.")) localStorage.removeItem(key);
+    }
     if ("indexedDB" in window) {
       window.indexedDB.deleteDatabase("salo");
     }

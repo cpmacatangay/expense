@@ -58,3 +58,6 @@ playwright-report/
 !.env.example
 
 .archify/
+
+# Production backups
+backups/

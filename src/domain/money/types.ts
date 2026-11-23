@@ -1,43 +1,33 @@
 export type Centavos = number;
 
-export type TotalMode = "auto" | "manual" | "fixed";
-
-export type AssignmentType = "adult" | "student" | "shared";
-
-export type PresentStudent = {
-  id: string;
-  coveredByAdultId: string;
-};
-
-export type MoneyItem = {
-  id?: string;
+export type ExpenseItemInput = {
+  name: string;
   amountCentavos: Centavos;
-  assignmentType: AssignmentType;
-  assignedAdultId?: string | null;
-  assignedStudentId?: string | null;
+  assignedPersonId: string;
 };
 
-export type ComputeSharesInput = {
-  presentAdults: string[];
-  presentStudents: PresentStudent[];
-  items: MoneyItem[];
-  totalMode: TotalMode;
-  manualTotalCentavos?: Centavos | null;
-  fixedTotalCentavos?: Centavos | null;
+export type ExpenseCoverageInput = {
+  coveredPersonId: string;
+  covererPersonId: string;
 };
 
-export type AdultShare = {
-  adultId: string;
-  ownItemsCentavos: Centavos;
-  studentItemsCentavos: Centavos;
-  sharedHeadCentavos: Centavos;
-  coveredStudentSharedCentavos: Centavos;
-  totalDifferenceCentavos: Centavos;
+export type ExpenseDraft = {
+  creatorPersonId: string;
+  payerPersonId: string;
+  people: string[];
+  items: ExpenseItemInput[];
+  coverage: ExpenseCoverageInput[];
+};
+
+export type ExpenseShare = {
+  personId: string;
+  itemsCentavos: Centavos;
+  coveredCentavos: Centavos;
+  owedCentavos: Centavos;
+  coveredByPersonId: string | null;
+};
+
+export type ExpenseSharesResult = {
   totalCentavos: Centavos;
-};
-
-export type SharesResult = {
-  totalCentavos: Centavos;
-  itemSumCentavos: Centavos;
-  shares: AdultShare[];
+  shares: ExpenseShare[];
 };
