@@ -17,7 +17,7 @@ removed.
 | `/expenses/:expenseId/edit` | Edit expense | pushed |
 | `/ledger` | Ledger | Ledger |
 | `/settings` | Settings | Settings |
-| `/invite` | Invite claim handler | behind auth |
+| `/join/:token` | Expense share link handler | behind auth |
 | `*` | Not found | — |
 
 No `/outings/:id`, `/history`, `/welcome`, group setup, or group switcher routes.
@@ -82,10 +82,11 @@ Fields:
 1. **Description** — required, 1–120.
 2. **Date** — defaults to Manila today.
 3. **Payer** — a select over the current people; defaults to the creator.
-4. **People** — the participant set, including the creator and payer. Add by email opens
+4. **People** — the participant set, including the creator and payer. Add by name opens
    `AddPersonSheet`. Minimum 2, maximum 12.
-5. **Items** — rows of name, amount, and person. Add and remove rows. Every item belongs to one
-   person. No shared option, quantity, unit price, or tax.
+5. **Items** — a persistent quick-add composer (name, amount, last-used person) plus editable rows.
+   Every item belongs to one person. **Split equally** creates independent one-person lines from a
+   total. No stored shared line, quantity, unit price, or tax.
 6. **Coverage** — optional. For each non-payer, choose “Pays own share” or “Covered by …”. Only valid
    coverers are offered; a coverer cannot be covered, and the payer cannot be chosen.
 7. **Preview** — total, each person's share, coverage note, and who owes whom. Updates on change.
@@ -152,23 +153,29 @@ Sections, in order:
 
 No group name, group color, members panel, ownership, archive, delete group, students, or export.
 
-## Invite
+## Join and Share
 
-- `/invite?token=...` stores the token, ensures Google sign-in, then calls `claim_invite`.
-- On success, show a short confirmation and route to Home or the expense the person was added to.
-- On account mismatch, explain: “Sign in with the Google account for the email this link was created for.”
-- On expired or revoked, explain: “This invite is no longer available. Ask for a new link.”
-- `claim_people_for_me` also runs after sign-in, so a forwarded or lost link does not block access.
+- **Share expense** appears on the detail page for the creator or payer. It opens a sheet with the
+  `/join/<token>` link, Copy, optional native Share, expiry, and Refresh. Refreshing rotates the
+  link and the old one stops working.
+- `/join/<token>` ensures Google sign-in, then shows the limited expense summary and the open names.
+  If one name is open it is preselected; otherwise the person chooses one.
+- On success, route to the expense detail. If the caller is already on the expense, show “You're
+  already on it.”
+- On an expired or refreshed token, show “This link is no longer available.”
+- Settings → People lists joined/not-joined status only; it does not create or list personal invite
+  links.
 
 ## Shared Components
 
 | Component | Responsibility |
 |---|---|
-| `AddPersonSheet` | Email input, `add_person` action, pending state, copyable invite link, retry |
-| `PersonPicker` | Selected people, add person, remove person, pending badge |
-| `ItemEditor` | Name, amount, assignee, add/remove rows, inline errors |
+| `AddPersonSheet` | Name input, `add_person` action, retry; no email or link |
+| `PersonPicker` | Selected people, add person, remove person, not-joined badge |
+| `ItemEditor` | Quick-add composer (name, amount, last-used person), saved rows, count/total, Split equally sheet |
 | `CoverageEditor` | Per-person coverage choice with only valid coverers |
 | `SharePreview` | Total, per-person shares, debt preview |
+| `ShareExpenseSheet` | Copy/native share, 7-day expiry, refresh |
 | `ActivityList` | Renders recent events and expense history, with deleted labels |
 | `DebtRow` | Direction, amount, Mark paid, QR action |
 | `PaySheet` | QR image, label, amount, missing-QR copy, Mark paid |
@@ -178,10 +185,10 @@ No group name, group color, members panel, ownership, archive, delete group, stu
 ## Data and Cache
 
 - Query keys: `["me"]`, `["people"]`, `["expenses"]`, `["expense", id]`, `["ledger"]`,
-  `["pair", personId]`, `["activity", "recent"]`.
+  `["pair", personId]`, `["activity", "recent"]`, `["expense-share", id]`.
 - Save/delete invalidate `expenses`, `ledger`, `activity`, and the affected `expense`.
 - Mark paid/undo invalidate `ledger`, `activity`, and `pair`.
-- Add person/link/correct invalidate `people` and the open expense draft.
+- Add person/share/claim invalidate `people`, `expenses`, `ledger`, `activity`, and the open detail.
 - A single realtime subscription invalidates `expenses`, `ledger`, `activity`, and the open detail on
   changes to `expenses`, `expense_shares`, `payments`, or `expense_events`. Payloads are not trusted;
   queries refetch under RLS.

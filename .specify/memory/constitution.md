@@ -1,25 +1,13 @@
 <!--
 Sync Impact Report
-- Version change: 4.1.0 -> 6.0.0 (5.0.0 participant-based ledger; 5.0.1 clarifications; 6.0.0 Google-only sign-in and share-link invites, no email delivery)
+- Version change: 6.0.0 -> 7.0.0 (share-link model aligned; equal-split helper added)
 - Modified principles:
-  - I. Money Correctness Is Non-Negotiable (one person per line; no shared items)
-  - II. Shared by Design, Private by Default -> II. Pairwise Privacy by Default
-  - III. Connected Shared Edits -> III. Immediate Saves, Connected Writes
-  - IV. One PWA, Two Native Shells -> IV. One Installable PWA, One Light Visual World
-  - V. Explicit and Simple Money Rules (participants, one-level coverage, mark-paid)
-  - VI. Auditable and Reversible -> VI. Corrections Stay Visible
-  - VII. Owner-Controlled, Member-Collaborative -> VII. No Owners, No Groups
-  - VIII. Low-Friction on a Phone (three tabs)
-- Added principles:
-  - IX. Simplicity Is the Product
-  - X. Zero Recurring Cost (retained, renumbered from IX)
-- Removed: group isolation, students, owner finalization, recipient-confirmed settlements,
-  recaps, exports, group lifecycle, four-tab navigation, private drafts, and email authentication
-- Added constraints: participant-only expense access, pairwise balances, data wipe after a
-  verified production backup, no migration of old ledger data, Google-only sign-in, self-service
-  sign-up, share-link invites, and no email delivery
-- Follow-up TODOs: take and verify a production backup before the destructive rollout; verify the
-  new schema and screens through the plan, tasks, and implement stages
+  - II. Pairwise Privacy by Default (name placeholders, no email invites)
+  - V. Explicit and Simple Money Rules (equal-split helper creates one-person lines)
+  - VII. No Owners, No Groups (one share link per expense replaces per-email invites)
+- Added constraints: name-based placeholders, one 7-day expense share link, deterministic
+  equal-split remainder, no stored shared lines, no email delivery
+- Follow-up TODOs: implement the item composer and equal-split helper with tests; no migration
 -->
 
 # Salo Constitution
@@ -48,8 +36,9 @@ see a debt between two other people.
 
 A person's display name and payment QR MUST be shown only to people who share an expense or an open
 balance with them. There is no directory, public profile, or search across strangers; people are
-added by exact email. Email addresses MUST NOT be shown to other participants; they are used only to
-add a person. No authentication or invite email is sent.
+added by name to an expense. A person may remain a named placeholder until they claim an expense
+share link. Email addresses MUST NOT be shown to other participants and MUST NOT be used to invite
+someone. No authentication or invite email is sent.
 
 Expense and balance access MUST be enforced on the server, not only hidden in the interface. A
 request outside the viewer's access MUST be denied without revealing whether the record exists. The
@@ -99,10 +88,12 @@ The payer MUST be one of the listed people. An expense MUST have at least two an
 people.
 
 Each item MUST have a name and an amount and MUST be assigned to exactly one listed person. A dish
-eaten by several people MUST be entered as one line per person; the product MUST NOT offer a
-shared-item split, a per-line multi-person split, or an unequal custom split. Quantity, unit price,
-and receipt line details are out of scope. The expense total MUST be the sum of its items; the
-product MUST NOT offer a manual total, a fixed total, tax, service charge, or discount.
+eaten by several people MUST be recorded as one line per person. The editor MAY offer an equal-split
+helper that creates those lines from a user-entered total; the helper MUST show the resulting
+per-person amounts before adding and MUST NOT store a shared line. The product MUST NOT offer an
+unequal custom split or a per-line multi-person split. Quantity, unit price, and receipt line details
+are out of scope. The expense total MUST be the sum of its items; the product MUST NOT offer a manual
+total, a fixed total, tax, service charge, or discount.
 
 Coverage MUST be one level inside one expense. A coverer absorbs the covered person's full share and
 MUST NOT also be covered in the same expense. The payer MUST NOT be covered, nobody may cover
@@ -142,12 +133,11 @@ Any signed-in person MUST be able to record an expense. The creator and the paye
 people who can edit or delete it; every other listed person is view-only. There MUST be no
 owner-only or admin-only action.
 
-People are added by exact email. An existing Google account is linked immediately; a new email
-becomes a pending person with a copyable invite link and may be listed, be the payer, or cover
-someone. Everything becomes actionable after they sign in with Google using the invited email. The
-inviter MUST be able to correct a pending email before it is claimed and to create a fresh link
-after expiry or loss. The product MUST use the term "People"; "adults" and "students" MUST NOT
-appear.
+Any signed-in person can add a named placeholder to an expense. The creator or payer can create one
+share link per expense, valid for 7 days and refreshable. Opening the link requires Google sign-in;
+the recipient sees a limited expense summary and claims one open name. Claiming merges the
+placeholder into the recipient's account person across every expense that used the name. The product
+MUST use the term "People"; "adults" and "students" MUST NOT appear.
 
 **Rationale**: The friction the group felt came from administering a shared space. Removing ownership
 and group lifecycle removes the work that was never about the expenses.
@@ -208,8 +198,9 @@ a subscription.
 - Expense access MUST be limited to the people listed on it. Balance access MUST be limited to the
   two people in the pair. Payment QR access MUST be limited to people who share an expense or open
   balance with its owner.
-- Invite links MUST be shareable, bound to the invited email, expiring, single-use, and claimable only
-  by a Google account with that email.
+- Expense share links MUST be unguessable, expire after 7 days, be refreshable by the creator or
+  payer, and grant only a limited expense preview plus the right to claim one open name on that
+  expense. They MUST NOT expose items, shares, payments, or email addresses before the claim.
 - Account deletion MUST be blocked while the person owes or is owed any amount. Past expenses MUST
   keep the display name recorded on them.
 - Old ledger data and payment QR images MUST be discarded at release, only after a fresh verified
@@ -254,4 +245,4 @@ update the version, ratification date, and last-amended date. Compliance is revi
 stage and before every release. When a principle conflicts with a feature request, the constitution
 wins until it is formally amended.
 
-**Version**: 6.0.0 | **Ratified**: 2026-11-07 | **Last Amended**: 2026-11-17
+**Version**: 7.0.0 | **Ratified**: 2026-11-07 | **Last Amended**: 2026-11-23

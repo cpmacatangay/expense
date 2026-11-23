@@ -2,9 +2,10 @@
 
 > **Revision 2026-11-23**: Email invitations were replaced by one share link per expense. People
 > are added by name; a signed-in recipient claims an open name and the placeholder is merged into
-> their account. Migration `0035_expense_share_links` implements this. The spec, data model, and
-> quickstart are the current source of truth for the sharing flow; older email-invite references
-> in this plan are historical.
+> their account. Migration `0035_expense_share_links` implements this. Constitution 7.0.0 also
+> allows an equal-split helper that creates one independent line per person; the ledger still stores
+> one person per item. The spec, data model, and quickstart are the current source of truth; older
+> email-invite references in this plan are historical.
 
 **Branch**: `003-friends-expense-ledger` | **Date**: 2026-11-17 | **Spec**: [spec.md](./spec.md)
 
@@ -16,8 +17,8 @@ Replace the group/table ledger with a participant-based one. An expense lists it
 payer, and item lines that each belong to one person. Saving is immediate and authoritative: the
 server computes every share, applies one-level coverage, and updates pairwise debts in the same
 transaction. Either person can mark a full debt paid or undo that mark. Expenses are visible only to
-their participants; people are added by email, with existing Google accounts linked and new emails
-becoming pending people with a copyable invite link.
+their participants; people are added by name, and the creator or payer shares one 7-day link per
+expense so a recipient can claim an open name.
 
 The product keeps the itemized bill, per-person payment QR, activity history, install section, and
 the light-only stone/ink interface. Groups, students, drafts, finalization, recaps, exports, the
@@ -74,9 +75,9 @@ connection; no third-party payments
 
 **Result**: All gates pass. No violations; Complexity Tracking is empty.
 
-**Security constraints**: Google OAuth only; self-service Google sign-up; email-bound invite links;
-no SMTP, sending domain, or authentication/invite email; the service-role key exists only in the
-`delete-account` Edge Function.
+**Security constraints**: Google OAuth only; self-service Google sign-up; one expiring share link per
+expense; no SMTP, sending domain, or authentication/invite email; the service-role key exists only in
+the `delete-account` Edge Function.
 
 **Post-design re-check**: After the data model, RPC contracts, and UI contracts were written, every
 gate still passes. The participant-only query paths, one-level coverage constraints, immediate-save
@@ -96,7 +97,7 @@ specs/003-friends-expense-ledger/
 ├── contracts/
 │   ├── rpc.md
 │   ├── ui.md
-│   └── invite-link.md
+│   └── share-link.md
 └── checklists/
     └── requirements.md
 ```
@@ -209,9 +210,10 @@ Full decisions and alternatives are in [research.md](./research.md). The design 
 6. **One-level coverage enforced twice.** A composite constraint and a validation trigger reject
    self-coverage, payer coverage, chains, loops, and non-participants; the UI only offers valid
    coverers.
-7. **Invite links.** `add_person` creates or links the person. A new email becomes pending and gets
-   a hashed, expiring link the creator copies and sends in chat. No email is sent, and no auth user is
-   provisioned by the app.
+7. **Share links.** `add_person` creates a named placeholder. The creator or payer creates one
+   7-day token on the expense; a signed-in recipient claims an open name, and the placeholder is
+   merged into their account across every expense. No email is sent, and no auth user is provisioned
+   by the app.
 8. **Release-gated wipe.** New tables ship first; a separate destructive migration drops legacy
    tables only during a maintenance window after a verified backup and explicit sign-off.
 
@@ -233,7 +235,7 @@ Core tables:
 - `expense_shares` — gross items, covered amount, owed amount, covered-by person.
 - `payments` — pair-level full payment with marker and undo.
 - `expense_events` — expense-scoped before/after history.
-- `person_invitations` — hashed token, email, expiry, claim state.
+- `expenses.share_token`, `expenses.share_expires_at` — one 7-day share link per expense; no invitation table.
 
 Money rules:
 
@@ -251,8 +253,8 @@ Money rules:
   check.
 - [contracts/ui.md](./contracts/ui.md) — routes, screens, component responsibilities, states, and
   query invalidation.
-- [contracts/invite-link.md](./contracts/invite-link.md) - invite link, token handling, expiry,
-  refresh, and pending-email correction.
+- [contracts/share-link.md](./contracts/share-link.md) — share link, token handling, 7-day expiry,
+  refresh, preview, and claim/merge.
 
 ### API surface
 
@@ -274,9 +276,10 @@ The browser calls only these functions:
 | `undo_payment` | Reverse a marked payment |
 | `recent_activity` | Five latest expense events and payments involving the caller |
 | `set_payment_qr`, `clear_payment_qr` | Manage the caller's QR metadata |
-| `add_person` | Add by email: link an existing Google account or create a pending person with a link |
-| `create_invite_link` | Create a fresh, expiring link for a pending person; revokes the old one |
-| `correct_pending_email` | Change a pending person's email and create a fresh link |
+| `add_person` | Add a named placeholder or reuse one with the same name |
+| `create_expense_share` | Return or refresh one 7-day share link for an expense |
+| `expense_share_preview` | Limited summary and open names for a signed-in link holder |
+| `claim_expense_share` | Claim one open name and merge the placeholder into the account |
 | `delete-account` (Edge Function) | Delete the caller's account after a zero-balance check |
 
 All RPCs are `security definer`, `set search_path = public, pg_temp`, revoked from `public` and
@@ -289,14 +292,19 @@ relationship before touching data.
 - Add a small `useMe` query backed by `ensure_person`; it resolves the caller's person row after
   sign-in and runs `claim_people_for_me` once.
 - Routes: `/` Home, `/expenses` All expenses, `/expenses/new`, `/expenses/:id`,
-  `/expenses/:id/edit`, `/ledger`, `/settings`, `/invite`.
-- Editor: description, date, payer, people (with add-by-email), item rows (name, amount, person),
-  optional coverage, live share preview, Save. No draft or finalize controls.
+  `/expenses/:id/edit`, `/ledger`, `/settings`, `/join/:token`.
+- Editor: description, date, payer, people (added by name), a persistent quick-add composer, saved
+  item rows (name, amount, person), an equal-split sheet, optional coverage, live share preview,
+  Save. No draft or finalize controls. The composer appends without a blank row, keeps the last-used
+  person, and restores focus to the name after each add.
+- Equal-split helper: client-only `splitEvenly(totalCentavos, people)` using floor plus a
+  deterministic remainder (first people in display order get one extra centavo); it creates
+  independent one-person lines and never stores a shared line.
 - Detail: payer, people, items grouped by person, shares, coverage, total, history, Edit/Delete when
   allowed.
 - Ledger: totals, debt rows, Mark paid, QR sheet, paid history, Undo.
-- Settings: profile name, People (status, create invite link, correct pending email), payment QR,
-  install, sign out, delete account.
+- Settings: profile name, People (joined/not joined status), payment QR, install, sign out, delete
+  account.
 - Keep the three-tab shell (`tabs.ts`) and all existing visual tokens; All expenses and detail are
   pushed screens, not new tabs.
 - Query keys: `me`, `people`, `expenses`, `expense:id`, `ledger`, `pair:id`, `activity:recent`.
@@ -322,14 +330,15 @@ checked against the same golden vectors:
 ### Testing
 
 - **Unit**: compute shares, coverage validation, pair netting, payment undo, version rejection,
-  formatting, invite-link token handling, plus a seeded property-based share-sum generator.
-- **Component**: editor validation, add-person pending state, coverage picker limits, mark-paid and
-  undo, empty Home, deleted expense absent, All expenses ordering.
+  equal-split allocation and remainder, formatting, plus a seeded property-based share-sum generator.
+- **Component**: editor composer and split sheet, add-person name flow, coverage picker limits,
+  mark-paid and undo, empty Home, deleted expense absent, All expenses ordering.
 - **SQL**: share sum invariant, randomized share-sum cases, coverage constraints, non-participant
-  denial on every table, pending claim by email, hidden emails, QR access, stale version, soft
-  delete, payment direction, netting, undo, concurrent mark-paid lock.
-- **E2E**: Home → new expense → ledger → mark paid; copy invite link, Google sign-in, and claim;
-  360/390/412/430/1440 layouts; offline save error; install section.
+  denial on every table, share preview/claim/merge by name, hidden emails, QR access, stale version,
+  soft delete, payment direction, netting, undo, concurrent mark-paid lock.
+- **E2E**: Home → new expense → composer → split equally → ledger → mark paid; share link, Google
+  sign-in, claim, refresh and expiry; 360/390/412/430/1440 layouts; offline save error; install
+  section.
 - **Performance and installability**: Lighthouse mobile with 4G throttling; first usable under 3
   seconds, interactions under 100ms, live updates under 2 seconds; record the results in
   `quickstart.md`.

@@ -7,15 +7,16 @@ security, security-definer RPCs, and the private `payment-qr` bucket.
 ## Authentication
 
 - Sign-in is **Google OAuth only**. Self-service Google sign-up is enabled; a new account lands on an
-  empty Home and sees no data until someone adds its email to an expense.
+  empty Home and sees no data until someone shares an expense link.
 - Email one-time codes, magic links, passwords, and Sign in with Apple are not used.
 - There is **no authentication or invite email**. No custom SMTP, sending domain, or transactional
   email provider is required.
-- A new email becomes a pending person with a hashed, expiring, email-bound token. The creator copies
-  `/invite?token=...` and sends it in chat. The token is returned once and stored only as a SHA-256
-  hash. Claiming requires a Google account with the invited email.
-- A forwarded link cannot be claimed by a different Google account. Creating a fresh link revokes the
-  previous one. A pending email can be corrected before it is claimed.
+- People are added by name as placeholders. The creator or payer creates one unguessable 7-day token
+  on the expense; `/join/<token>` requires Google sign-in and shows only the expense summary and open
+  names. Claiming merges the placeholder into the account across every expense. Refreshing rotates
+  the token and invalidates the previous link.
+- The link does not expose items, shares, payments, or email addresses before the claim, and no link
+  is written to activity or logs.
 - The `delete-account` Edge Function requires `SUPABASE_SERVICE_ROLE_KEY`; no other client path uses
   the service role.
 

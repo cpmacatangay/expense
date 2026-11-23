@@ -308,7 +308,7 @@ test.describe("mock ledger screens", () => {
   test("Editor renders", async ({ page }) => {
     await page.goto("/expenses/new", { waitUntil: "networkidle" });
     await expect(page.getByRole("heading", { name: "New expense" })).toBeVisible();
-    await expect(page.getByText("Items")).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Items" })).toBeVisible();
     await expect(page.getByRole("button", { name: "Save expense" })).toBeVisible();
   });
 
@@ -331,9 +331,61 @@ test.describe("mock ledger screens", () => {
   test("A person is added by name", async ({ page }) => {
     await page.goto("/expenses/new", { waitUntil: "networkidle" });
     await page.getByRole("button", { name: "Add someone by name" }).click();
-    await page.getByLabel("Name").fill("Mia");
-    await page.getByRole("button", { name: "Add person" }).click();
+    const sheet = page.getByRole("dialog", { name: "Add a person" });
+    await sheet.getByLabel("Name").fill("Mia");
+    await sheet.getByRole("button", { name: "Add person" }).click();
     await expect(page.getByRole("button", { name: /Mia/ })).toBeVisible();
+  });
+
+  test("The composer adds items and keeps focus", async ({ page }) => {
+    await page.goto("/expenses/new", { waitUntil: "networkidle" });
+    const composer = page.locator(".item-composer");
+
+    await composer.getByLabel("Item").fill("Pasta");
+    await composer.getByLabel("Amount").fill("4.00");
+    await composer.getByRole("button", { name: "Add" }).click();
+
+    await expect(page.getByText("1 item · ₱4.00")).toBeVisible();
+    await expect(composer.getByLabel("Item")).toHaveValue("");
+    await expect(composer.getByLabel("Item")).toBeFocused();
+
+    await composer.getByLabel("Item").fill("Pizza");
+    await composer.getByLabel("Amount").fill("8.00");
+    await composer.getByLabel("Amount").press("Enter");
+
+    await expect(page.getByText("2 items · ₱12.00")).toBeVisible();
+    await expect(page.locator(".item-edit-row")).toHaveCount(2);
+  });
+
+  test("Split equally creates one line per person", async ({ page }) => {
+    await page.goto("/expenses/new", { waitUntil: "networkidle" });
+    await page.getByRole("button", { name: /Mai/ }).click();
+
+    const composer = page.locator(".item-composer");
+    await composer.getByLabel("Item").fill("Pizza");
+    await composer.getByLabel("Amount").fill("10.00");
+    await page.getByRole("button", { name: "Split equally" }).click();
+
+    const sheet = page.getByRole("dialog", { name: "Split equally" });
+    await sheet.getByRole("button", { name: /Hope/ }).click();
+    await sheet.getByRole("button", { name: /Mai/ }).click();
+    await expect(sheet.getByText("₱5.00")).toHaveCount(2);
+    await sheet.getByRole("button", { name: "Add 2 items" }).click();
+
+    await expect(page.getByText("2 items · ₱10.00")).toBeVisible();
+    await expect(page.locator(".item-edit-row")).toHaveCount(2);
+  });
+
+  test("Every item can be removed while the composer stays", async ({ page }) => {
+    await page.goto("/expenses/new", { waitUntil: "networkidle" });
+    const composer = page.locator(".item-composer");
+    await composer.getByLabel("Item").fill("Pasta");
+    await composer.getByLabel("Amount").fill("4.00");
+    await composer.getByRole("button", { name: "Add" }).click();
+
+    await page.getByRole("button", { name: "Remove Pasta" }).click();
+    await expect(page.getByText("0 items · ₱0.00")).toBeVisible();
+    await expect(composer).toBeVisible();
   });
 
   test("The detail page creates a share link", async ({ page }) => {

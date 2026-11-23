@@ -135,17 +135,17 @@ generic activity table would need nullable expense and pair references and weake
 ## 9. Sign-in and invite links
 
 **Decision**: Sign-in is Google OAuth only. Self-service Google sign-up is allowed; a new account
-lands on an empty Home and sees no data until added. `add_person` normalizes the email, finds an
-existing profile or person, links it immediately, or creates a pending person. For a pending person,
-the RPC creates a hashed, expiring, email-bound token and returns it once; the creator copies the
-`/invite?token=...` link and sends it in chat. No email is sent. The person signs in with Google using
-the invited email and claims the link. `create_invite_link` refreshes a lost or expired link, and
-`correct_pending_email` changes the address and issues a new link.
+lands on an empty Home and sees no data until added. `add_person` creates or reuses a named
+placeholder; no email is required. The creator or payer creates one 7-day share link per expense
+(`/join/<token>`), and a signed-in recipient claims an open name on that expense. Claiming merges the
+placeholder into the account person across every expense that used the name. Refreshing rotates the
+link and invalidates the previous one. No email is sent.
 
 **Rationale**: Without a custom domain, authentication and invite email are unreliable and add a
 provider dependency. Google-only sign-in removes SMTP entirely. Self-service sign-up is safe because
-a person sees only expenses they are added to. A shareable link works in any chat app and keeps the
-email-bound claim, so a forwarded link cannot be claimed by the wrong Google account.
+a person sees only expenses they are added to. A shareable link works in any chat app; it identifies
+one expense and requires the recipient to claim an open name after signing in, so the email bound to
+the account no longer has to match anything.
 
 **Alternatives considered**:
 - **Keep email invites**: rejected; no domain and no reliable production SMTP.

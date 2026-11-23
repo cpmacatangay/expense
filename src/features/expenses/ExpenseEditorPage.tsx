@@ -19,15 +19,6 @@ import { SharePreview } from "./SharePreview";
 import { expenseDetail, saveExpense } from "./api";
 import type { ExpenseCoverage } from "./types";
 
-function draftItem(personId: string): ExpenseItemDraft {
-  return {
-    key: `item-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-    name: "",
-    amountCentavos: 0,
-    assignedPersonId: personId
-  };
-}
-
 export function ExpenseEditorPage() {
   const { expenseId } = useParams();
   const isEditing = Boolean(expenseId);
@@ -81,7 +72,7 @@ export function ExpenseEditorPage() {
     } else if (me && people) {
       setSelected([me.id]);
       setPayer(me.id);
-      setItems([draftItem(me.id)]);
+      setItems([]);
       setDate(todayInManila());
       initialized.current = true;
     }
@@ -133,9 +124,6 @@ export function ExpenseEditorPage() {
     }
 
     const nextItems = items.filter((item) => next.includes(item.assignedPersonId));
-    if (nextItems.length === 0 && next.length > 0) {
-      nextItems.push(draftItem(next[0]));
-    }
     setItems(nextItems);
 
     setCoverage(
@@ -302,10 +290,12 @@ export function ExpenseEditorPage() {
       </section>
 
       <section className="panel">
-        <div className="section-head">
-          <h2 className="panel-title">Items</h2>
-        </div>
-        <ItemEditor items={items} people={pickerPeople} onChange={setItems} />
+        <ItemEditor
+          items={items}
+          people={pickerPeople}
+          defaultPersonId={payer}
+          onChange={setItems}
+        />
       </section>
 
       <CoverageEditor

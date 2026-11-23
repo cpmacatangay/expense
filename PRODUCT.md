@@ -11,8 +11,8 @@ web
 ## Users
 
 **Friends who hang out** are the whole audience. One person records the expense at the table; everyone
-else sees only the expenses they are on. People may be existing Google accounts or new emails that
-receive a copyable invite link. There are no owners, admins, students, or group roles.
+else sees only the expenses they are on. People may be existing Google accounts or named placeholders
+who claim their name from an expense share link. There are no owners, admins, students, or group roles.
 
 ## Product Purpose
 
@@ -47,11 +47,12 @@ expense manager: no tables, no membership administration, no drafts, no export w
 ## Core Flows
 
 1. **Record an expense.** Home → New expense → description/date → payer → people → item lines →
-   optional coverage → Save. The expense is live immediately.
+   optional coverage → Save. A persistent composer adds items without blank rows; a shared dish can
+   be split equally into one independent line per person. The expense is live immediately.
 2. **See and settle.** Home shows the viewer's totals and debts; Ledger lists every pair and paid
    history. Either person marks the full amount paid.
-3. **Add a person.** Enter an email. An existing Google account links immediately; a new email becomes
-   a pending person with a copyable 7-day link. The person signs in with Google using that email.
+3. **Add and share.** Add a person by name, then share the expense link. The recipient signs in with
+   Google, claims an open name, and sees the recorded share. The link lasts 7 days and can be refreshed.
 4. **Review.** Home shows five recent events. Each expense shows its full change history. Ledger shows
    payments between a pair.
 5. **QR.** Settings stores one private QR and label. A debt row shows it to the pair.

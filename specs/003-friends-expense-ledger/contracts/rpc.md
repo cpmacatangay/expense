@@ -44,24 +44,11 @@ Errors: `Not authenticated`, `Profile not found`.
 ### `claim_people_for_me()`
 
 Links every `pending` or `former` person whose normalized email equals the signed-in profile email,
-marks open invitations claimed, and returns the claimed person ids. Called once after sign-in and on
-app load. Idempotent.
+and returns the claimed person ids. Called once after sign-in and on app load. Idempotent.
 
 ```json
 { "claimedPersonIds": ["uuid"] }
 ```
-
-### `claim_invite(p_token text)`
-
-Verifies a hashed, unexpired, unrevoked link and that the signed-in Google email matches the invited
-email. Links the person and marks the invitation claimed. A mismatched account is rejected without
-revealing the invitation.
-
-```json
-{ "personId": "uuid", "alreadyClaimed": false }
-```
-
-Errors: `This invite is no longer available`, `Sign in with the Google account for the invited email`.
 
 ### `update_display_name(p_display_name text)`
 
@@ -76,9 +63,8 @@ returns the person. Both rows stay in sync so the name shown on every expense ma
 
 ### `people_for_me()`
 
-Returns people the caller shares an active expense with or has paid, plus pending people the caller
-invited. It never returns another person's email. A pending person's email is returned only to the
-person who added them.
+Returns people the caller shares an active expense with or has paid, plus pending placeholders the
+caller created. It never returns email addresses.
 
 ```json
 {
@@ -89,74 +75,78 @@ person who added them.
       "status": "active",
       "isSelf": false,
       "hasQr": true,
-      "createdByMe": true,
-      "pendingEmail": null,
-      "invitationExpiresAt": null
+      "createdByMe": true
     }
   ]
 }
 ```
 
 Order: self first, then active people by display name, then pending people by display name.
-`createdByMe` is true only for a person the caller added; it gates Create invite link and Correct
-email in the UI and in the RPCs.
+`createdByMe` is true only for a person the caller added.
 
-### `add_person(p_email text)`
+### `add_person(p_name text)`
 
-Normalizes the email and either links an existing Google account or creates a pending person.
-
-```json
-{
-  "personId": "uuid",
-  "status": "active",
-  "inviteToken": null,
-  "expiresAt": null
-}
-```
+Trims and validates a 1–50 character name. Reuses the caller's pending placeholder with the same
+lowercased name, or creates a new pending person. No email is requested or sent.
 
 ```json
 {
   "personId": "uuid",
-  "status": "pending",
-  "inviteToken": "raw-token",
-  "expiresAt": "2026-11-24T12:00:00Z"
+  "displayName": "Mai",
+  "status": "pending"
 }
 ```
 
-Behavior:
+Errors: `Name must be 1-50 characters`, `Too many people. Try again later.`
 
-- Any authenticated person may add an email; the person is not yet on an expense, so no expense check
-  applies.
-- If a profile or person with that email exists, link or return it. An active result has no token.
-- If no account exists, create or reuse a pending person and create a hashed, 7-day invitation.
-  Return the raw token **once**; the client builds `/invite?token=...` for the creator to copy.
-- Adding the caller's own email is rejected.
-- No email is sent.
-- Rate limit: 20 add/link/correct calls per caller per hour.
+## Share links
 
-### `create_invite_link(p_person_id uuid)`
+### `create_expense_share(p_expense_id uuid, p_refresh boolean default false)`
 
-Creates a fresh link for a pending person. The caller must have created the person or share an active
-expense with them. Revokes any open invitation, creates a new hashed token, and returns it once.
+Creator or payer only. Reuses a live token unless `p_refresh` is true, in which case it rotates the
+token and starts a new 7-day window.
 
 ```json
-{ "personId": "uuid", "inviteToken": "raw-token", "expiresAt": "2026-11-24T12:00:00Z" }
+{ "token": "raw-token", "expiresAt": "2026-11-30T12:00:00Z" }
 ```
 
-Errors: `That person already joined`, `You cannot change this invite`, `Too many invites. Try again
-later.`
+Errors: `Not found`, `Only the creator or payer can share this expense`.
 
-### `correct_pending_email(p_person_id uuid, p_email text)`
+### `expense_share_preview(p_token text)`
 
-Creator only, before the person is claimed. Validates the new email, updates the person, revokes the
-old link, creates a new link, and returns the raw token once.
+Any signed-in caller with a live token. Returns the limited summary, whether the caller is already a
+participant, and the open names. Never returns items, shares, payments, or email addresses.
 
 ```json
-{ "personId": "uuid", "inviteToken": "raw-token", "expiresAt": "2026-11-24T12:00:00Z" }
+{
+  "expenseId": "uuid",
+  "description": "Dinner",
+  "expenseDate": "2026-11-23",
+  "payerName": "Hope",
+  "totalCentavos": 120000,
+  "expiresAt": "2026-11-30T12:00:00Z",
+  "alreadyParticipant": false,
+  "peopleCount": 3,
+  "unclaimed": [{ "personId": "uuid", "displayName": "Mai" }]
+}
 ```
 
-Errors: `Enter a valid email address`, `That email already belongs to another person`, `That person
-already joined`, `You cannot change this invite`.
+Error: `This link is no longer available`.
+
+### `claim_expense_share(p_token text, p_person_id uuid)`
+
+Claims one open name. The placeholder is merged into the caller's account person across every
+expense where it appears; items, coverage, shares, payer/creator references, payments, and event
+actors are rewritten, and the placeholder is deleted. Records one update event per affected expense.
+
+```json
+{ "expenseId": "uuid", "personId": "uuid", "alreadyClaimed": false }
+```
+
+Errors: `This link is no longer available`, `Choose your name`, `That name is already taken. Reload
+and choose another.`, `This name already has payments with your account. Ask the payer to use a new
+name.`, `This name shares an expense with your account already. Ask the payer to remove the
+duplicate.`
 
 No function sends email. There is no SMTP or auth-email path.
 

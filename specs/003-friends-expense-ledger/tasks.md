@@ -2,11 +2,16 @@
 
 **Input**: Design documents from `specs/003-friends-expense-ledger/`
 
-**Prerequisites**: `plan.md`, `spec.md`, `research.md`, `data-model.md`, `contracts/rpc.md`, `contracts/ui.md`, `contracts/invite-link.md`, `quickstart.md`
+**Prerequisites**: `plan.md`, `spec.md`, `research.md`, `data-model.md`, `contracts/rpc.md`, `contracts/ui.md`, `contracts/share-link.md`, `quickstart.md`
 
 **Tests**: Included because the constitution requires money-sum invariants and participant-access tests. Write the SQL and money tests before the implementation they verify. UI tests cover the spec's acceptance scenarios.
 
 **Organization**: Tasks are grouped by user story so each story can be implemented and tested independently.
+
+> **Post-release note**: migration `0035_expense_share_links` replaced `person_invitations` with
+> per-expense share tokens and replaced the email invite RPCs. Historical T011/T012/T016/T017/T029
+> references describe the earlier 0033 schema; the current schema and RPCs are in 0035, and the
+> current item-entry tasks are T111–T115 below.
 
 ## Format: `[ID] [P?] [Story] Description`
 
@@ -77,7 +82,7 @@
 - [ ] T033 Replace the group gate in `src/app/App.tsx` and `src/app/providers.tsx` with `useMe`; stop rendering `GroupProvider`; route unauthenticated users to `SignInPage`. Leave the old group modules in place until T099 so not-yet-rewritten pages still typecheck.
 - [ ] T034 [P] Update `src/features/auth/SignInPage.tsx` to Google only: one Continue with Google action, no email code, no magic link, no group-owner copy. Remove `VITE_EMAIL_AUTH_ENABLED` from `src/lib/env.ts` and `src/vite-env.d.ts` in the same change.
 - [ ] T035 [P] Update `src/features/auth/AuthProvider.tsx` and `src/features/auth/authContext.ts` for Google-only sign-in and the claim-after-sign-in hook; remove the email OTP handling.
-- [ ] T036 Update `src/ui/primitives/tabs.ts` and the route shell: Home, Ledger, Settings only; replace the old Home, Ledger, and Expenses imports with placeholders until their stories land; add placeholders for `/expenses`, `/expenses/new`, `/expenses/:id`, `/expenses/:id/edit`, `/invite`.
+- [ ] T036 Update `src/ui/primitives/tabs.ts` and the route shell: Home, Ledger, Settings only; replace the old Home, Ledger, and Expenses imports with placeholders until their stories land; add placeholders for `/expenses`, `/expenses/new`, `/expenses/:id`, `/expenses/:id/edit`, `/join/:token`.
 - [ ] T037 [P] Create `src/features/realtime/useLedgerRealtime.ts` to invalidate `expenses`, `ledger`, `activity`, and the open detail on `expenses`, `expense_shares`, `payments`, and `expense_events`.
 - [ ] T038 [P] Fill `supabase/tests/participant_ledger.test.sql` with share sum, randomized expenses for the share-sum invariant, coverage, stale version, delete, payment direction, netting, and undo tests.
 - [ ] T039 [P] Fill `supabase/tests/participant_security.test.sql` with cross-participant denial, pending claim, wrong Google email, hidden email, QR access, non-creator invite tests, account-deletion balance block, and the profile-to-former trigger.
@@ -95,12 +100,12 @@
 
 ### Tests first
 
-- [ ] T041 [P] [US1] Add editor validation tests in `src/features/expenses/ExpenseEditorPage.test.tsx`: description, two people, payer included, item name/amount/assignee, no shared option.
+- [ ] T041 [P] [US1] Add editor validation tests in `src/features/expenses/ExpenseEditorPage.test.tsx`: description, two people, payer included, item name/amount/assignee, and equal-split lines that sum exactly to the total. No stored shared line or unequal split.
 - [ ] T042 [P] [US1] Add the browser happy path in `tests/e2e/expense-flow.spec.ts`: sign in, New expense, three people, three items, save, detail.
 
 ### Implementation
 
-- [ ] T043 [P] [US1] Create `src/features/expenses/ItemEditor.tsx`: name, amount, assignee, add/remove rows, inline errors; no quantity, unit price, or shared option.
+- [ ] T043 [P] [US1] Create `src/features/expenses/ItemEditor.tsx`: persistent quick-add composer (name, amount, last-used person), saved item rows, inline errors, and an **Split equally** sheet that creates independent one-person lines. No quantity, unit price, stored shared line, or unequal split.
 - [ ] T044 [P] [US1] Create `src/features/expenses/SharePreview.tsx`: total, per-person shares, debt preview using `computeExpenseShares`.
 - [ ] T045 [P] [US1] Create `src/features/expenses/useExpenses.ts`: expense list/detail queries and mutation invalidation.
 - [ ] T046 [US1] Create `src/features/expenses/ExpenseEditorPage.tsx`: description, date, payer, people, items, preview, Save; no draft, finalize, reopen, lock, or total mode. Move `todayInManila()` from `src/features/outings/api.ts` to `src/lib/dates.ts` and use it as the date default.
@@ -139,28 +144,28 @@
 
 ---
 
-## Phase 5: User Story 3 — Add people by email (Priority: P1)
+## Phase 5: User Story 3 — Add people by name and share the expense (Priority: P1)
 
-**Goal**: Link existing Google accounts; create pending people with copyable invite links; claim by Google email.
+**Goal**: Add named placeholders, create one 7-day share link per expense, and let a signed-in recipient claim an open name.
 
-**Independent Test**: Add an existing account and a new email, copy the link, sign in with the invited Google account, claim, and see the expense.
+**Independent Test**: Add two names to an expense, save, create the share link, sign in as one of the names, claim it, and see the recorded share.
 
 ### Tests first
 
-- [ ] T061 [P] [US3] Add `src/features/people/AddPersonSheet.test.tsx` for existing, pending, duplicate, self, and link-copy states.
-- [ ] T062 [P] [US3] Add `tests/e2e/invite-link.spec.ts` with a test Google identity: add, copy, claim, wrong account, expired link.
+- [ ] T061 [P] [US3] Add `src/features/people/AddPersonSheet.test.tsx` for a new name, duplicate pending name, max people, and no email field.
+- [ ] T062 [P] [US3] Add `tests/e2e/share-link.spec.ts` with a second Google identity: add name, share, preview, claim, refresh, expired, and already-participant.
 
 ### Implementation
 
-- [ ] T063 [P] [US3] Create `src/features/people/AddPersonSheet.tsx`: email input, `add_person`, pending result, Copy invite link, retry.
-- [ ] T064 [P] [US3] Create `src/features/people/PersonPicker.tsx`: selected people, add person, pending badge, remove; min 2, max 12.
+- [ ] T063 [P] [US3] Create `src/features/people/AddPersonSheet.tsx`: name input, `add_person`, retry; no email or link UI.
+- [ ] T064 [P] [US3] Create `src/features/people/PersonPicker.tsx`: selected people, add person, not-joined badge, remove; min 2, max 12.
 - [ ] T065 [US3] Create `src/features/people/usePeople.ts`: list/refresh queries and invalidations.
-- [ ] T066 [US3] Create `src/pages/SettingsPage.tsx` with profile name edit, People, Install, and sign out; no group, table, student, or owner sections.
-- [ ] T067 [US3] Add People rows to `src/pages/SettingsPage.tsx`: pending status, Create invite link, Correct email, creator-only actions.
-- [ ] T068 [US3] Create `src/pages/InvitePage.tsx`: store token, sign in with Google, call `claim_invite`, route to Home or the expense.
-- [ ] T069 [US3] Add link copy, expiry, wrong-account, and refresh messages in `src/features/people/AddPersonSheet.tsx` and `src/pages/SettingsPage.tsx`.
+- [ ] T066 [US3] Create `src/pages/SettingsPage.tsx` with profile name edit, People, Install, and sign out; no group, table, student, or invite actions.
+- [ ] T067 [US3] Add People rows to `src/pages/SettingsPage.tsx`: joined/not-joined status only.
+- [ ] T068 [US3] Create `src/pages/JoinExpensePage.tsx`: `/join/:token`, Google sign-in, limited preview, choose name, claim, route to the expense.
+- [ ] T069 [US3] Create `src/features/share/ShareExpenseSheet.tsx` and `api.ts`: copy/native share, 7-day expiry, and refresh.
 
-**Checkpoint**: Existing and new people can join without email delivery.
+**Checkpoint**: People can be added by name and can join from one expense link without email delivery.
 
 ---
 
@@ -289,6 +294,14 @@
 - [ ] T108 Review accessibility in `src/styles/global.css` and `src/ui/`: 44-point targets, contrast, focus order, labels, reduced motion.
 - [ ] T109 Run the release dry run in `specs/003-friends-expense-ledger/quickstart.md`: backup verification, `0033`, `0034`, QR wipe, Google-only smoke, and the timing checks.
 - [ ] T110 Audit `specs/003-friends-expense-ledger/spec.md` against the built app for removed surfaces, no email auth, no groups/students/drafts/finalization/recaps/exports/Activity tab.
+
+## Post-release 7.0.0 - Item composer and equal split
+
+- [ ] T111 [P] [US1] Add `src/domain/money/splitEvenly.ts` and tests: 2–12 people, total > 0, each line at least 1 centavo, deterministic remainder to the first people in display order, and exact sum.
+- [ ] T112 [US1] Replace `src/features/expenses/ItemEditor.tsx` with the persistent quick-add composer, saved inline rows, running count/total, and no blank-row creation.
+- [ ] T113 [US1] Add the **Split equally** sheet: dish name, total, person checkboxes, per-person preview, and independent generated lines. Composer only; no action on saved rows.
+- [ ] T114 [P] [US1] Add composer and split e2e coverage in `tests/e2e/` and verify Name focus/keyboard persistence on iPhone Safari and Android Chrome.
+- [ ] T115 Audit the constitution 7.0.0 amendment and spec FR-038/FR-039/FR-122/FR-123 against the built composer before release.
 
 ---
 

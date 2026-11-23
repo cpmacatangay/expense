@@ -33,7 +33,7 @@ money movement and positive confirmation. The ledger is the content; decoration 
 
 - Header: S mark, “Salo”, and “Friends ledger” at 12px muted; Manila date or “Offline” in mono on the
   right. No table name or switcher.
-- Three bottom tabs: Home, Ledger, Settings. All expenses, editor, detail, and invite are pushed
+- Three bottom tabs: Home, Ledger, Settings. All expenses, editor, detail, and join are pushed
   screens; the tabs hide on the editor/detail stack.
 - Offline banner is a thin paper strip with ink text. No red for connectivity.
 - Skip link, focus rings, and safe-area padding are mandatory.
@@ -56,8 +56,10 @@ recaps, exports, or bulk actions.
 ## Expense editor
 
 - Description, date, payer.
-- People: chips with an active/invited state, 2–12 people, creator included.
-- Items: line name, amount, one assignee. No quantity, unit price, or shared line.
+- People: chips with a joined/not-joined state, 2–12 people, creator included. Add by name.
+- Items: a persistent quick-add composer (name, amount, last-used person) and editable rows below it.
+  **Split equally** creates independent one-person lines from a total. No stored shared line,
+  quantity, or unit price.
 - Coverage: per person, “Pays own share” or “Covered by …”. Only valid coverers; one level.
 - Split preview: total, person shares, coverage notes, who owes the payer.
 - Save is primary; cancel returns. Delete is a separate destructive panel for editors.
@@ -79,10 +81,9 @@ with Undo. Empty: “All square.”
 
 760px column of titled panels:
 1. Profile: display name, email read-only.
-2. People: active and pending people, pending email only to the creator, Create invite link, Correct
-   email.
-3. Payment QR: current image and label, upload/replace/remove.
-4. Install Salo.
+2. People: joined/not-joined status. Inviting happens by sharing an expense link.
+3. Payment QR: full-width current image and label, upload/replace, then remove.
+4. Install Salo, with numbered Safari steps on iPhone.
 5. Account: sign out, delete account with the balance block explained.
 
 ## Components and states
@@ -113,6 +114,6 @@ with Undo. Empty: “All square.”
 ## Verification
 
 - 360, 390, 412, 430, and 1440 widths, light theme, no horizontal overflow.
-- Home, All expenses, editor, detail, Ledger, Settings, and Invite.
+- Home, All expenses, editor, detail, Ledger, Settings, and Join.
 - Installed iPhone/Android shell, offline reads, and the “connection required” save state.
 - Lighthouse mobile with 4G throttling; first usable under 3s, interactions under 100ms.

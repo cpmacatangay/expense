@@ -18,7 +18,7 @@
 | Sign-in | Google only. Self-service Google sign-up is allowed; a new account lands on an empty Home. Email codes, magic links, and Sign in with Apple are out. |
 | Expense entry | Keep the itemized bill: one payer, a description and date, the people who were there, and lines with a name and amount, each assigned to one person. |
 | Item fields | Name and amount only; no quantity or unit price. |
-| Split dishes | One person per line. A dish eaten by several people is entered as one line per person; the product has no shared-item split. |
+| Split dishes | One person per line. A dish eaten by several people is entered as one line per person. The editor may offer **Split equally**, which creates those one-person lines from a total; the ledger never stores a shared line. |
 | Coverage | Members may cover other members inside an expense. One level only: a coverer absorbs the covered person's full share and cannot also be covered in the same expense. |
 | Visibility | An expense is visible only to the people listed on it. Balances are pairwise and only ever shown to the two people involved. |
 | Email visibility | Participants see display names only. Email is account identity data; it is never shown on an expense or used to invite someone. |
@@ -61,7 +61,7 @@ As a person who was out with friends, I want to record what we spent, who paid, 
 4. **Given** a complete expense, **When** they save it, **Then** the expense is live immediately, each person's share is stored, and balances update with no draft or finalize step.
 5. **Given** a missing description, a payer who is not listed, fewer than two people, an item with no amount, a zero or negative amount, or an item with no assignment, **When** they try to save, **Then** saving is blocked and the specific problem is named.
 6. **Given** a saved expense, **When** a participant opens it, **Then** they see the payer, the people, every item and its assignment, each person's share, any coverage, the total, the date, and the change history.
-7. **Given** a dish eaten by three people, **When** the creator records it, **Then** they add one line per person, because the product has no shared-item option.
+7. **Given** a dish eaten by three people, **When** the creator uses Split equally, **Then** they see the per-person amounts, confirm, and get one independent line per person whose amounts sum exactly to the dish total.
 8. **Given** a saved expense, **When** the person opens All expenses from Home, **Then** it appears newest first with its date, description, payer, total, and the person's share.
 
 ---
@@ -203,7 +203,7 @@ As a person who is owed money, I want my payment QR available on the debt I am o
 - An item has no assignment; saving is blocked and the item is named.
 - An item amount is zero, negative, or not a valid amount; saving is blocked.
 - An item is assigned to one person; the total still equals the sum of items and only the assigned people owe.
-- A dish eaten by several people is entered as one line per person; there is no shared-item split.
+- A shared dish is split equally across three people; the helper creates one line per person, the remainder centavo is assigned deterministically, and all lines remain independently editable.
 - An item amount has more than two decimal places; it is rejected or rounded at entry, and the stored amount is exact.
 - The payer covers someone; the covered share is absorbed by the payer and creates no debt.
 - B covers C and C covers B; the change is blocked as a loop.
@@ -290,8 +290,8 @@ As a person who is owed money, I want my payment QR available on the debt I am o
 - **FR-035**: The expense total MUST be the sum of its items; the product MUST NOT offer a manual total, a fixed total, tax, service charge, discount, or receipt reconciliation.
 - **FR-036**: Saving MUST be immediate; the product MUST NOT have a draft, finalize, reopen, lock, or fixed-total step.
 - **FR-037**: Saving MUST compute and store each person's share, and the shares MUST sum exactly to the item total.
-- **FR-038**: Item amounts MUST be recorded to the centavo; a share is a sum of assigned amounts, so the product MUST NOT divide amounts or produce a remainder.
-- **FR-039**: A dish eaten by several people MUST be recorded as one line per person; the product MUST NOT offer a shared-item split or a per-line multi-person split.
+- **FR-038**: Item amounts MUST be recorded to the centavo. Every stored item MUST have an exact positive integer amount, and a share MUST remain a sum of assigned amounts. The ledger MUST NOT store a fractional or multi-person amount. An equal-split helper MAY divide a user-entered total before adding items; it MUST create exact integer-centavo lines, assign any remainder deterministically, show the per-person amounts before adding, and prove that the generated lines sum exactly to the entered total.
+- **FR-039**: A dish eaten by several people MUST be recorded as one line per person. The editor MAY offer an equal-split helper that creates those lines from a user-entered total; it MUST NOT store a shared line, a multi-person item, or an unequal custom split.
 - **FR-040**: Saving MUST be blocked with a named reason when the expense is incomplete or invalid.
 - **FR-041**: The expense detail MUST show the description, date, payer, every person, every item and its assignment, each person's share, any coverage, the total, and the change history.
 - **FR-042**: The creator and the payer MUST be able to edit the description, date, payer, people, items, and coverage; every other listed person MUST be view-only.
@@ -394,7 +394,12 @@ As a person who is owed money, I want my payment QR available on the debt I am o
 - **FR-118**: The product MUST NOT include owner-only finalization, reopening, locking, fixed totals, or drafts.
 - **FR-119**: The product MUST NOT include recaps, share images, CSV exports, or JSON exports.
 - **FR-120**: The product MUST NOT include an Activity tab.
-- **FR-121**: The product MUST NOT include multiple payers, unequal custom splits, shared-item splits, per-line multi-person splits, partial payments, recipient confirmation, or disputes.
+- **FR-121**: The product MUST NOT include multiple payers, unequal custom splits, stored multi-person items, per-line multi-person splits, partial payments, recipient confirmation, or disputes.
+
+#### Item entry
+
+- **FR-122**: The equal-split helper MUST divide the total using integer centavos: each person receives `floor(total / people)`, and the first `total % people` people in display order receive one extra centavo. It MUST support 2–12 people, a total greater than zero, and a dish name. Generated items MUST be independent after creation.
+- **FR-123**: The editor MUST offer a persistent quick-add composer that appends a named, exact-amount item without creating a blank row. After adding, the name field MUST clear and keep focus, the last-used person MUST remain selected, and the item count and total MUST update immediately. Removing the last item MUST be allowed while the composer remains.
 
 ### Key Entities
 
@@ -431,6 +436,7 @@ As a person who is owed money, I want my payment QR available on the debt I am o
 - **SC-015**: A person can open the owed person's payment QR from a debt row in under 10 seconds.
 - **SC-016**: 100% of payment-QR requests from people with no shared expense are denied, and no QR is reachable by public link.
 - **SC-017**: A person can find and open a past expense from Home in under 10 seconds.
+- **SC-018**: 100% of equal-split operations across randomized totals and 2–12 people produce per-person lines that sum exactly to the entered total, with no amount differing by more than one centavo.
 
 ## Assumptions
 
