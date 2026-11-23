@@ -453,6 +453,35 @@ summary:focus-visible,
   font-size: var(--fs-body);
 }
 
+.page-head--split {
+  flex-direction: row;
+  align-items: flex-end;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.page-head--split > div {
+  min-width: 0;
+}
+
+.page-head--split > .primary-action {
+  width: auto;
+  flex: 0 0 auto;
+}
+
+@media (max-width: 560px) {
+  .page-head--split {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+
+  .page-head--split > .primary-action {
+    width: 100%;
+  }
+}
+
 .page-title {
   font-size: var(--fs-title);
   font-weight: 600;
@@ -533,6 +562,11 @@ summary:focus-visible,
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-card);
+}
+
+/* Keep every block in a panel on the same 12px rhythm. */
+.panel > :not(:first-child) {
+  margin-top: var(--gap);
 }
 
 .panel + .panel {
@@ -837,6 +871,7 @@ summary:focus-visible,
   min-height: var(--row-height);
   padding: 8px 0;
   border-bottom: 1px solid var(--rule);
+  text-decoration: none;
 }
 
 .ledger-row:last-child {
@@ -933,7 +968,7 @@ summary:focus-visible,
 
 .outing-list {
   display: grid;
-  margin: 8px 0 0;
+  margin: 0;
   padding: 0;
   list-style: none;
 }
@@ -1962,6 +1997,7 @@ summary:focus-visible,
   gap: 10px;
   padding: 9px 0;
   border-bottom: 1px solid var(--rule);
+  text-decoration: none;
 }
 
 .activity-row:last-child {
@@ -2663,12 +2699,16 @@ summary:focus-visible,
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
   align-items: end;
   gap: 8px;
-  padding: 10px 0;
+  padding: 12px 0;
   border-bottom: 1px solid var(--rule);
 }
 
 .item-edit-row .item-edit-name {
   grid-column: 1 / -1;
+}
+
+.item-edit-row:first-child {
+  padding-top: 0;
 }
 
 .item-edit-remove {
@@ -2677,7 +2717,7 @@ summary:focus-visible,
 
 .item-editor > .item-edit-add {
   justify-self: start;
-  margin-top: 8px;
+  margin-top: 12px;
 }
 
 @container page (min-width: 600px) {
@@ -2691,6 +2731,20 @@ summary:focus-visible,
 }
 
 @media (max-width: 560px) {
+  .ledger-rows .ledger-row {
+    flex-wrap: wrap;
+  }
+
+  .ledger-rows .ledger-actions {
+    width: 100%;
+    margin-top: 0;
+    justify-content: flex-start;
+  }
+
+  .ledger-rows .ledger-actions .amount {
+    margin-right: auto;
+  }
+
   .page--settings .member-row {
     flex-wrap: wrap;
   }

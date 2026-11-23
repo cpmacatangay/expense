@@ -302,10 +302,8 @@ test.describe("mock ledger screens", () => {
   test.describe("360 width", () => {
     test.use({ viewport: { width: 360, height: 800 } });
 
-    test("Home, Settings, and the editor fit without horizontal overflow", async ({
-      page
-    }) => {
-      for (const path of ["/", "/settings", "/expenses/new"]) {
+    test("every main screen fits without horizontal overflow", async ({ page }) => {
+      for (const path of ["/", "/expenses", "/expenses/new", "/ledger", "/settings"]) {
         await page.goto(path, { waitUntil: "networkidle" });
         const overflow = await page.evaluate(
           () => document.documentElement.scrollWidth > window.innerWidth + 1

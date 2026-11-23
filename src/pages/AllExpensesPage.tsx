@@ -16,9 +16,11 @@ export function AllExpensesPage() {
 
   usePageTitle("All expenses");
 
+  const expenses = data ?? [];
+
   return (
     <div className="page">
-      <header className="page-head">
+      <header className="page-head page-head--split">
         <div>
           <h1 className="page-title">All expenses</h1>
           <p className="page-sub">Every expense you are on, newest first.</p>
@@ -36,33 +38,33 @@ export function AllExpensesPage() {
         </p>
       ) : null}
 
-      {!isLoading && !error && (data ?? []).length === 0 ? (
+      {!isLoading && !error && expenses.length === 0 ? (
         <section className="panel">
           <h2 className="panel-title">No expenses yet.</h2>
           <p className="panel-copy">Record the first one from Home.</p>
         </section>
       ) : null}
 
-      <div className="outing-list">
-        {(data ?? []).map((expense) => (
-          <Link
-            className="ledger-row"
-            to={`/expenses/${expense.id}`}
-            key={expense.id}
-          >
-            <div className="row-main">
-              <p className="row-title">{expense.description}</p>
-              <p className="row-sub">
-                {formatDate(expense.expenseDate)} · {expense.payerName} paid
-              </p>
-            </div>
-            <div className="ledger-actions">
-              <p className="amount">{formatPeso(expense.totalCentavos)}</p>
-              <p className="row-sub">Your share {formatPeso(expense.myShareCentavos)}</p>
-            </div>
-          </Link>
-        ))}
-      </div>
+      {expenses.length > 0 ? (
+        <section className="panel">
+          <div className="outing-list">
+            {expenses.map((expense) => (
+              <Link className="ledger-row" to={`/expenses/${expense.id}`} key={expense.id}>
+                <div className="row-main">
+                  <p className="row-title">{expense.description}</p>
+                  <p className="row-sub">
+                    {formatDate(expense.expenseDate)} · {expense.payerName} paid
+                  </p>
+                </div>
+                <div className="ledger-actions">
+                  <p className="amount">{formatPeso(expense.totalCentavos)}</p>
+                  <p className="row-sub">Your share {formatPeso(expense.myShareCentavos)}</p>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </section>
+      ) : null}
     </div>
   );
 }
