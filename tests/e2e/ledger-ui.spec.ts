@@ -4,6 +4,10 @@ import { expect, test } from "@playwright/test";
 const secret = "super-secret-jwt-token-with-at-least-32-characters-long";
 const userId = "00000000-0000-0000-0000-0000000000f1";
 const email = "hope@example.test";
+const projectRef = new URL(
+  process.env.VITE_SUPABASE_URL ?? "https://rfbnpkhzmxktpkmuhqyf.supabase.co"
+).hostname.split(".")[0];
+const storageKey = `sb-${projectRef}-auth-token`;
 const encode = (value: unknown) => Buffer.from(JSON.stringify(value)).toString("base64url");
 const header = encode({ alg: "HS256", typ: "JWT" });
 const payload = encode({
@@ -157,7 +161,7 @@ test.describe("mock ledger screens", () => {
     await page.addInitScript(
       ({ key, value }) => localStorage.setItem(key, value),
       {
-        key: "sb-rfbnpkhzmxktpkmuhqyf-auth-token",
+        key: storageKey,
         value: JSON.stringify(session)
       }
     );
@@ -313,7 +317,7 @@ test.describe("desktop width", () => {
     await page.addInitScript(
       ({ key, value }) => localStorage.setItem(key, value),
       {
-        key: "sb-rfbnpkhzmxktpkmuhqyf-auth-token",
+        key: storageKey,
         value: JSON.stringify(session)
       }
     );
