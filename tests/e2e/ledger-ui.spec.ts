@@ -283,16 +283,35 @@ test.describe("mock ledger screens", () => {
     await expect(page.getByRole("button", { name: "Save expense" })).toBeVisible();
   });
 
+  test("New expense opened from Home goes back to Home", async ({ page }) => {
+    await page.goto("/", { waitUntil: "networkidle" });
+    await page.getByRole("link", { name: "New expense" }).click();
+    await expect(page.getByRole("heading", { name: "New expense" })).toBeVisible();
+    await page.getByRole("button", { name: "Back" }).click();
+    await expect(page.getByRole("heading", { name: "Hi, Hope" })).toBeVisible();
+  });
+
+  test("New expense opened from All expenses goes back to the list", async ({ page }) => {
+    await page.goto("/expenses", { waitUntil: "networkidle" });
+    await page.getByRole("link", { name: "New expense" }).click();
+    await expect(page.getByRole("heading", { name: "New expense" })).toBeVisible();
+    await page.getByRole("button", { name: "Back" }).click();
+    await expect(page.getByRole("heading", { name: "All expenses" })).toBeVisible();
+  });
+
   test.describe("360 width", () => {
     test.use({ viewport: { width: 360, height: 800 } });
 
-    test("Home fits without horizontal overflow", async ({ page }) => {
-      await page.goto("/", { waitUntil: "networkidle" });
-      await expect(page.getByRole("heading", { name: "Hi, Hope" })).toBeVisible();
-      const overflow = await page.evaluate(
-        () => document.documentElement.scrollWidth > window.innerWidth + 1
-      );
-      expect(overflow).toBe(false);
+    test("Home, Settings, and the editor fit without horizontal overflow", async ({
+      page
+    }) => {
+      for (const path of ["/", "/settings", "/expenses/new"]) {
+        await page.goto(path, { waitUntil: "networkidle" });
+        const overflow = await page.evaluate(
+          () => document.documentElement.scrollWidth > window.innerWidth + 1
+        );
+        expect(overflow, path).toBe(false);
+      }
     });
   });
 

@@ -1,9 +1,10 @@
 import { useMemo, useState } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { formatPeso } from "@/domain/money/format";
 import { formatDate } from "@/lib/dates";
 import { getErrorMessage } from "@/lib/errors";
+import { useBack } from "@/lib/useBack";
 import { usePageTitle } from "@/lib/usePageTitle";
 import { Icon } from "@/ui/primitives/Icon";
 import { ExpenseHistory } from "./ExpenseHistory";
@@ -11,7 +12,7 @@ import { deleteExpense, expenseDetail } from "./api";
 
 export function ExpenseDetailPage() {
   const { expenseId } = useParams();
-  const navigate = useNavigate();
+  const back = useBack("/expenses");
   const queryClient = useQueryClient();
   const { data: detail, isLoading, error } = useQuery({
     queryKey: ["expense", expenseId],
@@ -45,7 +46,7 @@ export function ExpenseDetailPage() {
         queryClient.invalidateQueries({ queryKey: ["ledger"] }),
         queryClient.invalidateQueries({ queryKey: ["activity", "recent"] })
       ]);
-      navigate("/expenses", { replace: true });
+      back();
     } catch (caught) {
       setDeleteError(getErrorMessage(caught, "Could not delete the expense"));
       setDeleting(false);
@@ -72,22 +73,24 @@ export function ExpenseDetailPage() {
   return (
     <div className="page">
       <header className="page-head">
-        <div>
-          <Link className="text-action" to="/expenses">
-            <Icon name="chevron-left" />
-            All expenses
-          </Link>
-          <h1 className="page-title">{detail.expense.description}</h1>
-          <p className="page-sub">
-            {formatDate(detail.expense.expenseDate)} · {payerName} paid
-          </p>
+        <button className="text-action" type="button" onClick={back}>
+          <Icon name="chevron-left" />
+          Back
+        </button>
+        <div className="detail-head">
+          <div className="detail-head-copy">
+            <h1 className="page-title">{detail.expense.description}</h1>
+            <p className="page-sub">
+              {formatDate(detail.expense.expenseDate)} · {payerName} paid
+            </p>
+          </div>
+          {detail.expense.canEdit ? (
+            <Link className="secondary-action" to={`/expenses/${detail.expense.id}/edit`}>
+              <Icon name="pencil" />
+              Edit
+            </Link>
+          ) : null}
         </div>
-        {detail.expense.canEdit ? (
-          <Link className="secondary-action" to={`/expenses/${detail.expense.id}/edit`}>
-            <Icon name="pencil" />
-            Edit
-          </Link>
-        ) : null}
       </header>
 
       <section className="ticket">

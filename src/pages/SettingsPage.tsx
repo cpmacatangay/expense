@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { formatPeso } from "@/domain/money/format";
 import { useAuth } from "@/features/auth/authContext";
@@ -12,6 +12,7 @@ import { clearPaymentQr, uploadPaymentQr, validatePaymentQrFile } from "@/featur
 import { requireSupabase } from "@/data/supabase/client";
 import { getErrorMessage } from "@/lib/errors";
 import { usePageTitle } from "@/lib/usePageTitle";
+import { FileField } from "@/ui/primitives/FileField";
 import { Icon } from "@/ui/primitives/Icon";
 
 export function SettingsPage() {
@@ -40,6 +41,7 @@ export function SettingsPage() {
   const [qrBusy, setQrBusy] = useState(false);
   const [qrNotice, setQrNotice] = useState<string | null>(null);
   const [qrError, setQrError] = useState<string | null>(null);
+  const qrInputRef = useRef<HTMLInputElement | null>(null);
 
   const [accountBusy, setAccountBusy] = useState(false);
   const [accountError, setAccountError] = useState<string | null>(null);
@@ -131,6 +133,7 @@ export function SettingsPage() {
       await queryClient.invalidateQueries({ queryKey: ["me"] });
       setQrFile(null);
       setQrLabel("");
+      if (qrInputRef.current) qrInputRef.current.value = "";
       setQrNotice("Payment QR saved.");
     } catch (caught) {
       setQrError(getErrorMessage(caught, "Could not save the payment QR"));
@@ -203,7 +206,8 @@ export function SettingsPage() {
         {nameError ? <p className="form-error">{nameError}</p> : null}
         {nameNotice ? <p className="form-notice">{nameNotice}</p> : null}
         <div className="form-actions">
-          <button className="secondary-action" type="button" onClick={() => void saveName()} disabled={nameBusy}>
+          <button className="primary-action" type="button" onClick={() => void saveName()} disabled={nameBusy}>
+            <Icon name="check" />
             {nameBusy ? "Saving." : "Save name"}
           </button>
         </div>
@@ -226,11 +230,12 @@ export function SettingsPage() {
               <input readOnly value={link.url} onFocus={(event) => event.currentTarget.select()} />
             </label>
             <div className="form-actions">
-              <button className="secondary-action" type="button" onClick={() => void copyLink()}>
-                <Icon name="copy" />
+              <button className="primary-action" type="button" onClick={() => void copyLink()}>
+                <Icon name={copied ? "check" : "copy"} />
                 {copied ? "Copied" : "Copy link"}
               </button>
-              <button className="text-action" type="button" onClick={() => setLink(null)}>
+              <button className="secondary-action" type="button" onClick={() => setLink(null)}>
+                <Icon name="x" />
                 Close
               </button>
             </div>
@@ -256,15 +261,16 @@ export function SettingsPage() {
               {person.createdByMe && person.status === "pending" ? (
                 <div className="member-actions">
                   <button
-                    className="text-action"
+                    className="primary-action"
                     type="button"
                     onClick={() => void makeLink(person.id)}
                     disabled={linkBusy === person.id}
                   >
+                    <Icon name="user-plus" />
                     {linkBusy === person.id ? "Creating." : "Create invite link"}
                   </button>
                   <button
-                    className="text-action"
+                    className="secondary-action"
                     type="button"
                     onClick={() => {
                       setCorrectingId(person.id);
@@ -272,6 +278,7 @@ export function SettingsPage() {
                       setCorrectError(null);
                     }}
                   >
+                    <Icon name="pencil" />
                     Correct email
                   </button>
                 </div>
@@ -296,14 +303,16 @@ export function SettingsPage() {
             {correctError ? <p className="form-error">{correctError}</p> : null}
             <div className="form-actions">
               <button
-                className="secondary-action"
+                className="primary-action"
                 type="button"
                 onClick={() => void saveCorrectedEmail()}
                 disabled={correctBusy}
               >
+                <Icon name="check" />
                 {correctBusy ? "Saving." : "Save email"}
               </button>
-              <button className="text-action" type="button" onClick={() => setCorrectingId(null)}>
+              <button className="secondary-action" type="button" onClick={() => setCorrectingId(null)}>
+                <Icon name="x" />
                 Cancel
               </button>
             </div>
@@ -323,7 +332,13 @@ export function SettingsPage() {
           <div className="qr-inline">
             <PaymentQrImage path={me.paymentQrPath} name={me.displayName} compact />
             <p className="panel-copy">{me.paymentQrLabel ?? "Payment QR"}</p>
-            <button className="text-action" type="button" onClick={() => void removeQr()} disabled={qrBusy}>
+            <button
+              className="text-action is-danger"
+              type="button"
+              onClick={() => void removeQr()}
+              disabled={qrBusy}
+            >
+              <Icon name="trash" />
               {qrBusy ? "Removing." : "Remove QR"}
             </button>
           </div>
@@ -337,18 +352,18 @@ export function SettingsPage() {
             maxLength={40}
           />
         </label>
-        <label className="field">
-          <span>PNG or JPEG, up to 2 MB</span>
-          <input
-            type="file"
-            accept="image/png,image/jpeg"
-            onChange={(event) => setQrFile(event.target.files?.[0] ?? null)}
-          />
-        </label>
+        <FileField
+          label="Payment QR image"
+          accept="image/png,image/jpeg"
+          file={qrFile}
+          onSelect={setQrFile}
+          hint="PNG or JPEG, up to 2 MB."
+          inputRef={qrInputRef}
+        />
         {qrError ? <p className="form-error">{qrError}</p> : null}
         {qrNotice ? <p className="form-notice">{qrNotice}</p> : null}
         <div className="form-actions">
-          <button className="secondary-action" type="button" onClick={() => void uploadQr()} disabled={qrBusy}>
+          <button className="primary-action" type="button" onClick={() => void uploadQr()} disabled={qrBusy}>
             <Icon name="upload" />
             {qrBusy ? "Saving." : me?.paymentQrPath ? "Replace QR" : "Upload QR"}
           </button>
@@ -366,7 +381,13 @@ export function SettingsPage() {
             <Icon name="log-out" />
             Sign out
           </button>
-          <button className="text-action" type="button" onClick={() => void deleteAccount()} disabled={accountBusy}>
+          <button
+            className="text-action is-danger"
+            type="button"
+            onClick={() => void deleteAccount()}
+            disabled={accountBusy}
+          >
+            <Icon name="trash" />
             {accountBusy ? "Working." : "Delete account"}
           </button>
         </div>

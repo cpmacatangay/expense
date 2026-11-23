@@ -60,7 +60,7 @@ export function InstallSection() {
       {prompt ? (
         <div className="export-actions">
           <button
-            className="secondary-action"
+            className="primary-action"
             type="button"
             onClick={() => void handleInstall()}
             disabled={busy}

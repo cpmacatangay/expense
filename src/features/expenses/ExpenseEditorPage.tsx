@@ -5,6 +5,7 @@ import { computeExpenseShares } from "@/domain/money/computeExpenseShares";
 import type { ExpenseDraft } from "@/domain/money/types";
 import { todayInManila } from "@/lib/dates";
 import { getErrorMessage } from "@/lib/errors";
+import { useBack } from "@/lib/useBack";
 import { usePageTitle } from "@/lib/usePageTitle";
 import { useOnlineStatus } from "@/features/realtime/useOnlineStatus";
 import { AddPersonSheet } from "@/features/people/AddPersonSheet";
@@ -13,15 +14,25 @@ import { usePeople } from "@/features/people/usePeople";
 import { useMe } from "@/features/me/useMe";
 import { Icon } from "@/ui/primitives/Icon";
 import { CoverageEditor } from "./CoverageEditor";
-import { ItemEditor } from "./ItemEditor";
+import { ItemEditor, type ExpenseItemDraft } from "./ItemEditor";
 import { SharePreview } from "./SharePreview";
-import { deleteExpense, expenseDetail, saveExpense } from "./api";
-import type { ExpenseCoverage, SaveExpenseItem } from "./types";
+import { expenseDetail, saveExpense } from "./api";
+import type { ExpenseCoverage } from "./types";
+
+function draftItem(personId: string): ExpenseItemDraft {
+  return {
+    key: `item-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+    name: "",
+    amountCentavos: 0,
+    assignedPersonId: personId
+  };
+}
 
 export function ExpenseEditorPage() {
   const { expenseId } = useParams();
   const isEditing = Boolean(expenseId);
   const navigate = useNavigate();
+  const back = useBack(isEditing ? `/expenses/${expenseId}` : "/");
   const queryClient = useQueryClient();
   const online = useOnlineStatus();
   const { data: me } = useMe();
@@ -38,15 +49,13 @@ export function ExpenseEditorPage() {
   const [date, setDate] = useState(todayInManila());
   const [payer, setPayer] = useState("");
   const [selected, setSelected] = useState<string[]>([]);
-  const [items, setItems] = useState<SaveExpenseItem[]>([]);
+  const [items, setItems] = useState<ExpenseItemDraft[]>([]);
   const [coverage, setCoverage] = useState<ExpenseCoverage[]>([]);
   const [addOpen, setAddOpen] = useState(false);
   const [pendingNames, setPendingNames] = useState<Record<string, string>>({});
   const [error, setError] = useState<string | null>(null);
   const [stale, setStale] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [deleting, setDeleting] = useState(false);
-  const [confirmDelete, setConfirmDelete] = useState(false);
   const initialized = useRef(false);
 
   usePageTitle(isEditing ? "Edit expense" : "New expense");
@@ -61,6 +70,7 @@ export function ExpenseEditorPage() {
       setSelected(detail.people.map((person) => person.id));
       setItems(
         detail.items.map((item) => ({
+          key: `item-${item.id}`,
           name: item.name,
           amountCentavos: item.amountCentavos,
           assignedPersonId: item.assignedPersonId
@@ -71,7 +81,7 @@ export function ExpenseEditorPage() {
     } else if (me && people) {
       setSelected([me.id]);
       setPayer(me.id);
-      setItems([{ name: "", amountCentavos: 0, assignedPersonId: me.id }]);
+      setItems([draftItem(me.id)]);
       setDate(todayInManila());
       initialized.current = true;
     }
@@ -126,7 +136,7 @@ export function ExpenseEditorPage() {
 
     const nextItems = items.filter((item) => next.includes(item.assignedPersonId));
     if (nextItems.length === 0 && next.length > 0) {
-      nextItems.push({ name: "", amountCentavos: 0, assignedPersonId: next[0] });
+      nextItems.push(draftItem(next[0]));
     }
     setItems(nextItems);
 
@@ -176,7 +186,11 @@ export function ExpenseEditorPage() {
           expenseDate: date,
           payerPersonId: payer,
           people: selected,
-          items,
+          items: items.map(({ name, amountCentavos, assignedPersonId }) => ({
+            name,
+            amountCentavos,
+            assignedPersonId
+          })),
           coverage
         },
         isEditing ? detail?.expense.version ?? null : null
@@ -189,36 +203,17 @@ export function ExpenseEditorPage() {
         queryClient.invalidateQueries({ queryKey: ["expense", result.expenseId] })
       ]);
 
-      navigate(`/expenses/${result.expenseId}`, { replace: true });
+      if (isEditing) {
+        back();
+      } else {
+        navigate(`/expenses/${result.expenseId}`, { replace: true });
+      }
     } catch (caught) {
       const message = getErrorMessage(caught, "Could not save the expense");
       setError(message);
       if (/changed|reload/i.test(message)) setStale(true);
     } finally {
       setSaving(false);
-    }
-  }
-
-  async function handleDelete() {
-    if (!expenseId) return;
-    if (!confirmDelete) {
-      setConfirmDelete(true);
-      return;
-    }
-
-    setDeleting(true);
-    setError(null);
-    try {
-      await deleteExpense(expenseId);
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey: ["expenses"] }),
-        queryClient.invalidateQueries({ queryKey: ["ledger"] }),
-        queryClient.invalidateQueries({ queryKey: ["activity", "recent"] })
-      ]);
-      navigate("/expenses", { replace: true });
-    } catch (caught) {
-      setError(getErrorMessage(caught, "Could not delete the expense"));
-      setDeleting(false);
     }
   }
 
@@ -256,10 +251,10 @@ export function ExpenseEditorPage() {
     <div className="page page--editor">
       <header className="page-head">
         <div>
-          <Link className="text-action" to={isEditing ? `/expenses/${expenseId}` : "/expenses"}>
+          <button className="text-action" type="button" onClick={back}>
             <Icon name="chevron-left" />
             Back
-          </Link>
+          </button>
           <h1 className="page-title">{isEditing ? "Edit expense" : "New expense"}</h1>
           <p className="page-sub">Every line belongs to one person.</p>
         </div>
@@ -349,33 +344,11 @@ export function ExpenseEditorPage() {
           <Icon name="check" />
           {saving ? "Saving." : "Save expense"}
         </button>
-        <Link className="secondary-action" to={isEditing ? `/expenses/${expenseId}` : "/expenses"}>
+        <button className="secondary-action" type="button" onClick={back}>
+          <Icon name="x" />
           Cancel
-        </Link>
+        </button>
       </div>
-
-      {isEditing && detail?.expense.canEdit ? (
-        <section className="panel panel--account">
-          <h2 className="panel-title">Delete</h2>
-          <p className="panel-copy">This removes the expense from every balance. It cannot be reopened.</p>
-          <div className="form-actions">
-            <button
-              className="text-action"
-              type="button"
-              onClick={() => void handleDelete()}
-              disabled={deleting}
-            >
-              <Icon name="trash" />
-              {deleting ? "Deleting." : confirmDelete ? "Confirm delete" : "Delete expense"}
-            </button>
-            {confirmDelete ? (
-              <button className="text-action" type="button" onClick={() => setConfirmDelete(false)}>
-                Keep it
-              </button>
-            ) : null}
-          </div>
-        </section>
-      ) : null}
 
       <AddPersonSheet
         open={addOpen}

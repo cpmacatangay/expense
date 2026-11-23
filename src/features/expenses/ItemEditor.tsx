@@ -1,56 +1,91 @@
+import { useEffect, useRef, useState } from "react";
 import { Icon } from "@/ui/primitives/Icon";
 import type { SaveExpenseItem } from "./types";
+
+export type ExpenseItemDraft = SaveExpenseItem & { key: string };
+
+function centsToInput(centavos: number) {
+  return centavos > 0 ? (centavos / 100).toFixed(2) : "";
+}
+
+function AmountField({
+  centavos,
+  onChange
+}: {
+  centavos: number;
+  onChange: (centavos: number) => void;
+}) {
+  const [text, setText] = useState(() => centsToInput(centavos));
+  const lastEmitted = useRef(centavos);
+
+  useEffect(() => {
+    if (centavos === lastEmitted.current) return;
+    lastEmitted.current = centavos;
+    setText(centsToInput(centavos));
+  }, [centavos]);
+
+  return (
+    <label className="field">
+      <span>Amount</span>
+      <input
+        type="text"
+        inputMode="decimal"
+        autoComplete="off"
+        value={text}
+        onChange={(event) => {
+          const next = event.target.value;
+          // Keep partial input like "12." and "0.5" editable.
+          if (!/^\d*(?:\.\d{0,2})?$/.test(next)) return;
+          setText(next);
+          const parsed = Math.round(Number(next || "0") * 100);
+          const cents = Number.isFinite(parsed) ? Math.max(0, parsed) : 0;
+          lastEmitted.current = cents;
+          onChange(cents);
+        }}
+        onBlur={() => setText(centsToInput(centavos))}
+        placeholder="0.00"
+      />
+    </label>
+  );
+}
 
 export function ItemEditor({
   items,
   people,
   onChange
 }: {
-  items: SaveExpenseItem[];
+  items: ExpenseItemDraft[];
   people: { id: string; displayName: string }[];
-  onChange: (next: SaveExpenseItem[]) => void;
+  onChange: (next: ExpenseItemDraft[]) => void;
 }) {
-  function update(index: number, patch: Partial<SaveExpenseItem>) {
-    onChange(items.map((item, position) => (position === index ? { ...item, ...patch } : item)));
+  function update(key: string, patch: Partial<SaveExpenseItem>) {
+    onChange(items.map((item) => (item.key === key ? { ...item, ...patch } : item)));
   }
 
   return (
-    <div className="stack">
+    <div className="item-editor">
       {items.map((item, index) => (
-        <div className="item-row" key={index}>
-          <label className="field">
+        <div className="item-edit-row" key={item.key}>
+          <label className="field item-edit-name">
             <span>Item</span>
             <input
               value={item.name}
-              onChange={(event) => update(index, { name: event.target.value })}
+              onChange={(event) => update(item.key, { name: event.target.value })}
               placeholder="What was it?"
               maxLength={120}
             />
           </label>
-          <label className="field">
-            <span>Amount</span>
-            <input
-              type="number"
-              min="0"
-              step="0.01"
-              inputMode="decimal"
-              value={item.amountCentavos > 0 ? (item.amountCentavos / 100).toFixed(2) : ""}
-              onChange={(event) => {
-                const amount = Number(event.target.value);
-                update(index, {
-                  amountCentavos: Number.isFinite(amount)
-                    ? Math.max(0, Math.round(amount * 100))
-                    : 0
-                });
-              }}
-              placeholder="0.00"
-            />
-          </label>
+          <AmountField
+            centavos={item.amountCentavos}
+            onChange={(amountCentavos) => update(item.key, { amountCentavos })}
+          />
           <label className="field">
             <span>For</span>
             <select
               value={item.assignedPersonId}
-              onChange={(event) => update(index, { assignedPersonId: event.target.value })}
+              onChange={(event) =>
+                update(item.key, { assignedPersonId: event.target.value })
+              }
             >
               {people.map((person) => (
                 <option key={person.id} value={person.id}>
@@ -60,10 +95,10 @@ export function ItemEditor({
             </select>
           </label>
           <button
-            className="icon-action"
+            className="icon-action item-edit-remove"
             type="button"
-            aria-label={`Remove ${item.name || "item"}`}
-            onClick={() => onChange(items.filter((_, position) => position !== index))}
+            aria-label={`Remove ${item.name || `item ${index + 1}`}`}
+            onClick={() => onChange(items.filter((entry) => entry.key !== item.key))}
             disabled={items.length <= 1}
           >
             <Icon name="trash" />
@@ -71,12 +106,13 @@ export function ItemEditor({
         </div>
       ))}
       <button
-        className="text-action"
+        className="text-action item-edit-add"
         type="button"
         onClick={() =>
           onChange([
             ...items,
             {
+              key: `item-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
               name: "",
               amountCentavos: 0,
               assignedPersonId: people[0]?.id ?? ""

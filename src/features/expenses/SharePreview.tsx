@@ -26,7 +26,30 @@ export function SharePreview({
   }, [draft]);
 
   if (!result.value) {
-    return <p className="form-error">{result.error}</p>;
+    const totalCentavos = draft.items.reduce(
+      (sum, item) => sum + item.amountCentavos,
+      0
+    );
+    const stillFillingIn = draft.people.length < 2 || totalCentavos <= 0;
+
+    if (stillFillingIn) {
+      return (
+        <section className="panel">
+          <p className="panel-label">Split preview</p>
+          <p className="panel-copy">
+            {draft.people.length < 2
+              ? "Add another person, then the item amounts, to see the split."
+              : "Add item amounts to see the split."}
+          </p>
+        </section>
+      );
+    }
+
+    return (
+      <p className="form-error" role="alert">
+        {result.error}
+      </p>
+    );
   }
 
   const payerName = names.get(draft.payerPersonId) ?? "Payer";

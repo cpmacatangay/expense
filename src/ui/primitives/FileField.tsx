@@ -23,9 +23,16 @@ export function FileField({
   return (
     <div className="file-field">
       <span className="file-field-label">{label}</span>
-      <label className="file-field-control">
-        <Icon name="upload" />
-        <span className="file-field-name">{file ? file.name : "No file chosen"}</span>
+      <label className={`file-field-control${file ? " has-file" : ""}`}>
+        <span className="file-field-icon">
+          <Icon name={file ? "check" : "upload"} />
+        </span>
+        <span className="file-field-body">
+          <span className="file-field-name">{file ? file.name : "No file chosen"}</span>
+          <span className="file-field-caption" id={hintId}>
+            {hint ?? "Tap to browse your files"}
+          </span>
+        </span>
         <span className="file-field-action">{file ? "Replace" : "Browse"}</span>
         <input
           ref={inputRef}
@@ -34,15 +41,10 @@ export function FileField({
           name={name}
           accept={accept}
           aria-label={label}
-          aria-describedby={hint ? hintId : undefined}
+          aria-describedby={hintId}
           onChange={(event) => onSelect(event.target.files?.[0] ?? null)}
         />
       </label>
-      {hint ? (
-        <span className="file-field-hint" id={hintId}>
-          {hint}
-        </span>
-      ) : null}
     </div>
   );
 }

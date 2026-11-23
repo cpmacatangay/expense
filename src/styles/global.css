@@ -425,6 +425,34 @@ summary:focus-visible,
   gap: 4px;
 }
 
+.page-head > .text-action,
+.page-head > div > .text-action {
+  margin-bottom: 6px;
+}
+
+.page-head > .text-action {
+  align-self: flex-start;
+}
+
+.detail-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.detail-head-copy {
+  min-width: 0;
+}
+
+.detail-head .secondary-action {
+  flex: 0 0 auto;
+  width: auto;
+  min-height: 44px;
+  padding: 0 12px;
+  font-size: var(--fs-body);
+}
+
 .page-title {
   font-size: var(--fs-title);
   font-weight: 600;
@@ -1086,6 +1114,13 @@ summary:focus-visible,
   font-size: var(--fs-body);
 }
 
+.member-actions .primary-action {
+  width: auto;
+  min-height: 44px;
+  padding: 0 12px;
+  font-size: var(--fs-body);
+}
+
 /* ---------- Actions ---------- */
 
 .primary-action,
@@ -1543,43 +1578,80 @@ summary:focus-visible,
   position: relative;
   display: flex;
   align-items: center;
-  gap: 10px;
-  min-height: var(--control-height);
-  padding: 0 12px;
-  border: 1px solid var(--control);
-  border-radius: var(--radius-control);
+  gap: 12px;
+  min-height: 68px;
+  padding: 10px 12px;
+  border: 1px dashed var(--control);
+  border-radius: var(--radius-card);
   background: var(--surface);
   cursor: pointer;
+  transition:
+    border-color var(--duration) var(--ease),
+    background-color var(--duration) var(--ease);
 }
 
-.file-field-control svg {
-  width: 16px;
-  height: 16px;
+.file-field-icon {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
   flex: 0 0 auto;
-  color: var(--muted);
+  border-radius: 10px;
+  background: var(--raised);
+  color: var(--text);
+  transition:
+    background-color var(--duration) var(--ease),
+    color var(--duration) var(--ease);
+}
+
+.file-field-icon svg {
+  width: 18px;
+  height: 18px;
+}
+
+.file-field-body {
+  display: grid;
+  gap: 2px;
+  flex: 1 1 auto;
+  min-width: 0;
 }
 
 .file-field-name {
-  flex: 1 1 auto;
-  min-width: 0;
   overflow: hidden;
   color: var(--text);
-  font-size: var(--fs-small);
+  font-size: var(--fs-body);
+  font-weight: 500;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.file-field-caption {
+  overflow: hidden;
+  color: var(--muted);
+  font-size: var(--fs-micro);
+  line-height: 1.35;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .file-field-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 34px;
+  padding: 0 12px;
   flex: 0 0 auto;
-  color: var(--text);
+  border-radius: var(--radius-chip);
+  background: var(--primary);
+  color: var(--on-primary);
   font-size: var(--fs-small);
   font-weight: 500;
+  white-space: nowrap;
 }
 
-.file-field-hint {
-  color: var(--muted);
-  font-size: var(--fs-small);
-  line-height: 1.4;
+.file-field-control.has-file .file-field-icon {
+  background: var(--accent-soft);
+  color: var(--accent);
 }
 
 .file-field-input {
@@ -1594,9 +1666,20 @@ summary:focus-visible,
   border: 0;
 }
 
+.file-field-control:active {
+  transform: scale(0.995);
+}
+
 .file-field-control:focus-within {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .file-field-control:hover {
+    border-color: var(--text);
+    background: var(--raised);
+  }
 }
 
 /* ---------- Onboarding ---------- */
@@ -2336,6 +2419,10 @@ summary:focus-visible,
     min-height: 34px;
   }
 
+  .member-actions .primary-action {
+    min-height: 34px;
+  }
+
   .student-row select {
     min-height: 34px;
     font-size: var(--fs-body);
@@ -2561,4 +2648,55 @@ summary:focus-visible,
 .item-row .field input,
 .item-row .field select {
   width: 100%;
+}
+
+/* ---------- Item editor ---------- */
+
+.item-editor {
+  display: grid;
+  gap: 2px;
+  margin-top: 4px;
+}
+
+.item-edit-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
+  align-items: end;
+  gap: 8px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--rule);
+}
+
+.item-edit-row .item-edit-name {
+  grid-column: 1 / -1;
+}
+
+.item-edit-remove {
+  justify-self: end;
+}
+
+.item-editor > .item-edit-add {
+  justify-self: start;
+  margin-top: 8px;
+}
+
+@container page (min-width: 600px) {
+  .item-edit-row {
+    grid-template-columns: minmax(0, 1.6fr) minmax(0, 0.7fr) minmax(0, 1fr) auto;
+  }
+
+  .item-edit-row .item-edit-name {
+    grid-column: auto;
+  }
+}
+
+@media (max-width: 560px) {
+  .page--settings .member-row {
+    flex-wrap: wrap;
+  }
+
+  .page--settings .member-actions {
+    width: 100%;
+    justify-content: flex-start;
+  }
 }
