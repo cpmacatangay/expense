@@ -372,7 +372,7 @@ As a person who is owed money, I want my payment QR available on the debt I am o
 - **FR-102**: A new account MUST land on an empty Home and MUST be able to record the first expense without any setup step.
 - **FR-103**: The interface MUST remain light-only in the stone/ink visual world, with no appearance switch.
 - **FR-104**: Tap targets MUST be at least 44 points, focus MUST be visible, controls MUST have accessible names, and reduced motion MUST be respected.
-- **FR-105**: Loading, empty, offline, error, and pending-invite states MUST be explicit.
+- **FR-105**: Loading, empty, offline, error, and not-joined states MUST be explicit.
 - **FR-106**: Settings MUST provide install guidance for iPhone and Android.
 - **FR-107**: The expense editor MUST be usable one-handed, with the primary action reachable without horizontal scrolling.
 - **FR-108**: Every primary screen MUST render without clipping or horizontal overflow at 360, 390, 412, 430, and 1440 widths.
