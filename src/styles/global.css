@@ -453,6 +453,37 @@ summary:focus-visible,
   font-size: var(--fs-body);
 }
 
+.detail-share {
+  display: flex;
+}
+
+.detail-share .primary-action {
+  width: 100%;
+}
+
+@media (min-width: 760px) {
+  .detail-share .primary-action {
+    width: auto;
+    min-width: 200px;
+    align-self: flex-start;
+  }
+}
+
+.install-steps {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding-left: 20px;
+  color: var(--muted);
+  font-size: var(--fs-small);
+  line-height: 1.5;
+}
+
+.install-steps li::marker {
+  color: var(--text);
+  font-weight: 600;
+}
+
 .page-head--split {
   flex-direction: row;
   align-items: flex-end;
@@ -2194,9 +2225,17 @@ summary:focus-visible,
   background: var(--qr-surface);
 }
 
+.qr-image--full {
+  max-width: none;
+  padding: 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  background: var(--qr-surface);
+}
+
 .qr-inline {
   display: grid;
-  justify-items: start;
+  justify-items: stretch;
   gap: 8px;
   margin-top: 8px;
 }

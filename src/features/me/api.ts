@@ -22,10 +22,6 @@ export async function claimPeopleForMe(): Promise<string[]> {
   return data.claimedPersonIds ?? [];
 }
 
-export async function claimInvite(token: string): Promise<{ personId: string }> {
-  return rpc<{ personId: string }>("claim_invite", { p_token: token });
-}
-
 export async function updateDisplayName(displayName: string): Promise<Me> {
   const data = await rpc<PersonResponse>("update_display_name", {
     p_display_name: displayName

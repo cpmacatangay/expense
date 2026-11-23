@@ -21,7 +21,7 @@ export function PlatformShell() {
   useLedgerRealtime();
   const isPushed =
     (location.pathname.startsWith("/expenses/") && location.pathname !== "/expenses") ||
-    location.pathname.startsWith("/invite");
+    location.pathname.startsWith("/join");
 
   return (
     <div className={`app${isPushed ? " is-detail" : ""}`}>

@@ -7,6 +7,7 @@ import { getErrorMessage } from "@/lib/errors";
 import { useBack } from "@/lib/useBack";
 import { usePageTitle } from "@/lib/usePageTitle";
 import { Icon } from "@/ui/primitives/Icon";
+import { ShareExpenseSheet } from "@/features/share/ShareExpenseSheet";
 import { ExpenseHistory } from "./ExpenseHistory";
 import { deleteExpense, expenseDetail } from "./api";
 
@@ -22,6 +23,7 @@ export function ExpenseDetailPage() {
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [shareOpen, setShareOpen] = useState(false);
 
   usePageTitle(detail?.expense.description ?? "Expense");
 
@@ -69,6 +71,9 @@ export function ExpenseDetailPage() {
   }
 
   const payerName = names.get(detail.expense.payerPersonId) ?? "Payer";
+  const pendingNames = detail.people
+    .filter((person) => person.status === "pending")
+    .map((person) => person.displayName);
 
   return (
     <div className="page">
@@ -99,6 +104,19 @@ export function ExpenseDetailPage() {
         <p className="ticket-copy">{payerName} paid for {detail.people.length} people.</p>
       </section>
 
+      {detail.expense.canEdit ? (
+        <div className="detail-share">
+          <button
+            className="primary-action"
+            type="button"
+            onClick={() => setShareOpen(true)}
+          >
+            <Icon name="share" />
+            Share expense
+          </button>
+        </div>
+      ) : null}
+
       <section className="panel">
         <div className="section-head">
           <h2 className="panel-title">People</h2>
@@ -114,7 +132,7 @@ export function ExpenseDetailPage() {
                 </p>
                 <p className="row-sub">
                   {person.status === "pending"
-                    ? "Invited"
+                    ? "Not joined yet"
                     : person.status === "former"
                       ? "Former account"
                       : "Active"}
@@ -123,6 +141,12 @@ export function ExpenseDetailPage() {
             </div>
           ))}
         </div>
+        {pendingNames.length > 0 ? (
+          <p className="panel-copy">
+            Waiting to join: <strong>{pendingNames.join(", ")}</strong>. Share the expense link
+            so they can claim their name.
+          </p>
+        ) : null}
       </section>
 
       <section className="panel">
@@ -197,6 +221,13 @@ export function ExpenseDetailPage() {
           </div>
         </section>
       ) : null}
+
+      <ShareExpenseSheet
+        open={shareOpen}
+        expenseId={detail.expense.id}
+        pendingNames={pendingNames}
+        onClose={() => setShareOpen(false)}
+      />
     </div>
   );
 }

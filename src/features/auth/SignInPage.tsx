@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useLocation } from "react-router-dom";
 import { useAuth } from "@/features/auth/authContext";
 import { getErrorMessage } from "@/lib/errors";
 import { usePageTitle } from "@/lib/usePageTitle";
@@ -7,10 +8,12 @@ import { Icon } from "@/ui/primitives/Icon";
 
 export function SignInPage() {
   const { configured, signInWithGoogle } = useAuth();
+  const location = useLocation();
+  const joining = location.pathname.startsWith("/join");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  usePageTitle("Sign in");
+  usePageTitle(joining ? "Join expense" : "Sign in");
 
   async function handleGoogle() {
     setBusy(true);
@@ -39,9 +42,13 @@ export function SignInPage() {
   return (
     <main className="onboarding">
       <BrandMark className="onboarding-mark" />
-      <h1 className="page-title">Eat together. Settle once.</h1>
+      <h1 className="page-title">
+        {joining ? "Someone shared an expense." : "Eat together. Settle once."}
+      </h1>
       <p className="page-sub">
-        One shared ledger for friends. Sign in with Google to see what you owe and who owes you.
+        {joining
+          ? "Sign in with Google to claim your name and see the share already recorded for you."
+          : "One shared ledger for friends. Sign in with Google to see what you owe and who owes you."}
       </p>
 
       {error ? (
@@ -56,7 +63,9 @@ export function SignInPage() {
       </button>
 
       <p className="onboarding-note">
-        New here? Sign in with Google. A friend can add you to an expense.
+        {joining
+          ? "You will go straight back to the shared expense after signing in."
+          : "New here? Sign in with Google. A friend can share an expense link with you."}
       </p>
     </main>
   );

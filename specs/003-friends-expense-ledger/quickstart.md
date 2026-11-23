@@ -10,7 +10,7 @@ does not contain migration bodies, service code, or a full test suite.
 - Node 20+ and npm
 - Supabase CLI with Docker for local Postgres and Storage
 - Three test accounts: **A**, **B**, and **C**, each with a display name
-- A fourth Google account that has not used Salo, for the invite path
+- A fourth Google account that has not used Salo, for the share-link claim path
 - The app running at `http://127.0.0.1:5173`
 
 ## Commands
@@ -100,27 +100,27 @@ the two people see the pair.
 Expected: “Not found” every time. C cannot see the A–B balance, the expense description, the people's
 emails, or the QR. A can see both expenses because A is on both; C sees only the A–C expense.
 
-## Scenario 5 — Invite link, pending, claim, correction
+## Scenario 5 — Share link, claim, refresh, expiry
 
-1. As A, add `new@example.test` to an expense. Expect a pending person and **Copy invite link**. No
-   email is sent.
-2. Before it is claimed, open Settings → People as A. Expect “Invited”, Create invite link, Correct
-   email, and the invited address visible only to A.
-3. Copy the link, open it in a private window, and choose **Continue with Google** using
-   `new@example.test`. Expect the pending person to claim and the expense to appear.
-4. As B, open the same link or try the People row. Expect denial.
-5. As A, correct the email to `right@example.test`. Expect the old link to be revoked and a new link
-   to be created. Open the new link with the Google account for `right@example.test`; expect the
-   claim to succeed. The old link must fail.
-6. Try the link with a different Google account. Expect “Sign in with the Google account for the
-   email this link was created for.”
-7. Let a link expire. Expect “This invite is no longer available”, the person still pending on the
-   expense, and Create invite link available.
-8. Sign in with a new Google account that no one has added. Expect an empty Home and no other data.
+1. As A, add `Mai` by name to an expense and save. Expect the expense detail to show
+   “Waiting to join: Mai” and no email field anywhere.
+2. Open **Share expense**. Expect a copyable `/join/<token>` link and a 7-day expiry.
+3. Open the link in a private window and choose **Continue with Google** as C. Expect the expense
+   summary and the open name “Mai” under “Which one is you?”.
+4. Claim Mai. Expect the expense detail to open for C with the recorded share, and the Home balance
+   to show what C owes A.
+5. As A, reopen the expense. Expect C's account name instead of Mai, no waiting names, and the same
+   amounts.
+6. As A, open Share again. Expect the same link while it is valid. Tap **Refresh link**; the previous
+   link must now be refused and the new one must work.
+7. As a fourth signed-in person who is already on the expense, open the link. Expect “You're already
+   on it.” instead of another claim.
+8. Let a link expire. Expect “This link is no longer available” and the expense to remain intact with
+   the open name.
+9. Sign in with a new Google account that no one has added. Expect an empty Home and no other data.
 
-Expected: existing Google accounts link immediately; new emails become pending with a copyable link;
-only the invited Google email can claim; no duplicate person for the same email; no email delivery.
-An address without a Google account cannot claim until it has one or the creator corrects it.
+Expected: names are added without email; one link per expense; the recipient signs in, claims an open
+name, and sees every expense that used that name; no duplicate person is created; no email delivery.
 
 ## Scenario 6 — Edit, delete, history
 
@@ -219,9 +219,9 @@ The wipe is a release operation, not a normal deploy.
     provider disabled, and the app and localhost redirect URLs configured. No SMTP, sending domain,
     or email provider is needed.
 11. Verify every retained account can sign in with Google using its recorded email. For a non-Google
-    address, create a Google account with that address or re-add the person with a Google email.
+    address, create a Google account with that address or re-add the person by name and share the expense link.
 12. Deploy the app and `delete-account`; remove `finalize-outing` and `invite-adult`.
-13. Smoke test with A and B: empty Home, record an expense, see the debt, mark paid, add a new email,
+13. Smoke test with A and B: empty Home, record an expense, see the debt, mark paid, add a new name,
     copy the link, sign in with Google, claim it, open the QR.
 14. Smoke test account deletion with a zero-balance account C; confirm it is blocked while a balance
     exists and succeeds when zero.

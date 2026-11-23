@@ -107,9 +107,7 @@ export function ExpenseEditorPage() {
           status: "pending",
           isSelf: personId === me?.id,
           hasQr: false,
-          createdByMe: true,
-          pendingEmail: null,
-          invitationExpiresAt: null
+          createdByMe: true
         });
       }
     }
@@ -353,10 +351,12 @@ export function ExpenseEditorPage() {
       <AddPersonSheet
         open={addOpen}
         onClose={() => setAddOpen(false)}
-        onAdded={(result, email) => {
+        onAdded={(result) => {
           setSelected((current) => [...new Set([...current, result.personId])]);
-          const fallback = email.split("@")[0] || "Invited";
-          setPendingNames((current) => ({ ...current, [result.personId]: fallback }));
+          setPendingNames((current) => ({
+            ...current,
+            [result.personId]: result.displayName
+          }));
           void queryClient.invalidateQueries({ queryKey: ["people"] });
         }}
       />

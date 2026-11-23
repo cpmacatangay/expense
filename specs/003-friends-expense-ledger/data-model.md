@@ -29,13 +29,14 @@ active or undone.
 
 ### `public.people`
 
-One row per Google identity email. Replaces `group_adults`. Self-service Google sign-up creates a
-row on first sign-in with no expenses attached.
+One row per Google identity email or per named placeholder. Replaces `group_adults`.
+Self-service Google sign-up creates a row on first sign-in with no expenses attached. A name added
+to an expense creates a placeholder with no email until the person claims the expense link.
 
 | Column | Type | Rules |
 |---|---|---|
 | `id` | uuid | PK |
-| `email` | text | not null, 3–254 chars, unique on `lower(email)` |
+| `email` | text | nullable, 3–254 chars when present, unique on `lower(email)` |
 | `display_name` | text | not null, 1–50 chars |
 | `profile_id` | uuid | nullable, unique, FK `profiles(id)` on delete set null |
 | `status` | `person_status` | not null, default `pending` |
@@ -50,7 +51,7 @@ Constraints:
 
 ```sql
 check (char_length(display_name) between 1 and 50)
-check (char_length(email) between 3 and 254)
+check (email is null or char_length(email) between 3 and 254)
 check (
   (status = 'pending' and profile_id is null)
   or (status = 'active' and profile_id is not null)
@@ -63,8 +64,8 @@ Indexes: `unique (lower(email))`, `unique (profile_id) where profile_id is not n
 `(status)`, `(created_by_person_id)`.
 
 The retained `profiles` table gets `create index profiles_email_lower_idx on public.profiles
-(lower(email))` for the add-by-email lookup. It is not unique; Supabase Auth is the identity
-authority, and the person row enforces one identity per email.
+(lower(email))` so a returning account can be relinked. It is not unique; Supabase Auth is the
+identity authority, and the person row enforces one identity per account email.
 
 A `former` person keeps past expenses and payments. If the same email signs in again,
 `claim_people_for_me` may relink the row and return it to `active`. A `before delete` trigger on
@@ -84,6 +85,8 @@ cannot sign in or undo it.
 | `created_by_person_id` | uuid | not null FK `people(id)` on delete restrict |
 | `total_centavos` | bigint | not null, `> 0` for a saved expense |
 | `version` | integer | not null default 1, `> 0` |
+| `share_token` | text | nullable, unique; the current expense share token |
+| `share_expires_at` | timestamptz | nullable; 7 days after the token was created |
 | `deleted_at` | timestamptz | nullable |
 | `created_at` | timestamptz | not null default now() |
 | `updated_at` | timestamptz | not null default now() |
@@ -97,7 +100,8 @@ Rules enforced by `save_expense` and a deferred integrity trigger:
 - `total_centavos = sum(expense_items.amount_centavos)`.
 - `total_centavos = sum(expense_shares.owed_centavos)`.
 
-Indexes: `(expense_date desc, created_at desc) where deleted_at is null`,
+Indexes: `unique (share_token) where share_token is not null`,
+`(expense_date desc, created_at desc) where deleted_at is null`,
 `(payer_person_id) where deleted_at is null`, `(created_by_person_id)`.
 
 ### `public.expense_people`
@@ -239,28 +243,26 @@ live rows.
 
 Index: `(expense_id, created_at desc)`.
 
-### `public.person_invitations`
+### Expense share links
 
-| Column | Type | Rules |
-|---|---|---|
-| `id` | uuid | PK |
-| `person_id` | uuid | not null FK `people(id)` on delete cascade |
-| `email` | text | not null — snapshot of the invited address |
-| `token_hash` | text | not null unique — SHA-256 hex, never the raw token |
-| `invited_by_person_id` | uuid | not null FK `people(id)` |
-| `expires_at` | timestamptz | not null, default now() + 7 days |
-| `claimed_at` | timestamptz | nullable |
-| `revoked_at` | timestamptz | nullable |
-| `created_at` | timestamptz | not null default now() |
+A share link is stored on the expense itself: `share_token` (raw, unguessable 48-character hex) and
+`share_expires_at` (7 days after creation). There is no separate invitation table.
 
-Partial unique index: one open invitation per person
-`(person_id) where claimed_at is null and revoked_at is null`.
-
-Indexes: `(token_hash)`, `(person_id)`, `(expires_at)`.
-
-No direct client access. `add_person`, `create_invite_link`, `correct_pending_email`, and
-`claim_invite` are the only paths; `people_for_me` returns pending status and `createdByMe`. No email
-is sent.
+- `create_expense_share(expense_id, refresh?)` — creator or payer only. Reuses a valid token, or
+  rotates it and starts a new 7-day window.
+- `expense_share_preview(token)` — any signed-in caller with a valid token. Returns the expense
+  summary, whether the caller is already a participant, and the open names (`status = 'pending'`
+  and `profile_id is null`). It never returns items, shares, or email addresses.
+- `claim_expense_share(token, person_id)` — any signed-in caller with a valid token. Locks the
+  expense, validates that the chosen person is an open name on it, then merges that placeholder
+  into the caller's account person: items, coverage, shares, payer/creator references, payments,
+  and events are rewritten, the placeholder is deleted, and an `updated` event is recorded.
+- The placeholder merge keeps one `people` row per account. If the caller already has a share on
+  the expense, the claim returns `alreadyClaimed: true` instead of creating a duplicate.
+- Expired or refreshed tokens are refused with “This link is no longer available”. A token that is
+  already claimed cannot be claimed again.
+- No email is sent. `add_person(name)` only creates or reuses a named placeholder owned by the
+  caller; `people_for_me` returns joined/not-joined status and no email fields.
 
 ## Money Rules
 
@@ -364,23 +366,23 @@ payment history together. This keeps QR access after a settled debt and blocks u
 | `expense_shares` | `is_expense_participant(expense_id) and expense is live` | none |
 | `payments` | `from_person_id = current_person_id() or to_person_id = current_person_id()` | none |
 | `expense_events` | `is_expense_participant(expense_id)` | none |
-| `person_invitations` | no policy | service role and RPCs only |
 
 `expense_events` deliberately allows participants to read a deleted expense's deletion event, while
-the detail RPC returns not found. No other table exposes deleted expenses.
+the detail RPC returns not found. No other table exposes deleted expenses. There is no invitation
+table: share tokens live on `expenses` and are reachable only through the security-definer RPCs.
 
 Direct privileges: `revoke all on ... from anon, authenticated`; grant `select` only where a policy
 exists. RPCs are granted to `authenticated` individually.
 
 ## State Transitions
 
-**Person**: `pending → active` (Google claim or immediate link), `pending → pending` (email
-corrected, link replaced), `active → former` (account deleted), `former → active` (same Google email
-signs in again). A person is never hard-deleted while referenced.
+**Person**: `pending → active` (expense link claimed, or a returning account relinked by email),
+`active → former` (account deleted), `former → active` (same Google email signs in again). A claimed
+placeholder is merged into the account person and hard-deleted; a person is never deleted while
+referenced.
 
-**Invitation**: `open → claimed | revoked | expired`. Refreshing revokes the open row and creates a
-new
-one. Only one open row per person.
+**Expense share link**: created on first share, reused until `share_expires_at`, then `expired`, or
+rotated by the creator/payer. Claiming a name does not expire the link for the other open names.
 
 **Expense**: `live v1 → live vN` on each save, `live → deleted` terminal. A stale version is
 rejected. A deleted expense cannot be restored.
@@ -390,7 +392,7 @@ direction.
 
 ## Validation Rules
 
-- Email: trim, lowercase for comparison, valid shape, ≤254 characters, unique.
+- Account email: optional on a person row, trimmed, lowercased for comparison, ≤254 characters.
 - Display name: 1–50 characters, trimmed.
 - Description: 1–120 characters, trimmed.
 - Date: valid date; defaults to Manila today; no restriction on past or future.
@@ -403,10 +405,10 @@ direction.
 - Undo: either pair member; only an active payment; one undo.
 - Account deletion: both ledger totals must be zero; the Edge Function calls `can_delete_account`
   and then deletes the auth user with the service role. Past expenses keep the display name.
-- Pending email correction: creator only, person status `pending`, no claimed invitation; the old
-  link is revoked and a new link returned.
-- Invite link: creator or a person sharing an active expense with the pending person; 7-day expiry;
-  one open link per person; refresh revokes the previous link.
+- Share link: creator or payer only; one token per expense; 7-day window; refresh rotates the
+  token; preview never returns items, shares, or email addresses.
+- Claim: signed-in caller; token live; chosen person is an open name on that expense; if the caller
+  is already on the expense, return `alreadyClaimed`; otherwise merge and log an update event.
 - Sign-in: Google only. No email is sent for authentication or invites; no SMTP or sending domain is
   required.
 - QR: PNG/JPEG ≤2 MB; label ≤40; path owned by the person.

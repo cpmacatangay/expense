@@ -3,11 +3,13 @@ import { usePaymentQrUrl } from "./usePaymentQrUrl";
 export function PaymentQrImage({
   path,
   name,
-  compact = false
+  compact = false,
+  full = false
 }: {
   path: string;
   name: string;
   compact?: boolean;
+  full?: boolean;
 }) {
   const { data: url, isLoading, error } = usePaymentQrUrl(path);
 
@@ -25,7 +27,7 @@ export function PaymentQrImage({
 
   return (
     <img
-      className={`qr-image${compact ? " qr-image--compact" : ""}`}
+      className={`qr-image${compact ? " qr-image--compact" : ""}${full ? " qr-image--full" : ""}`}
       src={url}
       alt={`Payment QR for ${name}`}
     />

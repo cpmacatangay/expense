@@ -1,5 +1,11 @@
 # Implementation Plan: Salo Friends Expense Ledger
 
+> **Revision 2026-11-23**: Email invitations were replaced by one share link per expense. People
+> are added by name; a signed-in recipient claims an open name and the placeholder is merged into
+> their account. Migration `0035_expense_share_links` implements this. The spec, data model, and
+> quickstart are the current source of truth for the sharing flow; older email-invite references
+> in this plan are historical.
+
 **Branch**: `003-friends-expense-ledger` | **Date**: 2026-11-17 | **Spec**: [spec.md](./spec.md)
 
 **Input**: Feature specification from `/specs/003-friends-expense-ledger/spec.md`

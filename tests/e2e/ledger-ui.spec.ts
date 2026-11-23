@@ -52,9 +52,7 @@ const people = [
     status: "active",
     isSelf: true,
     hasQr: true,
-    createdByMe: false,
-    pendingEmail: null,
-    invitationExpiresAt: null
+    createdByMe: false
   },
   {
     id: "p2",
@@ -62,9 +60,15 @@ const people = [
     status: "active",
     isSelf: false,
     hasQr: false,
-    createdByMe: true,
-    pendingEmail: null,
-    invitationExpiresAt: null
+    createdByMe: true
+  },
+  {
+    id: "p3",
+    displayName: "Kent",
+    status: "pending",
+    isSelf: false,
+    hasQr: false,
+    createdByMe: true
   }
 ];
 
@@ -222,6 +226,31 @@ test.describe("mock ledger screens", () => {
         case "can_delete_account":
           body = { canDelete: true, youOweCentavos: 0, owedToYouCentavos: 0 };
           break;
+        case "create_expense_share":
+          body = {
+            token: "share-token-1234567890",
+            expiresAt: "2026-11-30T12:00:00Z"
+          };
+          break;
+        case "expense_share_preview":
+          body = {
+            expenseId: "e1",
+            description: "Dinner at Manam",
+            expenseDate: "2026-11-17",
+            payerName: "Hope",
+            totalCentavos: 120000,
+            expiresAt: "2026-11-30T12:00:00Z",
+            alreadyParticipant: false,
+            peopleCount: 2,
+            unclaimed: [{ personId: "p3", displayName: "Kent" }]
+          };
+          break;
+        case "claim_expense_share":
+          body = { expenseId: "e1", personId: "p1", alreadyClaimed: false };
+          break;
+        case "add_person":
+          body = { personId: "p4", displayName: "Mia", status: "pending" };
+          break;
         default:
           body = {};
       }
@@ -297,6 +326,45 @@ test.describe("mock ledger screens", () => {
     await expect(page.getByRole("heading", { name: "New expense" })).toBeVisible();
     await page.getByRole("button", { name: "Back" }).click();
     await expect(page.getByRole("heading", { name: "All expenses" })).toBeVisible();
+  });
+
+  test("A person is added by name", async ({ page }) => {
+    await page.goto("/expenses/new", { waitUntil: "networkidle" });
+    await page.getByRole("button", { name: "Add someone by name" }).click();
+    await page.getByLabel("Name").fill("Mia");
+    await page.getByRole("button", { name: "Add person" }).click();
+    await expect(page.getByRole("button", { name: /Mia/ })).toBeVisible();
+  });
+
+  test("The detail page creates a share link", async ({ page }) => {
+    await page.goto("/expenses/e1", { waitUntil: "networkidle" });
+    await page.getByRole("button", { name: "Share expense" }).click();
+    const link = page.getByLabel("Expense link");
+    await expect(link).toBeVisible();
+    await expect(link).toHaveValue(/\/join\/share-token-1234567890/);
+    await expect(page.getByRole("button", { name: "Copy link" })).toBeVisible();
+  });
+
+  test("A join link claims a name", async ({ page }) => {
+    await page.goto("/join/share-token-1234567890", { waitUntil: "networkidle" });
+    await expect(page.getByRole("heading", { name: "Join expense" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Join as Kent" })).toBeEnabled();
+    await page.getByRole("button", { name: "Join as Kent" }).click();
+    await expect(page.getByRole("heading", { name: "Dinner at Manam" })).toBeVisible();
+  });
+
+  test.describe("iPhone install", () => {
+    test.use({
+      userAgent:
+        "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1"
+    });
+
+    test("Settings shows numbered Safari steps", async ({ page }) => {
+      await page.goto("/settings", { waitUntil: "networkidle" });
+      await expect(page.getByText("Open Salo in Safari.")).toBeVisible();
+      await expect(page.getByText("Tap the Share button.")).toBeVisible();
+      await expect(page.getByText("Tap Add to Home Screen.")).toBeVisible();
+    });
   });
 
   test.describe("360 width", () => {

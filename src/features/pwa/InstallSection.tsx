@@ -51,13 +51,16 @@ export function InstallSection() {
     <section className="panel">
       <h2 className="panel-title">Install Salo</h2>
       <p className="panel-copy">
-        {ios && !prompt
-          ? "In Safari, tap Share, then Add to Home Screen."
-          : prompt
-            ? "Install Salo for one-tap access. It opens like an app and keeps the ledger a tap away."
-            : "In your browser menu, choose Install app or Add to Home screen."}
+        Salo opens like an app and keeps the ledger a tap away.
       </p>
-      {prompt ? (
+      {ios ? (
+        <ol className="install-steps">
+          <li>Open Salo in Safari.</li>
+          <li>Tap the Share button.</li>
+          <li>Tap Add to Home Screen.</li>
+          <li>Tap Add.</li>
+        </ol>
+      ) : prompt ? (
         <div className="export-actions">
           <button
             className="primary-action"
@@ -69,7 +72,9 @@ export function InstallSection() {
             {busy ? "Opening…" : "Install Salo"}
           </button>
         </div>
-      ) : null}
+      ) : (
+        <p className="panel-copy">In your browser menu, choose Install app or Add to Home screen.</p>
+      )}
       {notice ? (
         <p className="form-notice" role="status">
           {notice}

@@ -4,7 +4,6 @@ import { formatPeso } from "@/domain/money/format";
 import { useAuth } from "@/features/auth/authContext";
 import { useMe } from "@/features/me/useMe";
 import { canDeleteAccount, updateDisplayName } from "@/features/me/api";
-import { createInviteLink, correctPendingEmail, inviteUrl } from "@/features/people/api";
 import { usePeople } from "@/features/people/usePeople";
 import { InstallSection } from "@/features/pwa/InstallSection";
 import { PaymentQrImage } from "@/features/payments/PaymentQrImage";
@@ -25,16 +24,6 @@ export function SettingsPage() {
   const [nameBusy, setNameBusy] = useState(false);
   const [nameNotice, setNameNotice] = useState<string | null>(null);
   const [nameError, setNameError] = useState<string | null>(null);
-
-  const [link, setLink] = useState<{ personId: string; url: string } | null>(null);
-  const [linkBusy, setLinkBusy] = useState<string | null>(null);
-  const [linkError, setLinkError] = useState<string | null>(null);
-  const [copied, setCopied] = useState(false);
-
-  const [correctingId, setCorrectingId] = useState<string | null>(null);
-  const [correctEmail, setCorrectEmail] = useState("");
-  const [correctBusy, setCorrectBusy] = useState(false);
-  const [correctError, setCorrectError] = useState<string | null>(null);
 
   const [qrLabel, setQrLabel] = useState("");
   const [qrFile, setQrFile] = useState<File | null>(null);
@@ -67,50 +56,6 @@ export function SettingsPage() {
       setNameError(getErrorMessage(caught, "Could not save your name"));
     } finally {
       setNameBusy(false);
-    }
-  }
-
-  async function makeLink(personId: string) {
-    setLinkBusy(personId);
-    setLinkError(null);
-    setCopied(false);
-    try {
-      const result = await createInviteLink(personId);
-      setLink({ personId, url: inviteUrl(result.inviteToken) });
-      await queryClient.invalidateQueries({ queryKey: ["people"] });
-    } catch (caught) {
-      setLinkError(getErrorMessage(caught, "Could not create the invite link"));
-    } finally {
-      setLinkBusy(null);
-    }
-  }
-
-  async function copyLink() {
-    if (!link) return;
-    try {
-      await navigator.clipboard.writeText(link.url);
-      setCopied(true);
-    } catch {
-      setLinkError("Could not copy. Select the link and copy it.");
-    }
-  }
-
-  async function saveCorrectedEmail() {
-    if (!correctingId) return;
-    setCorrectBusy(true);
-    setCorrectError(null);
-    try {
-      const result = await correctPendingEmail(correctingId, correctEmail.trim());
-      await queryClient.invalidateQueries({ queryKey: ["people"] });
-      if ("inviteToken" in result && result.inviteToken) {
-        setLink({ personId: result.personId, url: inviteUrl(result.inviteToken) });
-      }
-      setCorrectingId(null);
-      setCorrectEmail("");
-    } catch (caught) {
-      setCorrectError(getErrorMessage(caught, "Could not change the email"));
-    } finally {
-      setCorrectBusy(false);
     }
   }
 
@@ -218,29 +163,10 @@ export function SettingsPage() {
           <h2 className="panel-title">People</h2>
         </div>
         <p className="panel-copy">
-          People you share an expense with. Pending people have a link you can send in chat.
+          People you share an expense with. Not joined means they have not claimed their name
+          yet.
         </p>
         {peopleLoading ? <p className="panel-copy">Loading people.</p> : null}
-        {linkError ? <p className="form-error">{linkError}</p> : null}
-
-        {link ? (
-          <div className="stack">
-            <label className="field">
-              <span>Invite link</span>
-              <input readOnly value={link.url} onFocus={(event) => event.currentTarget.select()} />
-            </label>
-            <div className="form-actions">
-              <button className="primary-action" type="button" onClick={() => void copyLink()}>
-                <Icon name={copied ? "check" : "copy"} />
-                {copied ? "Copied" : "Copy link"}
-              </button>
-              <button className="secondary-action" type="button" onClick={() => setLink(null)}>
-                <Icon name="x" />
-                Close
-              </button>
-            </div>
-          </div>
-        ) : null}
 
         <div className="member-list">
           {(people ?? []).map((person) => (
@@ -252,72 +178,18 @@ export function SettingsPage() {
                 </p>
                 <p className="row-sub">
                   {person.status === "pending"
-                    ? `Invited${person.createdByMe && person.pendingEmail ? ` · ${person.pendingEmail}` : ""}`
+                    ? "Not joined yet"
                     : person.status === "former"
                       ? "Former account"
                       : "Active"}
                 </p>
               </div>
-              {person.createdByMe && person.status === "pending" ? (
-                <div className="member-actions">
-                  <button
-                    className="primary-action"
-                    type="button"
-                    onClick={() => void makeLink(person.id)}
-                    disabled={linkBusy === person.id}
-                  >
-                    <Icon name="user-plus" />
-                    {linkBusy === person.id ? "Creating." : "Create invite link"}
-                  </button>
-                  <button
-                    className="secondary-action"
-                    type="button"
-                    onClick={() => {
-                      setCorrectingId(person.id);
-                      setCorrectEmail(person.pendingEmail ?? "");
-                      setCorrectError(null);
-                    }}
-                  >
-                    <Icon name="pencil" />
-                    Correct email
-                  </button>
-                </div>
-              ) : null}
             </div>
           ))}
         </div>
-
-        {correctingId ? (
-          <div className="stack">
-            <label className="field">
-              <span>Correct the invited email</span>
-              <input
-                type="email"
-                value={correctEmail}
-                onChange={(event) => setCorrectEmail(event.target.value)}
-                autoCapitalize="none"
-                autoCorrect="off"
-                spellCheck={false}
-              />
-            </label>
-            {correctError ? <p className="form-error">{correctError}</p> : null}
-            <div className="form-actions">
-              <button
-                className="primary-action"
-                type="button"
-                onClick={() => void saveCorrectedEmail()}
-                disabled={correctBusy}
-              >
-                <Icon name="check" />
-                {correctBusy ? "Saving." : "Save email"}
-              </button>
-              <button className="secondary-action" type="button" onClick={() => setCorrectingId(null)}>
-                <Icon name="x" />
-                Cancel
-              </button>
-            </div>
-          </div>
-        ) : null}
+        <p className="panel-copy">
+          To invite someone, add their name to an expense and share that expense link.
+        </p>
       </section>
 
       <section className="panel">
@@ -330,17 +202,8 @@ export function SettingsPage() {
         </p>
         {me?.paymentQrPath ? (
           <div className="qr-inline">
-            <PaymentQrImage path={me.paymentQrPath} name={me.displayName} compact />
+            <PaymentQrImage path={me.paymentQrPath} name={me.displayName} full />
             <p className="panel-copy">{me.paymentQrLabel ?? "Payment QR"}</p>
-            <button
-              className="text-action is-danger"
-              type="button"
-              onClick={() => void removeQr()}
-              disabled={qrBusy}
-            >
-              <Icon name="trash" />
-              {qrBusy ? "Removing." : "Remove QR"}
-            </button>
           </div>
         ) : null}
         <label className="field">
@@ -368,6 +231,19 @@ export function SettingsPage() {
             {qrBusy ? "Saving." : me?.paymentQrPath ? "Replace QR" : "Upload QR"}
           </button>
         </div>
+        {me?.paymentQrPath ? (
+          <div className="form-actions">
+            <button
+              className="text-action is-danger"
+              type="button"
+              onClick={() => void removeQr()}
+              disabled={qrBusy}
+            >
+              <Icon name="trash" />
+              {qrBusy ? "Removing." : "Remove QR"}
+            </button>
+          </div>
+        ) : null}
       </section>
 
       <InstallSection />

@@ -21,11 +21,12 @@
 | Split dishes | One person per line. A dish eaten by several people is entered as one line per person; the product has no shared-item split. |
 | Coverage | Members may cover other members inside an expense. One level only: a coverer absorbs the covered person's full share and cannot also be covered in the same expense. |
 | Visibility | An expense is visible only to the people listed on it. Balances are pairwise and only ever shown to the two people involved. |
-| Email visibility | Participants see display names only. Emails are used to add people, never shown on an expense. |
+| Email visibility | Participants see display names only. Email is account identity data; it is never shown on an expense or used to invite someone. |
 | All expenses | Home links to a full list of the person's expenses, newest first, in addition to recent activity and balances. |
-| Adding people | Add by email from inside an expense. An existing Google account is linked immediately; a new email becomes a pending person with a copyable invite link the creator sends in chat. No email is sent. |
-| Pending people | A person invited but not yet joined may be listed, be the payer, or cover someone; everything becomes actionable after they sign in with Google using the invited email. |
-| People settings | Settings lists people you have shared with, shows pending status, creates a fresh invite link, and lets the inviter correct a pending email before it is claimed. |
+| Adding people | Add a person by name from inside an expense. A new name is a placeholder that can be listed, be the payer, or cover someone immediately. |
+| Sharing | The creator or payer can create one expense link, valid for 7 days. A recipient signs in with Google, claims one of the open names already on the expense, and sees the share recorded for that name. |
+| Pending people | A name that has not been claimed stays not joined. The expense and its balances are recorded normally; the person acts on it after claiming the link. |
+| People settings | Settings lists people you have shared with and shows joined or not joined. Inviting happens from the expense link, not from Settings. |
 | Edit rights | The creator and the payer can edit or delete an expense. Everyone else listed can view it. |
 | Deleted expense | Removed from lists and balances, recorded in recent activity, and no longer openable. |
 | Saving | Saving is immediate. No draft, finalize, reopen, lock, or fixed-total step. |
@@ -85,26 +86,26 @@ As a person sharing expenses, I want to see exactly how much I owe each friend a
 
 ---
 
-### User Story 3 - Add people by email (Priority: P1)
+### User Story 3 - Add people by name and share the expense (Priority: P1)
 
-As the person recording an expense, I want to add a friend by email and give them a link, so I can include them even if they have never used the app.
+As the person recording an expense, I want to add a friend by name and send one expense link, so I can include them even if they have never used the app.
 
-**Why this priority**: A new friend must be addable in the moment, at the table, and the product must not depend on sending email.
+**Why this priority**: A new friend must be addable in the moment, at the table, and the product must not depend on knowing their email or sending email.
 
-**Independent Test**: Add an existing Google account and a new email to one expense, verify the first is linked immediately and the second is pending with a copyable link, then open that link, sign in with Google using the invited email, and verify the expense appears.
+**Independent Test**: Add a new name to an expense, save it, create the expense link, open it in a second signed-in session, claim the name, and verify the expense and its share appear for that person.
 
 **Acceptance Scenarios**:
 
-1. **Given** an expense being recorded, **When** the creator adds an email that belongs to an existing Google account, **Then** that person is linked and appears in the expense immediately.
-2. **Given** an expense being recorded, **When** the creator adds an email with no account, **Then** the person appears as pending, a copyable invite link is created, no email is sent, and they can be included in the expense right away.
-3. **Given** a pending person, **When** they open the link and sign in with Google using the invited email, **Then** they claim that identity and see every expense they are on.
-4. **Given** an invite link created for one email, **When** a different Google account tries to claim it, **Then** the claim is refused.
-5. **Given** an email that is already on the expense, **When** it is added again, **Then** the existing person is returned and no duplicate is created.
-6. **Given** a pending person who has not joined, **When** their link expires, **Then** they remain a pending person on their expenses and the creator can create a fresh link.
-7. **Given** a pending email was mistyped, **When** the inviter corrects it before it is claimed, **Then** the old link is revoked, a new link is created for the corrected address, and the old address can no longer claim it.
-8. **Given** an expense, **When** any participant views its people, **Then** they see display names only and not email addresses.
-9. **Given** a person with no Google account for the invited email, **When** they try to join, **Then** they cannot claim it until they use a Google account with that email or the inviter corrects the address.
-10. **Given** a new Google account, **When** the person signs in for the first time, **Then** they land on an empty Home and see no expense until someone adds them.
+1. **Given** an expense being recorded, **When** the creator adds a new name, **Then** that person appears as not joined and can be included in the expense, payer, or coverage immediately.
+2. **Given** a saved expense with open names, **When** the creator or payer opens Share, **Then** a copyable link valid for 7 days is created and the old link is reused while it is still valid.
+3. **Given** a signed-in recipient, **When** they open the link, **Then** they see the expense summary and the open names on it, and can choose their name.
+4. **Given** a recipient who claims a name, **When** they sign in with Google, **Then** the placeholder is merged into their account, the recorded share applies, and the expense appears in their ledger.
+5. **Given** a link whose 7 days have passed or that was refreshed, **When** someone opens it, **Then** it is refused and the creator can send the current link.
+6. **Given** an expense link, **When** someone who is already a participant opens it, **Then** they are told they are already on the expense instead of claiming another name.
+7. **Given** an expense, **When** any participant views its people, **Then** they see display names only and not email addresses.
+8. **Given** a new Google account, **When** the person signs in for the first time without a link, **Then** they land on an empty Home and see no expense until someone shares one.
+9. **Given** a link, **When** an unrelated person opens it, **Then** they cannot see the expense unless they sign in and claim an open name.
+10. **Given** an open name, **When** a second person tries to claim it after it was taken, **Then** the claim fails and they can choose another open name.
 
 ---
 
@@ -217,16 +218,15 @@ As a person who is owed money, I want my payment QR available on the debt I am o
 - An expense is edited after a debt from it was marked paid; the pair's balance is recalculated, the payment record stays, and any excess reverses the direction of the debt.
 - An expense is deleted after a payment; the payment record stays and the pair's balance is recalculated.
 - A marked payment is undone; the balance returns and the correction is recorded.
-- The same email is added twice to one expense; no duplicate person is created.
-- The creator adds their own email; it is refused with a clear message.
-- An email is added that already has a Google account; the account is linked immediately and no invite link is needed.
-- A pending person is the payer; the expense records who entered it, and the pending person sees it after signing in with Google.
-- A pending person is a coverer; the debt is recorded against them and becomes visible and actionable after they sign in with Google.
-- A pending person tries to sign in with a different Google account; the invite cannot be claimed.
-- A pending email is corrected before it is claimed; the old address can no longer claim it and a new link is created for the corrected address.
-- The invited email has no Google account; the person cannot claim it until they create or use a Google account with that address, or the inviter corrects the email.
-- The creator loses an invite link; creating a fresh one revokes the previous link and the pending person remains.
-- A person signs in with Google before anyone adds them; Home is empty and no expense is visible.
+- The same name is added twice to one expense; the existing placeholder is returned, not duplicated.
+- The creator adds their own name; it is allowed only as a separate placeholder, which they cannot claim because they are already on the expense.
+- A placeholder is the payer; the expense records who entered it, and the person sees it after claiming the link.
+- A placeholder is a coverer; the debt is recorded against them and becomes visible and actionable after they claim the link.
+- Two people open the same link; the first claim wins and the second sees the name as taken.
+- A link is refreshed after someone has already joined; the person stays joined and only new claims need the new link.
+- A link is opened by someone who is already on the expense; they are told they are already on it.
+- The creator loses the link; refreshing creates a new 7-day link and invalidates the old one while the expense remains.
+- A person signs in with Google before anyone shares an expense; Home is empty and no expense is visible.
 - A person has no shared expense with the viewer; their name and QR are not shown.
 - Participants open an expense; they see display names and never email addresses.
 - The connection drops while saving; the save fails with a clear message and no partial expense is created.
@@ -249,30 +249,30 @@ As a person who is owed money, I want my payment QR available on the debt I am o
 
 - **FR-001**: A person MUST sign in before seeing any expense, balance, person, activity, or payment QR.
 - **FR-002**: Sign-in MUST use Google OAuth only. Self-service Google sign-up MUST be allowed, and a new account MUST land on an empty Home. Email one-time codes, magic links, Sign in with Apple, and any authentication or invite email MUST NOT be used.
-- **FR-003**: Every person MUST have a stable identity, an email, and an editable display name.
+- **FR-003**: Every person MUST have a stable identity and an editable display name; email is account identity data and MUST NOT be required for a person on an expense.
 - **FR-004**: A person MUST be able to sign out and to delete their account from Settings.
 - **FR-005**: Account deletion MUST be blocked while the person owes or is owed any amount, and past expenses MUST keep the display name recorded on them.
 - **FR-006**: Sessions MUST persist across app launches and renew without losing the current screen when possible.
 - **FR-007**: An expense, its items, its shares, its coverage, and its history MUST be visible only to the people listed on it.
 - **FR-008**: A pairwise balance MUST be visible only to the two people in that pair.
 - **FR-009**: A person's display name and payment QR MUST be shown only to people who share at least one expense or open balance with them.
-- **FR-010**: People MUST be found by exact email only; the product MUST NOT offer a directory, search across strangers, or public profiles.
-- **FR-011**: Email addresses MUST NOT be shown to other participants; they are used only to add a person.
-- **FR-012**: A request for an expense, balance, or image outside the viewer's access MUST be denied without revealing whether it exists.
+- **FR-010**: The product MUST NOT offer a directory, search across strangers, or public profiles; people are added by name to an expense.
+- **FR-011**: Email addresses MUST NOT be shown to other participants and MUST NOT be required to add a person.
+- **FR-012**: A request for an expense, balance, or image outside the viewer's access MUST be denied without revealing whether it exists, except for the limited expense summary available through a valid share link.
 - **FR-013**: A person MUST NOT be able to bypass these access rules by any route, link, or repeated request.
 
-#### People and invitations
+#### People and sharing
 
-- **FR-014**: A person MUST be able to add another person to an expense by email.
-- **FR-015**: When the email belongs to an existing Google account, the person MUST be linked and listed immediately.
-- **FR-016**: When the email has no account, the system MUST create a pending person, allow that person to be listed on the expense immediately, and create a copyable invite link. No email is sent.
-- **FR-017**: An invite link MUST be bound to the invited email, expiring, single-use, and claimable only by a Google account with that email.
-- **FR-018**: A pending person MUST become active when they claim the invite with Google, and MUST then see every expense they are on.
-- **FR-019**: A creator MUST be able to create a fresh invite link after expiry or loss; the pending person and their expenses MUST remain, and the previous link MUST be revoked.
-- **FR-020**: The inviter MUST be able to correct a pending person's email before it is claimed; the old link MUST be revoked, a new link MUST be created, and once claimed the email MUST NOT be changed.
-- **FR-021**: Adding an email already on the expense MUST return the existing person and MUST NOT create a duplicate.
-- **FR-022**: Adding the creator's own email MUST be refused with a clear message.
-- **FR-023**: Settings MUST list the people the viewer has shared an expense with and any pending people they added, with pending status and an invite-link action; it MUST NOT list anyone else.
+- **FR-014**: A person MUST be able to add another person to an expense by name.
+- **FR-015**: A new name MUST create a placeholder person that can be listed on the expense, be the payer, or cover someone immediately.
+- **FR-016**: The creator or payer MUST be able to create one expense share link, valid for 7 days, and reuse it while it is valid.
+- **FR-017**: A share link MUST identify exactly one expense, be unguessable, and grant only the ability to preview that expense and claim one open name on it.
+- **FR-018**: Opening a share link MUST require Google sign-in; the recipient MUST see the expense summary and the open names before claiming.
+- **FR-019**: Claiming an open name MUST merge the placeholder into the recipient's account person, apply the recorded share, and make the expense visible in their ledger.
+- **FR-020**: A claimed name MUST stop being listed as open; a claim on a taken name MUST fail with a clear message.
+- **FR-021**: The creator or payer MUST be able to refresh the link; refreshing MUST invalidate the previous link and start a new 7-day window.
+- **FR-022**: An expired or refreshed link MUST be refused without revealing the expense.
+- **FR-023**: Settings MUST list the people the viewer has shared an expense with, with joined or not joined status; it MUST NOT create or list personal invite links.
 - **FR-024**: A display name MUST be editable by its owner and MUST be shown the same way on every expense.
 - **FR-025**: A payer MUST NOT be removed from an expense; the editor MUST choose a different payer first.
 - **FR-026**: Removing a participant MUST remove their share, clear any coverage involving them, and warn the editor when someone they covered becomes responsible for their own share. The creator MUST NOT remove themselves; the creator and payer MUST remain participants.
@@ -398,9 +398,9 @@ As a person who is owed money, I want my payment QR available on the debt I am o
 
 ### Key Entities
 
-- **Account**: A signed-in person, with a stable identity, an email, a display name, and a payment QR.
-- **Person**: A participant identity on expenses, linked to an account or pending an invite; a pending person becomes active when they claim the invited email.
-- **Invitation**: An expiring, email-bound invite that lets a pending person claim their identity.
+- **Account**: A signed-in person, with a stable identity, an account email, a display name, and a payment QR.
+- **Person**: A participant identity on expenses, linked to an account or waiting to be claimed through an expense link.
+- **Share link**: An expiring, unguessable link to one expense that lets a signed-in recipient claim one open name on it.
 - **Expense**: A shared purchase with a description, date, one payer, listed people, items, coverage, computed shares, creator, and version.
 - **Expense item**: A line on an expense with a name, an amount, and an assignment to one person.
 - **Share**: The amount a person owes for one expense: their assigned items, plus any share they cover, and zero when they are covered.
@@ -422,8 +422,8 @@ As a person who is owed money, I want my payment QR available on the debt I am o
 - **SC-006**: In 100% of covered shares, the amount is charged to the coverer and the covered person owes zero for that expense.
 - **SC-007**: Editing or deleting an expense updates every affected balance within 2 seconds of saving.
 - **SC-008**: No screen offers tables, groups, students, drafts, finalize, lock, reopen, recaps, exports, or a fourth tab in the release review.
-- **SC-009**: 100% of newly added emails either link an existing Google account immediately or create a pending person with a copyable invite link.
-- **SC-010**: A person who has never used the app can sign in with Google, claim an invite, and see their expense in under 2 minutes.
+- **SC-009**: 100% of newly added names create a placeholder person that can be claimed from the expense link.
+- **SC-010**: A person who has never used the app can open a share link, sign in with Google, claim a name, and see their expense in under 2 minutes.
 - **SC-011**: Every primary screen renders without clipping or horizontal overflow at 360, 390, 412, 430, and 1440 widths in the light theme.
 - **SC-012**: All primary flows pass the accessibility review for 44-point targets, contrast, focus order, labels, and reduced motion.
 - **SC-013**: A fresh account can record its first expense in under 3 minutes without a group or table setup.
@@ -438,21 +438,21 @@ As a person who is owed money, I want my payment QR available on the debt I am o
 - The interface stays light-only in the stone/ink visual world; there is no dark-mode switch in this release.
 - The product stays single-currency: Philippine pesos, English, and Asia/Manila dates.
 - Existing sign-in accounts are retained while old ledger data is wiped at release, after a fresh verified production backup and explicit sign-off.
-- Existing accounts are expected to sign in with Google using their recorded email; an account without a Google identity must create one with that address or be re-added with a Google email.
-- Every person eventually has a Google account; a pending person is a temporary identity that can be listed, pay, or cover before signing in.
-- A pending person may be recorded as the payer or a coverer by the creator; they can act on it only after signing in with Google.
+- Existing accounts are expected to sign in with Google using their recorded email; an account without a Google identity must create one with that address or be re-added by name and claim the expense link.
+- Every person eventually has a Google account; a not-joined placeholder is a temporary identity that can be listed, pay, or cover before signing in.
+- A placeholder may be recorded as the payer or a coverer by the creator; they can act on it only after claiming the expense link.
 - One payer per expense; multiple payers, unequal custom splits, and per-line multi-person splits are out of scope.
 - Every item belongs to one person and has a name and amount; split dishes are entered as one line per person.
 - Coverage is one level and per expense; standing coverage, chains, and coverage across expenses are out of scope.
 - Payments are full-amount marks, not partial installments; mistakes are corrected by an undo, not by editing the amount.
-- An invite link expires after 7 days and can be refreshed; the pending person and their expenses remain.
+- An expense share link expires after 7 days and can be refreshed; the placeholder and their expenses remain.
 - Account deletion requires a zero net balance in both directions, whether the person owes or is owed.
-- An active person can mark a debt paid even while the other person is pending; the pending person sees the record after signing in.
+- An active person can mark a debt paid even while the other person has not joined; the other person sees the record after claiming the link.
 - Balances are net pairwise amounts; an edit or delete after a payment can reverse the direction of a debt.
 - Saving requires a connection; cached expenses may be read offline.
 - Group size is friends-and-family scale: 2–12 people per expense.
 - Sign-in is Google only; no custom SMTP, sending domain, or authentication email is required.
-- Email is used to identify and add people only; no invite email is sent, and there are no product notifications, push messages, or digests.
+- Email is account identity data only; no invite email is sent, and there are no product notifications, push messages, or digests.
 - All expenses is reached from Home; navigation stays three tabs.
 - No old payment QR image is carried over; each person starts with none.
 - The product has no analytics, advertising, receipt capture, OCR, or AI extraction.
@@ -466,7 +466,7 @@ As a person who is owed money, I want my payment QR available on the debt I am o
 - Recaps, share images, CSV exports, JSON exports, and data portability features.
 - A fourth Activity tab and group-wide activity feeds.
 - Multiple payers, unequal custom splits, shared-item splits, per-line multi-person splits, partial payments, recipient confirmation, and disputes.
-- Email one-time codes, magic links, custom SMTP, sending domains, and authentication or invite email delivery.
+- Email one-time codes, magic links, custom SMTP, sending domains, authentication or invite email delivery, and per-email invitation links.
 - Sign in with Apple.
 - Multi-currency, taxes, service charges, discounts, and printed-receipt reconciliation.
 - Quantity, unit price, and other receipt line details.

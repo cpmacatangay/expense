@@ -7,19 +7,10 @@ export type Person = {
   isSelf: boolean;
   hasQr: boolean;
   createdByMe: boolean;
-  pendingEmail: string | null;
-  invitationExpiresAt: string | null;
 };
 
 export type AddPersonResult = {
   personId: string;
+  displayName: string;
   status: "active" | "pending";
-  inviteToken: string | null;
-  expiresAt: string | null;
-};
-
-export type InviteLinkResult = {
-  personId: string;
-  inviteToken: string;
-  expiresAt: string;
 };

@@ -22,8 +22,8 @@ const LedgerPage = lazy(() =>
 const SettingsPage = lazy(() =>
   import("@/pages/SettingsPage").then((module) => ({ default: module.SettingsPage }))
 );
-const InvitePage = lazy(() =>
-  import("@/pages/InvitePage").then((module) => ({ default: module.InvitePage }))
+const JoinExpensePage = lazy(() =>
+  import("@/pages/JoinExpensePage").then((module) => ({ default: module.JoinExpensePage }))
 );
 const ExpenseEditorPage = lazy(() =>
   import("@/features/expenses/ExpenseEditorPage").then((module) => ({
@@ -85,7 +85,7 @@ function MeGate() {
         <Route path="expenses/:expenseId/edit" element={<ExpenseEditorPage />} />
         <Route path="ledger" element={<LedgerPage />} />
         <Route path="settings" element={<SettingsPage />} />
-        <Route path="invite" element={<InvitePage />} />
+        <Route path="join/:token" element={<JoinExpensePage />} />
       </Route>
       <Route path="*" element={<NotFoundPage />} />
     </Routes>

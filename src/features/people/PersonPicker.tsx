@@ -37,7 +37,9 @@ export function PersonPicker({
                 {person.displayName.slice(0, 2).toUpperCase()}
               </span>
               <span>{person.displayName}</span>
-              {person.status === "pending" ? <span className="status-chip">Invited</span> : null}
+              {person.status === "pending" ? (
+                <span className="status-chip">Not joined</span>
+              ) : null}
               {isOn ? <Icon name="check" size={14} /> : null}
             </button>
           );
@@ -46,7 +48,7 @@ export function PersonPicker({
       {onAdd ? (
         <button className="text-action" type="button" onClick={onAdd}>
           <Icon name="user-plus" />
-          Add person by email
+          Add someone by name
         </button>
       ) : null}
     </div>
