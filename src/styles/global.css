@@ -2476,3 +2476,89 @@ summary:focus-visible,
     animation: none;
   }
 }
+
+/* ---------- Participant ledger ---------- */
+
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.person-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.member-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.member-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--rule);
+}
+
+.member-row:last-child {
+  border-bottom: 0;
+}
+
+.share-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--rule);
+}
+
+.share-row:last-child {
+  border-bottom: 0;
+}
+
+.home-page .ticket {
+  gap: 8px;
+}
+
+.home-page .ticket-figure {
+  font-size: var(--fs-kpi);
+}
+
+.home-page .home-lead {
+  align-items: stretch;
+}
+
+@media (min-width: 760px) {
+  .home-page .home-lead {
+    flex-direction: row;
+    align-items: flex-end;
+  }
+
+  .home-page .home-lead .ticket {
+    flex: 1 1 auto;
+  }
+
+  .home-page .home-lead .primary-action {
+    width: auto;
+    min-width: 180px;
+  }
+}
+
+.item-row {
+  flex-wrap: wrap;
+}
+
+.item-row .field {
+  flex: 1 1 120px;
+}
+
+.item-row .field input,
+.item-row .field select {
+  width: 100%;
+}

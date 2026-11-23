@@ -1,288 +1,118 @@
-# DESIGN.md
+# Design
 
-# Design System
+**Product**: Salo - friends expense ledger PWA
 
-**Product**: Salo — shared group meal ledger PWA
-**Mode**: Operate
-**Platforms**: one Salo interface on iPhone and Android; only safe areas and input behavior differ
-**Direction**: Achromatic ledger, redrawn for Salo · seed `656333293`
-**Face**: Geist with Geist Mono for every figure
-**Signature**: the table split — one band that shows exactly how a bill divides, and a balance printed as a ticket
+**World**: a warm stone desk with an ink receipt. Paper ground, ink chrome, one green used only for
+money movement and positive confirmation. The ledger is the content; decoration stays quiet.
 
-## 1. Design intent
+## Principles
 
-Salo is used one-handed at the table, often with poor signal, while a bill is being discussed. A member
-should answer three questions in seconds:
+1. **The expense is the object.** People, lines, shares, and the payer are the content. Never hide
+   them behind generic cards or tabs.
+2. **One number at a time.** Home leads with the viewer's balance; Ledger separates “You owe” and
+   “Owed to you”; the editor ends with the split preview.
+3. **Immediate.** No draft, finalize, lock, or total mode. Save is the commit.
+4. **One thumb.** Primary actions sit at the bottom of the reachable column. Tap targets are at least
+   44px. No interaction depends on hover.
+5. **Light only.** `color-scheme: light`; no appearance switch. Dark tokens may remain unused.
+6. **Quiet motion.** 120–180ms ease transitions for presses, sheets, and appearing rows. Reduced motion
+   removes motion rather than shortening it.
 
-1. What do I owe, or what am I owed?
-2. Who else is at this table?
-3. What do I do next?
+## Palette and type
 
-The world is **the shared table and the printed ticket**. Paper ground, ink chrome, one green used only
-on the data, and figures set like a receipt. The interface is not a dashboard and not a phone imitation
-of Material or iOS; it is one Salo language that adapts in width, not in personality.
+- Ground: warm paper (`#F2F1ED` at the shell).
+- Surface: white-warm panels; ink `#171512`; muted ink for secondary copy; a single `--rule` border.
+- Accent: Salo green, used for positive money and confirmation only. Destructive controls use red text
+  with a neutral border, never a filled red button.
+- Type: Geist for UI, Geist Mono for amounts and dates. Amounts are tabular. The balance uses the KPI
+  size; row amounts use the body size.
+- One 4px base. Screen gutters 16px phone / 24px wide. Section gap 12px, the same rhythm as the Home
+  balance-to-New expense pair. Card padding 16px / 20px.
 
-**Direction redraws** (state them, don't hide them):
+## Shell
 
-- **The style's #F8F8F8 chrome → a low-chroma warm stone.** The table world needs paper, but the first
-  warm cream read as the assistant palette. The ground is a neutral stone (`#F2F1ED`), not a yellow
-  cream; the warmth comes from ink, the ticket surface, and the green data.
-- **The style's blue chart hue → Salo green.** The brand's own hue is kept and used only on data.
-- **The style's sparse density → calm Home, dense Ledger.** Two jobs, two densities.
-- **The dealt Manrope face → Geist + Geist Mono.** The style's own face is the mono figure; it is the
-  product's ledger voice. Loaded locally, no network at runtime.
-- **The single-column phone shell → a responsive top nav.** Three tabs on a phone; the same three
-  destinations as text links on a wide screen. No sidebar, no floating pill bar.
+- Header: S mark, “Salo”, and “Friends ledger” at 12px muted; Manila date or “Offline” in mono on the
+  right. No table name or switcher.
+- Three bottom tabs: Home, Ledger, Settings. All expenses, editor, detail, and invite are pushed
+  screens; the tabs hide on the editor/detail stack.
+- Offline banner is a thin paper strip with ink text. No red for connectivity.
+- Skip link, focus rings, and safe-area padding are mandatory.
 
-## 2. Principles
+## Home
 
-- **One question per screen.** The balance answers Home; who owes whom answers Ledger; administration
-  answers Settings.
-- **The table is the product.** People, shares, and the exact split are the content; never generic
-  finance tiles.
-- **Paper, not chrome.** Surfaces are flat, separated by one line or one tone step. No gradients,
-  glows, glass, or resting shadows.
-- **Ink for structure, green for data.** The primary action is ink; Salo green appears on the balance's
-  split, the viewer's share, and positive states. Red is status, never decoration.
-- **Figures are printed.** Every amount uses Geist Mono, tabular, right-aligned against its row edge.
-- **One language, two widths.** Same components at 390px and 1440px; only density and navigation
-  placement change.
+1. Greeting and one-line sub.
+2. Balance ticket: “You owe ₱X”, “You are owed ₱X”, or “All square.” The ticket is the anchor.
+3. Primary **New expense** directly under the ticket, separated by the 12px section rhythm.
+4. Open debts panel: one row per person, direction, amount, Mark paid, optional Scan.
+5. Recent activity panel: five events, then **See all** to All expenses.
 
-## 3. Tokens
+Empty Home: “No expenses yet. Record the first one.” with New expense. Do not show a setup wizard.
 
-### Colour
+## All expenses
 
-| Role | Light | Dark | Use |
-|---|---|---|---|
-| `ground` | `#F2F1ED` | `#12100D` | Page |
-| `surface` | `#FBFAF7` | `#191713` | Panels, tickets, nav |
-| `raised` | `#E9E7E0` | `#211F1A` | Wells, selected rows |
-| `active` | `#E2DFD6` | `#2A2721` | Pressed / selected |
-| `border` | `#D9D5CC` | `#302D27` | Panel and control edges |
-| `rule` | `#E9E6DF` | `#24211C` | Row rules |
-| `control` | `#C7C2B8` | `#4A463D` | Input edges |
-| `text` | `#171512` | `#F2F2F2` | Primary ink |
-| `muted` | `#625E55` | `#B4B2AC` | Secondary text, 4.5:1+ |
-| `accent` | `#1F5C45` | `#8FD6B4` | The one data hue |
-| `accent-soft` | `#DCEBE1` | `#1B3326` | Selected data tint |
-| `primary` | `#171512` | `#EFEEEA` | Filled action |
-| `on-primary` | `#FBFAF7` | `#171512` | Filled action label |
-| `negative` | `#8E2F22` | `#F0A79A` | You owe; destructive |
-| `warning` | `#7A4E12` | `#E8C68A` | Pending |
-| positive / warning / negative / neutral pills | pale pairs in `tokens.css` | dark tints | Status only |
+Newest first. Row: description, date, payer, total, “your share”. Tap opens the detail. No filters,
+recaps, exports, or bulk actions.
 
-Rules:
-- The accent is data, not chrome. It never fills a button, a nav row, or a heading.
-- The shipped app is **light only**: it sets `color-scheme: light` and does not follow the device dark preference. Dark tokens remain behind `data-theme="dark"` for a future switch.
-- Status pills are pale surface + dark ink of the same family; no saturated fill with white text.
-- The identity circles keep their pale adult colour from the database, with a constant dark ink in
-  both themes.
-- Dark mode is a warm black, not navy; text is a neutral off-white, not cream.
-- Control boundaries use `--control`, not the softer panel `--border`, and clear 3:1 against the
-  surface or ground in both themes. Panels and row rules stay quiet.
+## Expense editor
 
-### Type
+- Description, date, payer.
+- People: chips with an active/invited state, 2–12 people, creator included.
+- Items: line name, amount, one assignee. No quantity, unit price, or shared line.
+- Coverage: per person, “Pays own share” or “Covered by …”. Only valid coverers; one level.
+- Split preview: total, person shares, coverage notes, who owes the payer.
+- Save is primary; cancel returns. Delete is a separate destructive panel for editors.
+- Inline validation names the problem. A stale save offers Reload latest.
 
-| Role | Face / size | Use |
-|---|---|---|
-| Page title | Geist 24 (26 at ≥760) / 600 | One `h1` per screen |
-| Section title | Geist 16 / 600 | Panel heading |
-| Body | Geist 14 / 400, 1.5 | Rows and running text |
-| Small | Geist 13 / 400–500 | Labels, helper copy, sublines |
-| Micro | Geist 12 / 500 | Meta, tabs, legends |
-| Pill | Geist 11 / 500 | Status only |
-| Initials | Geist 10 / 600 | In the identity circle |
-| Figure | Geist Mono 34 / 500 | The balance |
-| Figure | Geist Mono 13–26 / 500 | Amounts, totals, codes |
+## Expense detail
 
-Rules:
-- Two faces only: Geist for words, Geist Mono for every figure. No monospace labels.
-- `font-variant-numeric: tabular-nums` everywhere a figure updates.
-- No display type: the title stays at 24–26, the balance at 34, nothing at 48.
-- Sentence case. No tracked uppercase, no eyebrow labels above headings.
-- Every size resolves from a `--fs-*` role token in `tokens.css` (`title`, `title-wide`,
-  `onboarding`, `section`, `kpi`, `kpi-small`, `total`, `code`, `sheet`, `body`, `small`, `micro`,
-  `pill`, `initials`, `control`). Component CSS must not set a literal font size.
+Description, date, total, payer; people with paid/created badges; item lines grouped by person;
+shares with “Covered by”; full history; Edit for the creator/payer; Delete with confirmation. A
+deleted expense is not reachable.
 
-### Spacing, shape, and depth
+## Ledger
 
-- One 4px base; screen gutters 16px on a phone, 24px on a wide screen; section gap 12px, the
-  balance-to-action rhythm on Home.
-- Panel padding 16px (20px at ≥760), card gap 16px.
-- Radii: panel/ticket 8px, control 6px, chip 4px, sheet 12px. No 9–16px middle values elsewhere.
-- No shadows at rest. A sheet is the only floating surface, with a soft shadow and a scrim.
-- Touch controls 44px, 48px on coarse pointers; 32–36px on a wide screen.
+Balance ticket with two figures. Debt rows show the other person, direction, amount, Mark paid, Scan,
+and History. Pay sheet: name, amount, QR or “Ask them for their QR”, Mark paid. Paid history per pair
+with Undo. Empty: “All square.”
 
-## 4. Shell
+## Settings
 
-**One shell.** `PlatformShell` renders the same markup on both platforms; `data-platform` remains only
-as a detection flag.
+760px column of titled panels:
+1. Profile: display name, email read-only.
+2. People: active and pending people, pending email only to the creator, Create invite link, Correct
+   email.
+3. Payment QR: current image and label, upload/replace/remove.
+4. Install Salo.
+5. Account: sign out, delete account with the balance block explained.
 
-- **Header (60px phone / 64px wide):** the S mark in ink, "Salo" at 16/600, the table name at 12
-  muted (a button that opens the table switcher), and the Manila date in mono on the right. No
-  wordmark lockup; the splash carries the mark.
-- **Navigation:** three destinations — Home, Ledger, Settings — as 20px outline icons and 12px
-  labels in a bottom bar on a phone (56px + safe area). At ≥760px the same nav becomes a text row under
-  the header. Active: ink label/label weight and a 2px ink rule; never a coloured pill.
-- **Detail routes** (`/outings/:id`, `/expenses`) hide the nav; the page carries a back link. The
-  editor total is a fixed bottom bar on the surface with a 1px top rule.
-- **Widths:** the app frame is 960px; every page is a 760px column centered inside it, so the header
-  brand, page title, panels, and nav all share one left edge. Editors use 720px; Settings and lists use
-  760px. The Home is a single calm column; the Ledger is the same column with denser rows.
-- No sidebars, no responsive dashboard, no floating action button.
+## Components and states
 
-## 5. Components
+- Ticket, panel, row, field, primary/secondary/text/icon actions, status chip, sheet, QR frame.
+- Text action: 44px, 1px neutral border, 4px radius, 14/500. Card-level Settings actions use the 6px
+  control radius and fill the panel.
+- Status chips are pale fills with dark ink; never saturated fill with white text.
+- Loading uses a short copy line, not a spinner storm. Empty states explain the next action. Errors
+  are paper surfaces with a named message and a retry.
+- Sheets are modals on phone and centered on wide screens; 44px close target.
 
-### The ticket balance
+## Motion
 
-- Home's largest element: a surface panel with two 14px punch notches on its sides (the ground showing
-  through), an 8px radius, and a 1px border.
-- Label (12 muted), figure (Geist Mono 34), one or two 13px lines of copy, a 1px rule, then the split.
-- State: "You owe" sets the label and figure to `negative`; "You are owed" keeps ink; zero recedes to
-  muted. The amount is always the absolute figure; the label carries the direction.
+- Press: 120ms opacity/scale to 0.98. Sheets: 180ms translate/fade. Rows: 120ms fade/slide when a
+  mutation lands.
+- No looping motion, parallax, or decorative shimmer.
+- Respect `prefers-reduced-motion`.
 
-### The table split
+## Accessibility
 
-- One horizontal band of segments sized by each adult's exact share, 10px tall with 2px seams.
-- The viewer's segment is the only green. Everyone else is ink at one of five fixed opacities, never a
-  separate hue. The legend repeats the band's tones as 7px squares with name + mono amount.
-- Used on Home (last finalized meal) and on the expense "Who pays what" panel. It replaces any
-  share table; it is the product's signature.
-- A flat amount is never shown twice: the legend is the only list of shares.
+- 44px targets, visible focus, logical reading order, labelled inputs, and `aria-pressed` on people
+  chips.
+- Contrast meets WCAG AA for body text and amounts.
+- Dynamic Type/large text must not clip amounts or buttons.
+- Screen readers announce balance direction, coverage, payment state, and errors.
 
-### Ledger rows
+## Verification
 
-- 44px rows separated by 1px rules; no cards inside cards, no zebra.
-- Identity circle 28px (22px for attendance), name 14/500, status/sublines 13/400 muted, amount Geist
-  Mono 13 right-aligned on a single edge.
-- Transfer rows read left to right: from initial → arrow → to initial → to-name + "From …" → amount →
-  one 36–44px action. The action is a `+` ("Record payment"), not an arrow; the QR is its own button.
-- Balances: "is owed"/"owes"/"even" as the subline; green/red only on the figure and subline.
-
-### Status and stamp
-
-- Status pills: 20px tall, 11/500, pale fill, dark ink, 4px radius.
-- `Finalized` is a stamp: a 22px unfilled tag with a 1px ink border, used once in the editor total.
-- One status mark per row. Pending adults show one `Pending` label; the initials are not tinted again.
-
-### Actions
-
-- **Primary:** 44px, 6px radius, ink fill, warm-white label, 16px icon. One per screen. The only
-  exception is the dark theme's inverted light fill.
-- **Secondary:** 44px, transparent, 1px control border, ink label.
-- **Text action:** 44px on phone / 34px on wide, transparent, 1px border, 4px radius, 14/500. A command
-  is never styled as bare underlined text. Destructive: red text with the same neutral border; only the
-  hover state earns a red edge. Card-level text actions in Settings use the 6px control radius and fill
-  the panel width.
-- **Icon action:** 44px phone / 36px wide, 1px border, 16px icon, accessible name + title.
-- **Text link:** navigation only, 44px hit area, 13/500 ink, trailing arrow; underline on hover. Never
-  use it for a command.
-
-### Forms
-
-- Label above the field, 13/500 muted; control 44px (48px on coarse pointers), 1px `control` border,
-  6px radius, surface fill.
-- Every control has an explicit `id`, a `name`, and a `<label for>` association, even when nested.
-- Inputs and selects share one height and radius; native date controls are mono 16 on a phone and 13
-  on a wide screen, and every text control is 16px at phone widths so iOS does not zoom on focus.
-  Placeholder uses `faint`, never a label.
-- Forms submit and validate natively: `required`, `pattern`, `minLength`, and `type` constraints do the
-  work, then the handler checks the parsed value and writes an `aria-describedby` error. Submit stays
-  enabled until a valid submission is in flight; it is never disabled to pre-empt invalid input.
-- Email and one-time-code fields add the matching `autocomplete`, `autocorrect="off"`,
-  `autocapitalize="none"`, `spellcheck="false"`, and `enterKeyHint`. Date ranges sit in a
-  `<fieldset><legend>`; filter controls sit in `<search>`.
-- File upload is the shared `FileField`: 44px bordered control, upload icon, file name, Browse/Replace,
-  a 13px hint, and a focus ring on the wrapper. No bare native file input.
-- Action rows: 44px controls; primary right, cancel/secondary left. Destructive confirmation names the
-  object and the consequence.
-
-### Sheet
-
-- Payment QR opens a bottom sheet, not an inline panel: scrim, 12px top radius, 430px max width. On wide
-  screens it centers as a 460px dialog.
-- It is a native `<dialog>` opened with `showModal()`: the browser supplies the top layer, focus
-  handling, `Escape`, and focus return to the QR button. Do not add `role="dialog"`, `aria-modal`, a
-  focus trap, `inert`, an Escape handler, or a body scroll lock. `closedby="any"` plus a pointer
-  fallback gives backdrop dismissal; `::backdrop` carries the scrim and `overscroll-behavior: contain`
-  keeps the page still.
-- The QR surface stays white in both themes; its label ink stays dark, independent of the theme.
-
-### Recap / export / payment QR
-
-- Recap stays a paper receipt: Geist text, mono numbers, one image, share/copy/download as buttons.
-- Exports are secondary actions with download icons; never green.
-- The QR never appears in a recap or export.
-
-## 6. Screens
-
-- **Home (calm):** greeting h1, attendance subline, the ticket balance with the last meal's split,
-  New expense (primary), and recent expenses (4 rows + View all). Tables switch from the header. One
-  column, 24px rhythm.
-- **Ledger (dense):** a compact balance strip, then Balances, Who owes whom, Confirm payments, Payment
-  history. 44px rows, one-line sublines, one action per row. Recording a payment opens a sheet.
-- **Settings:** a 760px column of titled panels in task order: table, tables, members, invite,
-  students, payment QR, export, install, account, with ownership and archive/delete under collapsed
-  Advanced sections. No eyebrow labels; every panel is named.
-- **Expense editor:** back link, place and date, attendance toggles, a receipt of items with mono
-  amounts and a delete action, the table split, and a fixed total bar with the stamp or Finalize. Item
-  deletion asks once inline before removing the line; Cancel is hidden while the bill is empty.
-- **All expenses:** back link, a count title, a collapsed Filter control (date/adult/student), and
-  expense rows. No bottom tab.
-- **Onboarding:** paper ground, the S mark, a 28px title, one sentence, one primary. Shown inline on
-  Home when the user has no table.
-- **Splash:** stone ground with the ink S and "Loading Salo…" in muted; the same splash is inlined in
-  `index.html` so the first paint matches the app before React mounts. The installed app icon is a
-  black tile with a white S.
-
-## 7. States
-
-- **Empty:** keep the panel frame and header; one sentence naming the state and the next action.
-- **Loading:** keep the final layout, labels at once, values replaced by a flat tonal bar. No shimmer,
-  and no live region: interstitial "Loading…" copy is not an announcement worth interrupting for.
-  Existing copy may name the operation ("Loading outings…") until the skeleton exists.
-- **Error:** inside the panel that failed, one sentence and a retry; role="alert". If the app tree
-  throws, a paper error surface offers Reload Salo; a group-load failure offers Try again instead of
-  inviting a duplicate group.
-- **Success:** role="status"; brief, no toast layer.
-- **Offline:** a 13px warning strip under the header; shared writes are disabled and no stale data is
-  shown.
-- Missing value: a muted dash. A real zero prints as `₱0.00`.
-- Signing out clears the React Query cache and the selected table.
-
-## 8. Motion and accessibility
-
-- Motion is feedback, not entrance choreography: press scale 0.99 on buttons, 0.97 on tabs, the sheet's
-  14px rise, the Advanced chevron. No page-load animations.
-- `prefers-reduced-motion` removes press scales, chevron rotation, and sheet animation while keeping
-  state changes.
-- 44px targets (48px on coarse pointers); visible 2px accent focus rings; skip link; one h1 and section
-  headings; labels on every control; icon-only controls have `aria-label` and `title`; live regions for
-  async notices only; repeated rows are `ul`/`ol` lists (with `role="list"` where grid strips Safari
-  semantics); each route sets its own document title.
-- Native `<dialog>` owns the sheet's focus, Escape, backdrop, and focus restore; there is no focus trap.
-- Contrast: body copy ≥4.5:1 in both themes; status pills ≥7:1 in the pairs used.
-
-## 9. Do / Don't
-
-**Do**
-- Let the balance and the split be the loudest things on Home.
-- Keep green on data and one action state; keep chrome ink.
-- Set every figure in Geist Mono, tabular, right-aligned.
-- Use one column and one left edge; let wide screens stay calm.
-
-**Don't**
-- Don't reintroduce iOS large titles, Material app bars, or platform-specific cards.
-- Don't use gradients, glows, glass, resting shadows, icon tiles, sparklines, or a coloured nav.
-- Don't use cream grounds, violet, or indigo.
-- Don't put a label above a heading; don't use uppercase tracked labels or index numbers.
-- Don't style a command as a bare link, or a navigation link as a button.
-- Don't show the same figure twice in a card.
-
-## 10. Reference
-
-- Direction sheet: `.taste-skill/direction.json` (Achromatic ledger, seed `656333293`).
-- Tokens: `src/ui/tokens/tokens.css`; fonts: `src/ui/tokens/fonts.css` + `public/fonts/`.
-- Shell: `src/platform/PlatformShell.tsx`.
-- Signature: `src/ui/primitives/ShareBand.tsx`.
-- Gate: `node <design-taste-frontend>/scripts/inspect.mjs --app <url>` and `lint.mjs --app src`.
+- 360, 390, 412, 430, and 1440 widths, light theme, no horizontal overflow.
+- Home, All expenses, editor, detail, Ledger, Settings, and Invite.
+- Installed iPhone/Android shell, offline reads, and the “connection required” save state.
+- Lighthouse mobile with 4G throttling; first usable under 3s, interactions under 100ms.

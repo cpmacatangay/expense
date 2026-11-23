@@ -1,81 +1,101 @@
 # Security model
 
-Salo is a shared group meal ledger. The database is the authority for money and membership; the
-browser is a client. The security boundary is enforced by Supabase Auth, Postgres row-level security,
-column privileges, SECURITY DEFINER RPCs, the private `payment-qr` bucket, and the
-`finalize-outing` Edge Function.
+Salo is a participant-based expense ledger. The database is the authority for money, access, and
+history; the browser is a client. The security boundary is Supabase Auth, Postgres row-level
+security, security-definer RPCs, and the private `payment-qr` bucket.
 
-## Account lifecycle
+## Authentication
 
-- Client sign-up is disabled (`enable_signup = false`), and the app's OTP request uses
-  `shouldCreateUser: false`. New accounts are provisioned by the owner-only `invite-adult` Edge Function,
-  which creates the auth user with the service role and then calls `create_invitation` as the owner.
-- Existing users can sign in with Google or email OTP. The first owner is provisioned by the operator
-  in Supabase Auth before the group is created.
-- Invitations are bound to `invitee_email`, use an eight-character code, expire after seven days, and
-  are throttled after repeated failed claims.
+- Sign-in is **Google OAuth only**. Self-service Google sign-up is enabled; a new account lands on an
+  empty Home and sees no data until someone adds its email to an expense.
+- Email one-time codes, magic links, passwords, and Sign in with Apple are not used.
+- There is **no authentication or invite email**. No custom SMTP, sending domain, or transactional
+  email provider is required.
+- A new email becomes a pending person with a hashed, expiring, email-bound token. The creator copies
+  `/invite?token=...` and sends it in chat. The token is returned once and stored only as a SHA-256
+  hash. Claiming requires a Google account with the invited email.
+- A forwarded link cannot be claimed by a different Google account. Creating a fresh link revokes the
+  previous one. A pending email can be corrected before it is claimed.
+- The `delete-account` Edge Function requires `SUPABASE_SERVICE_ROLE_KEY`; no other client path uses
+  the service role.
 
-The `invite-adult` function requires `SUPABASE_SERVICE_ROLE_KEY` in its environment. Hosted Auth must
-keep self-service sign-up disabled; configuring `supabase/config.toml` alone does not change a
-deployed project.
+## Access model
 
-Adults invited before this flow have no auth user, so enabling `enable_signup = false` makes their
-codes unclaimable. Remove those pending adults and re-invite them through the app, which provisions
-their account. Re-inviting an adult created by `invite-adult` is safe because the account already
-exists.
+- An expense, its items, shares, coverage, and history are readable only by its participants.
+- A pairwise balance is readable only by the two people in the pair.
+- A person's display name and payment QR are shown only to people who share an active expense or a
+  payment with them.
+- Emails are never returned to other participants. A pending email is returned only to the person who
+  added it.
+- No directory, public profile, or search across strangers exists. People are found by exact email.
+- Access is enforced in the database. RLS protects direct reads; every write and composite read is a
+  security-definer RPC that re-checks `auth.uid()` and the relationship. No direct table writes are
+  granted to `authenticated`.
 
-## Money and membership
+## Money rules
 
-- Members may update only `date`, `place`, `notes`, and `payer_adult_id` on an outing. `status`,
-  `total_mode`, `total_centavos`, `group_id`, `author_profile_id`, `version`, and finalization fields
-  are server-controlled.
-- Finalization is owner-only and service-role-only. `apply_finalization` validates the owner, version,
-  present adults, payer, total, and share sum.
-- Settlements are RPC-only. Only confirmed settlements affect the ledger.
-- Removed adults and archived/deleted groups are rejected by outing status transitions, settlement
-  decisions, participant writes, and payment-QR metadata writes.
-- Historical finalized shares remain readable; removed or archived identities cannot be added to new
-  or reopened attendance, assignments, or finalization.
+- All amounts are integer centavos; floating point is never used for money.
+- `save_expense` validates, computes, and persists participants, items, coverage, and shares in one
+  transaction. The TypeScript engine is a preview only.
+- `total = sum(items) = sum(owed shares)`. Covered people owe zero; coverers absorb the covered gross.
+- Coverage is one level: no self, no payer, no chains, no loops, one coverer per covered person.
+- Expenses are version-checked. A stale save is rejected.
+- `mark_paid` and `undo_payment` are pair-level. `mark_paid` records the full net; a transaction-scoped
+  advisory lock prevents double settlement. Payments are not tied to one expense.
+- Deleting an expense soft-deletes it, removes its shares from every balance, and records the deletion
+  event. It cannot be reopened.
+- Account deletion is blocked while the person owes or is owed anything.
 
 ## Browser and local state
 
-- The Supabase client uses PKCE (`flowType: "pkce"`).
-- Sign-out and any auth user-id change clear the React Query cache and the saved table selection.
-- There are no offline reads, local drafts, persisted query caches, or group snapshots.
+- The Supabase client uses PKCE. The service-role key is never shipped in the browser.
+- Sign-out clears the React Query cache and the legacy table selection keys.
+- There are no local drafts, persisted ledger caches, or offline writes.
 - The app does not use `dangerouslySetInnerHTML`, `innerHTML`, `eval`, or dynamic code execution.
+
+## Payment QR
+
+- One private PNG/JPEG up to 2 MB per person, with a short label.
+- Object path is `{person_id}/{timestamp}.png` in the private `payment-qr` bucket.
+- Storage reads require `can_view_person(person_id)`; writes require the caller's own person id.
+- The client requests a 60-second signed URL. There is no public URL, no in-app scanner, and no
+  payment-processor integration.
+- QR changes never appear in activity text, and QR data is never migrated from the old ledger.
 
 ## Deployment checklist
 
-1. Apply migrations through `0032_retire_drafts.sql`.
-   If the hosted project predates the numbered migration history, reconcile it first with
-   `supabase migration repair`; pushing numbered migrations onto an already-migrated database fails.
-2. Disable self-service sign-up in the hosted Auth settings and deploy the `invite-adult` function with
-   `SUPABASE_SERVICE_ROLE_KEY`.
-3. Keep the hosted redirect allowlist to Salo-controlled HTTPS origins. Remove cleartext loopback
-   origins from the production project; keep them only in local development.
-4. Confirm the `payment-qr` bucket is private with the 2 MB / PNG-JPEG policy.
-5. Keep the Vercel header policy in `vercel.json` (CSP, frame-ancestors, HSTS, nosniff,
+1. Confirm hosted Auth has Google enabled, self-service sign-up allowed, the email provider disabled,
+   and the app and localhost redirect URLs configured.
+2. Verify every retained account can sign in with Google using its recorded email. A non-Google
+   address needs a Google account with that address or a new email.
+3. Keep the `payment-qr` bucket private with the 2 MB / PNG-JPEG policy.
+4. Keep the Vercel header policy in `vercel.json` (CSP, frame-ancestors, HSTS, nosniff,
    Referrer-Policy).
-6. Rotate any Supabase personal access token used during earlier setup.
+5. Apply `0033_participant_ledger.sql`.
+6. Take and verify a full production backup, record the SHA-256, and obtain explicit sign-off.
+7. Apply `0034_wipe_legacy_ledger.sql` only in the release window. It drops the legacy group/student/
+   outing/settlement tables and policies. It does not touch `auth.users` or `profiles`.
+8. Empty the `payment-qr` bucket with `scripts/wipe-payment-qr.mjs` using the service role.
+9. Deploy the app and `delete-account`; remove `finalize-outing` and `invite-adult`.
+10. Smoke test two accounts, a new invite link, account deletion, and the timing checks in
+    `specs/003-friends-expense-ledger/quickstart.md`.
 
 ## Verification
 
 ```sh
-npx supabase start
-npx supabase test db
 npm run typecheck
 npm run lint
 npm run test
 npm run build
+npm run test:e2e
+npx supabase test db
 ```
 
-`supabase/tests/security.test.sql` covers column privileges, removed-author reads, revoked QR
-metadata, removed-recipient settlement decisions, participant lifecycle checks, private-draft
-rejection, and fail-closed child writes after finalization. `supabase/tests/multi_group.test.sql`
-covers the owned-group cap and cross-group read isolation.
+`supabase/tests/participant_ledger.test.sql` covers share sums, coverage, delete, stale versions,
+netting, and undo. `participant_security.test.sql` covers cross-participant denial, invite claims,
+hidden emails, QR access, and account deletion. `money_vectors.test.sql` holds the golden money cases.
 
 ## Data hygiene
 
-Personal emails and names used by the original nickname matching were removed from the working tree
-and from git history. Do not reintroduce real identifiers in migrations, tests, fixtures, or docs.
-Use `example.test` addresses in tests.
+Do not put real names, emails, tokens, or QR images in migrations, tests, fixtures, or docs. Invite
+tokens are stored only as hashes. Production backups live outside the repository.

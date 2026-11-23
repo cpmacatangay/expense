@@ -1,42 +1,37 @@
-import type { SettlementStatus } from "@/domain/ledger/computeLedger";
+export type DebtDirection = "you_owe" | "owes_you";
 
-export type { SettlementStatus };
+export type Debt = {
+  otherPersonId: string;
+  otherName: string;
+  direction: DebtDirection;
+  amountCentavos: number;
+  hasQr: boolean;
+  qrPath: string | null;
+};
 
-export type Settlement = {
+export type Ledger = {
+  youOweCentavos: number;
+  owedToYouCentavos: number;
+  debts: Debt[];
+};
+
+export type Payment = {
   id: string;
-  group_id: string;
-  from_adult_id: string;
-  to_adult_id: string;
-  amount_centavos: number;
-  date: string;
-  note: string | null;
-  status: SettlementStatus;
-  recorded_by: string;
-  confirmed_by: string | null;
-  decided_at: string | null;
-  decline_reason: string | null;
-  voided_at: string | null;
-  voided_by: string | null;
-  created_at: string;
+  fromPersonId: string;
+  toPersonId: string;
+  amountCentavos: number;
+  markedByPersonId: string;
+  markedAt: string;
+  undoneAt: string | null;
+  undoneByPersonId: string | null;
 };
 
-export type LedgerOutingRow = {
-  id: string;
-  date: string;
-  place: string | null;
-  payer_adult_id: string | null;
-  total_centavos: number;
-  status: "finalized";
-};
-
-export type LedgerShareRow = {
-  outing_id: string;
-  adult_id: string;
-  total_centavos: number;
-};
-
-export type LedgerData = {
-  outings: LedgerOutingRow[];
-  shares: LedgerShareRow[];
-  settlements: Settlement[];
+export type PairHistory = {
+  other: {
+    id: string;
+    displayName: string;
+    hasQr: boolean;
+    qrPath: string | null;
+  };
+  payments: Payment[];
 };

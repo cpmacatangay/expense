@@ -7,6 +7,15 @@ export function formatDate(value: string): string {
   }).format(date);
 }
 
+export function todayInManila(): string {
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Manila",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit"
+  }).format(new Date());
+}
+
 export function formatRelativeTime(value: string): string {
   const then = new Date(value).getTime();
   if (Number.isNaN(then)) return "";

@@ -26,9 +26,9 @@ export default defineConfig({
       registerType: "autoUpdate",
       includeAssets: ["brand/salo-symbol-favicon.svg"],
       manifest: {
-        name: "Salo · shared group ledger",
+        name: "Salo - friends expense ledger",
         short_name: "Salo",
-        description: "One shared meal ledger for the table.",
+        description: "One shared expense ledger for friends.",
         theme_color: "#F2F1ED",
         background_color: "#F2F1ED",
         display: "standalone",

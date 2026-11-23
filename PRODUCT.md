@@ -10,123 +10,67 @@ web
 
 ## Users
 
-**The owner (CP)** is the person who creates the group and keeps it correct. He eats out with friends
-and students, usually pays, and wants the split to be obvious before everyone leaves.
-
-**The other adults** are invited members with their own accounts: Mai, Kent, Llanmer, and the friends
-who join later. They install the PWA from a link, claim an adult identity, and see the same shared
-ledger. Some adults may stay pending for a while; the app still lets the owner record an outing that
-includes them.
-
-**Students** are names on the ledger, not users. They are covered by an adult and never sign in.
-
-The situation is the table at the end of a meal: the bill arrives, one person has paid, some items
-belong to one adult, some belong to a student, some are shared, and everyone wants a number that is
-obviously fair. Later, the same group reconciles the running balance across many outings, in the app
-and in messages.
+**Friends who hang out** are the whole audience. One person records the expense at the table; everyone
+else sees only the expenses they are on. People may be existing Google accounts or new emails that
+receive a copyable invite link. There are no owners, admins, students, or group roles.
 
 ## Product Purpose
 
-Salo is a shared group meal ledger. A group records an outing, marks which adults and students were
-present, charges every item to the person or people who consumed it, and produces an exact peso split
-plus a running ledger of who owes whom until it is settled.
+Salo is a participant-based expense ledger. One expense records a description, a date, exactly one
+payer, the people who were there, and itemized lines. Every line belongs to one person. One-level
+coverage lets a friend absorb another friend's full share. Saving is immediate. Balances are net
+pairwise amounts, and either person can mark a full debt paid or undo a mistaken payment.
 
-Success means the group never opens a spreadsheet again: the split sums to the item total to the
-centavo, the recap is clear enough that nobody argues, and the ledger stays correct across months.
+Success means the group records an expense in under two minutes, sees exactly who owes whom, and
+never needs a spreadsheet, group chat reconstruction, or a finalization step.
 
 ## Positioning
 
-Most bill splitters divide evenly and stop at one meal. Salo assigns each line to an adult, a student,
-or the table, then charges student lines to the adult covering that student and divides shared lines
-per head across the people who actually attended. The item sum is the bill. A typed total is an
-explicit override, not a hidden adjustment.
+Most splitters divide evenly and stop at one meal. Salo keeps the itemized bill, records who covers
+whom, and maintains a running pairwise ledger across months. It is deliberately smaller than a group
+expense manager: no tables, no membership administration, no drafts, no export workflow.
 
-Salo is one installable PWA with one Salo interface on both platforms, adapted only for safe areas and
-input. The group is shared, the ledger is live, and settlements are confirmed by the person who
-receives the money.
+## Operating Principles
 
-## Operating Context
+- **Pairwise by default.** An expense is visible only to its people. A balance is visible only to the
+  pair.
+- **Immediate.** Saving is the commit. There is no draft, finalize, reopen, lock, or fixed total.
+- **One person per line.** A shared dish is one line per person; the product does not split a line.
+- **One level of coverage.** A coverer absorbs the covered person's full share and cannot be covered
+  in the same expense.
+- **Full marks, reversible.** Mark the full net paid, or undo it. No partial payments, no recipient
+  confirmation.
+- **Google only.** Self-service Google sign-up. No email code, magic link, or invite email.
+- **Three tabs.** Home, Ledger, Settings. All expenses and expense detail are pushed screens.
+- **Light only.** Stone and ink, one accent, no appearance switch.
 
-- Used one-handed on a phone, at the table, often with poor signal.
-- One person records the meal; the owner finalizes; everyone can see the open expense and the result.
-- Payment happens outside the app (cash, transfer). The app records a settlement and the recipient
-  confirms it.
-- Recaps leave the app through the web share sheet or a download.
-- Supabase holds the shared ledger; no receipt images are captured.
+## Core Flows
 
-## Capabilities and Constraints
+1. **Record an expense.** Home → New expense → description/date → payer → people → item lines →
+   optional coverage → Save. The expense is live immediately.
+2. **See and settle.** Home shows the viewer's totals and debts; Ledger lists every pair and paid
+   history. Either person marks the full amount paid.
+3. **Add a person.** Enter an email. An existing Google account links immediately; a new email becomes
+   a pending person with a copyable 7-day link. The person signs in with Google using that email.
+4. **Review.** Home shows five recent events. Each expense shows its full change history. Ledger shows
+   payments between a pair.
+5. **QR.** Settings stores one private QR and label. A debt row shows it to the pair.
 
-- **Installable PWA only**: iPhone Safari 16.4+ and current Android Chrome. No native app, Trusted Web
-  Activity, or store listing in v1.
-- **One interface, two platforms**: the same information architecture, money rules, permissions, copy,
-  and components on iPhone and Android; only safe areas and input behavior differ.
-- **Accounts for every adult**: Google OAuth or email one-time code. No Sign in with Apple in v1.
-  Students never have accounts. Pending adults are allowed until they join.
-- **Shared groups of 2–12 adults**: one owner per group; the owner is the only admin in v1. A user may
-  own up to five groups and join many; the header table name opens a switcher.
-- **Invitations**: share link and short code, bound to a pending adult, revocable and expiring.
-- **Present adults and students per outing**: shared items and the per-head fallback split across the
-  people who attended; student shares go to their covering adult.
-- **One payer per outing**: the payer must be present.
-- **Item-sum money rule**: Auto follows the items; typing switches to Manual; a reopened outing is
-  Fixed. No tax, service charge, discount, or printed-receipt reconciliation.
-- **Settlements**: payer records; recipient confirms or declines with a note. Only confirmed amounts
-  affect balances. The owner can record for a pending adult, but confirmation waits until they join.
-- **Payment QR**: each group adult may add one private payment QR and label. Members can open the
-  payee's QR from Home, Ledger, or the finalized outing and scan it with their banking app. Salo never
-  scans the code, and the QR never appears in a recap or export.
-- **Live ledger**: expenses, items, shares, settlements, and membership update in real time when
-  connected. Sensitive changes are recorded server-side for audit.
-- **Connected edits**: shared writes require connectivity. There are no offline reads, local drafts,
-  or queued writes.
-- **Owner controls**: invite, remove, manage students, finalize, reopen, transfer ownership, archive,
-  soft-delete, and export the full group. A member can export their own data.
-- **No OCR or LLM**: manual entry only. No receipt images, no external recognition.
-- **Currency and time**: Philippine pesos, English, Asia/Manila.
-- **Zero recurring cost**: Supabase free tier, a free static host and subdomain, a free-tier email
-  provider. No Apple Developer Program, paid OCR, or store fees.
-- **Deliberately absent**: multiple payers, multiple admins, multi-currency, photo avatars, public
-  group discovery, push notifications, and offline shared writes.
+## Removed
 
-## Brand Commitments
+Tables, groups, group invitations, the switcher, member management, ownership, archive/delete group,
+students, owner finalization, reopening, locks, fixed totals, drafts, recaps, exports, the Activity
+tab, email authentication, and email delivery.
 
-- Name: **Salo**. Application label and install name are `Salo`.
-- Voice: plain, compact, quietly confident. Philippine context — pesos, "outing", "students",
-  "covered by". No hedging, no exclamation marks, no growth-marketing language.
-- A green identity: Ledger Green `#1F5C45` as the one data hue, warm stone surfaces, green-mint in
-  dark mode.
-- Interface: one Salo language — paper ground, ink chrome, ticket surfaces, Geist with Geist Mono for
-  every figure. The shared table's exact split is the signature: the balance is printed as a ticket and
-  the split is one band across the people who paid.
-- Interface language is English. Currency formatting is `₱1,234.56`.
+## Retained
 
-## Evidence on Hand
+Itemized bills, per-person payment QR, activity history, install section, the three-tab shell, and the
+light stone/ink interface.
 
-- `specs/002-salo-pwa/spec.md` - eight user stories, edge cases, functional requirements, success
-  criteria, assumptions, and explicit out-of-scope.
-- `specs/002-salo-pwa/plan.md`, `research.md`, `data-model.md`, `contracts/`, `quickstart.md`, and
-  `tasks.md` — the shared-PWA architecture and validation plan.
-- `.specify/memory/constitution.md` (4.0.0) — nine enforceable principles, including money
-  correctness, shared privacy, connected edits, one interface, and zero recurring cost.
-- `specs/001-salo-expense-sharing/` — the archived Android app spec and its Material 3 design.
-- No testimonials, benchmarks, press, pricing page, or customer logos exist. Future work must not
-  invent them.
+## Success
 
-## Product Principles
-
-1. **The item sum wins.** The visible math reconciles to the items the group listed. A typed total is
-   an explicit override, never a hidden gap.
-2. **Present people only.** Shared costs go to the adults and students who were actually there.
-3. **Assign, don't average.** A number is only trustworthy if it can be traced to who ate what.
-4. **Shared by design, private by default.** A group sees its own ledger; no one else does. Students
-   are names, not profiles.
-5. **Confirmed money.** A settlement changes a balance only after the recipient confirms it.
-6. **Native on both phones.** The PWA should feel like an iPhone app on iOS and a Material app on
-   Android, without two codebases.
-7. **The table is live.** Everyone sees the same ledger when connected; no one edits a stale copy.
-
-## Accessibility & Inclusion
-
-The product requires 44pt targets, contrast in both themes, accessible names for icon-only controls,
-visible focus, Dynamic Type support, reduced-motion support, and a logical reading order. It is
-verified on the owner's iPhone and Android phone, in both installed and browser modes.
+- A three-person, five-item expense is recorded in under 2 minutes.
+- Shares sum exactly to the item total.
+- A person sees who they owe within 5 seconds of opening the app.
+- A debt is marked paid in under 15 seconds.
+- No one outside the participants can read the expense or the pair.

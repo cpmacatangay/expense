@@ -1,11 +1,9 @@
 import { lazy } from "react";
-import { Navigate, Route, Routes, useLocation } from "react-router-dom";
+import { Navigate, Route, Routes } from "react-router-dom";
 import { AuthProvider } from "@/features/auth/AuthProvider";
 import { useAuth } from "@/features/auth/authContext";
 import { SignInPage } from "@/features/auth/SignInPage";
-import { GroupProvider } from "@/features/groups/GroupProvider";
-import { useGroup } from "@/features/groups/groupContext";
-import { useGroupRealtime } from "@/features/realtime/useGroupRealtime";
+import { useMe } from "@/features/me/useMe";
 import { NotFoundPage } from "@/pages/NotFoundPage";
 import { PlatformShell } from "@/platform/PlatformShell";
 import { BrandMark } from "@/ui/primitives/BrandMark";
@@ -15,18 +13,26 @@ import { SplashScreen } from "@/ui/primitives/SplashScreen";
 const HomePage = lazy(() =>
   import("@/pages/HomePage").then((module) => ({ default: module.HomePage }))
 );
+const AllExpensesPage = lazy(() =>
+  import("@/pages/AllExpensesPage").then((module) => ({ default: module.AllExpensesPage }))
+);
 const LedgerPage = lazy(() =>
   import("@/pages/LedgerPage").then((module) => ({ default: module.LedgerPage }))
 );
-const ExpensesPage = lazy(() =>
-  import("@/pages/ExpensesPage").then((module) => ({ default: module.ExpensesPage }))
-);
 const SettingsPage = lazy(() =>
-  import("@/features/groups/SettingsPage").then((module) => ({ default: module.SettingsPage }))
+  import("@/pages/SettingsPage").then((module) => ({ default: module.SettingsPage }))
 );
-const OutingEditorPage = lazy(() =>
-  import("@/features/outings/OutingEditorPage").then((module) => ({
-    default: module.OutingEditorPage
+const InvitePage = lazy(() =>
+  import("@/pages/InvitePage").then((module) => ({ default: module.InvitePage }))
+);
+const ExpenseEditorPage = lazy(() =>
+  import("@/features/expenses/ExpenseEditorPage").then((module) => ({
+    default: module.ExpenseEditorPage
+  }))
+);
+const ExpenseDetailPage = lazy(() =>
+  import("@/features/expenses/ExpenseDetailPage").then((module) => ({
+    default: module.ExpenseDetailPage
   }))
 );
 
@@ -40,33 +46,25 @@ export function App() {
 
 function AuthGate() {
   const { loading, session } = useAuth();
-
   if (loading) return <SplashScreen />;
   if (!session) return <SignInPage />;
-
-  return (
-    <GroupProvider>
-      <GroupGate />
-    </GroupProvider>
-  );
+  return <MeGate />;
 }
 
-function GroupGate() {
-  const { loading, group, groups, error, refresh } = useGroup();
-  const location = useLocation();
-  useGroupRealtime(group?.id, refresh);
+function MeGate() {
+  const { data, error, isLoading, refetch } = useMe();
 
-  if (loading) return <SplashScreen />;
+  if (isLoading) return <SplashScreen />;
 
-  if (error && groups.length === 0) {
+  if (error) {
     return (
       <main className="onboarding">
         <BrandMark className="onboarding-mark" />
-        <h1 className="page-title">Could not load your tables.</h1>
+        <h1 className="page-title">Could not load your ledger.</h1>
         <p className="page-sub" role="alert">
-          {error}
+          {error instanceof Error ? error.message : "Try again when you are connected."}
         </p>
-        <button className="primary-action" type="button" onClick={() => void refresh()}>
+        <button className="primary-action" type="button" onClick={() => void refetch()}>
           <Icon name="restore" />
           Try again
         </button>
@@ -74,21 +72,21 @@ function GroupGate() {
     );
   }
 
-  if (groups.length === 0 && location.pathname !== "/") {
-    return <Navigate to="/" replace />;
-  }
+  if (!data) return <SplashScreen />;
 
   return (
     <Routes>
       <Route path="/welcome" element={<Navigate to="/" replace />} />
       <Route element={<PlatformShell />}>
         <Route index element={<HomePage />} />
+        <Route path="expenses" element={<AllExpensesPage />} />
+        <Route path="expenses/new" element={<ExpenseEditorPage />} />
+        <Route path="expenses/:expenseId" element={<ExpenseDetailPage />} />
+        <Route path="expenses/:expenseId/edit" element={<ExpenseEditorPage />} />
         <Route path="ledger" element={<LedgerPage />} />
-        <Route path="expenses" element={<ExpensesPage />} />
         <Route path="settings" element={<SettingsPage />} />
-        <Route path="outings/:outingId" element={<OutingEditorPage />} />
+        <Route path="invite" element={<InvitePage />} />
       </Route>
-      <Route path="history" element={<Navigate to="/expenses" replace />} />
       <Route path="*" element={<NotFoundPage />} />
     </Routes>
   );

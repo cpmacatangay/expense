@@ -1,9 +1,8 @@
-import { Suspense, useState } from "react";
+import { Suspense } from "react";
 import { NavLink, Outlet, useLocation } from "react-router-dom";
 import { RouteErrorBoundary } from "@/app/RouteErrorBoundary";
-import { GroupSwitcher } from "@/features/groups/GroupSwitcher";
-import { useGroup } from "@/features/groups/groupContext";
 import { useOnlineStatus } from "@/features/realtime/useOnlineStatus";
+import { useLedgerRealtime } from "@/features/realtime/useLedgerRealtime";
 import { BrandMark } from "@/ui/primitives/BrandMark";
 import { Icon } from "@/ui/primitives/Icon";
 import { tabItems } from "@/ui/primitives/tabs";
@@ -17,14 +16,15 @@ function todayLabel() {
 }
 
 export function PlatformShell() {
-  const { group, error, refresh } = useGroup();
   const location = useLocation();
   const online = useOnlineStatus();
-  const [switcherOpen, setSwitcherOpen] = useState(false);
-  const isDetail = location.pathname.startsWith("/outings/");
+  useLedgerRealtime();
+  const isPushed =
+    (location.pathname.startsWith("/expenses/") && location.pathname !== "/expenses") ||
+    location.pathname.startsWith("/invite");
 
   return (
-    <div className={`app${isDetail ? " is-detail" : ""}`}>
+    <div className={`app${isPushed ? " is-detail" : ""}`}>
       <a className="skip-link" href="#main-content">
         Skip to content
       </a>
@@ -34,19 +34,7 @@ export function PlatformShell() {
           <BrandMark />
           <div className="app-brand-copy">
             <span className="app-name">Salo</span>
-            {group ? (
-              <button
-                className="app-group app-group-button"
-                type="button"
-                onClick={() => setSwitcherOpen(true)}
-                aria-label={`Switch table. Current table: ${group.name}`}
-              >
-                <span className="app-group-name">{group.name}</span>
-                <Icon name="chevron-down" size={12} />
-              </button>
-            ) : (
-              <span className="app-group">No table yet</span>
-            )}
+            <span className="app-group">Friends ledger</span>
           </div>
         </div>
         <span className="app-head-meta">{online ? todayLabel() : "Offline"}</span>
@@ -58,16 +46,7 @@ export function PlatformShell() {
         </div>
       ) : null}
 
-      {error && group && online ? (
-        <div className="refresh-banner" role="status">
-          <span>Could not refresh. Try again.</span>
-          <button className="text-action" type="button" onClick={() => void refresh()}>
-            Try again
-          </button>
-        </div>
-      ) : null}
-
-      <nav className="app-nav" aria-label="Main" hidden={isDetail || !group}>
+      <nav className="app-nav" aria-label="Main" hidden={isPushed}>
         {tabItems.map((item) => (
           <NavLink
             key={item.to}
@@ -83,19 +62,11 @@ export function PlatformShell() {
 
       <main className="app-main" id="main-content" tabIndex={-1}>
         <RouteErrorBoundary key={location.pathname}>
-          <Suspense
-            fallback={
-              <p className="panel-copy">
-                Loading the table…
-              </p>
-            }
-          >
+          <Suspense fallback={<p className="panel-copy">Loading your ledger.</p>}>
             <Outlet />
           </Suspense>
         </RouteErrorBoundary>
       </main>
-
-      <GroupSwitcher open={switcherOpen} onClose={() => setSwitcherOpen(false)} />
     </div>
   );
 }

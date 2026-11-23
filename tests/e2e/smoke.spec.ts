@@ -6,7 +6,7 @@ test("the sign-in screen renders", async ({ page }) => {
     page.getByRole("heading", { name: "Eat together. Settle once." })
   ).toBeVisible();
   await expect(page.getByRole("button", { name: "Continue with Google" })).toBeVisible();
-  await expect(page.getByLabel("Email")).toBeVisible();
+  await expect(page.getByText("New here? Sign in with Google.")).toBeVisible();
 });
 
 test("the Android platform override applies", async ({ page }) => {

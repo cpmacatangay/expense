@@ -67,24 +67,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (!supabase) throw new Error("Supabase is not configured");
         const { error } = await supabase.auth.signInWithOAuth({
           provider: "google",
-          options: { redirectTo: `${window.location.origin}/` }
-        });
-        if (error) throw error;
-      },
-      sendEmailCode: async (email) => {
-        if (!supabase) throw new Error("Supabase is not configured");
-        const { error } = await supabase.auth.signInWithOtp({
-          email,
           options: {
-            shouldCreateUser: false,
-            emailRedirectTo: `${window.location.origin}/`
+            redirectTo: `${window.location.origin}${window.location.pathname}${window.location.search}`
           }
         });
-        if (error) throw error;
-      },
-      verifyEmailCode: async (email, token) => {
-        if (!supabase) throw new Error("Supabase is not configured");
-        const { error } = await supabase.auth.verifyOtp({ email, token, type: "email" });
         if (error) throw error;
       },
       signOut: async () => {

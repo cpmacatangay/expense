@@ -1,0 +1,56 @@
+{
+  "cases": [
+    {
+      "name": "assigned items",
+      "payerPersonId": "a",
+      "people": ["a", "b", "c"],
+      "items": [
+        { "name": "Pasta", "amountCentavos": 30000, "assignedPersonId": "a" },
+        { "name": "Pizza", "amountCentavos": 20000, "assignedPersonId": "b" },
+        { "name": "Salad", "amountCentavos": 10000, "assignedPersonId": "c" }
+      ],
+      "coverage": [],
+      "expected": { "a": 30000, "b": 20000, "c": 10000 }
+    },
+    {
+      "name": "one-level coverage",
+      "payerPersonId": "a",
+      "people": ["a", "b", "c"],
+      "items": [
+        { "name": "Pasta", "amountCentavos": 30000, "assignedPersonId": "a" },
+        { "name": "Pizza", "amountCentavos": 20000, "assignedPersonId": "b" },
+        { "name": "Salad", "amountCentavos": 10000, "assignedPersonId": "c" }
+      ],
+      "coverage": [{ "coveredPersonId": "c", "covererPersonId": "b" }],
+      "expected": { "a": 30000, "b": 30000, "c": 0 }
+    },
+    {
+      "name": "payer covers a share",
+      "payerPersonId": "a",
+      "people": ["a", "b", "c"],
+      "items": [
+        { "name": "Pasta", "amountCentavos": 30000, "assignedPersonId": "a" },
+        { "name": "Pizza", "amountCentavos": 20000, "assignedPersonId": "b" },
+        { "name": "Salad", "amountCentavos": 10000, "assignedPersonId": "c" }
+      ],
+      "coverage": [{ "coveredPersonId": "c", "covererPersonId": "a" }],
+      "expected": { "a": 40000, "b": 20000, "c": 0 }
+    },
+    {
+      "name": "one coverer for two people",
+      "payerPersonId": "a",
+      "people": ["a", "b", "c", "d"],
+      "items": [
+        { "name": "A", "amountCentavos": 10000, "assignedPersonId": "a" },
+        { "name": "B", "amountCentavos": 20000, "assignedPersonId": "b" },
+        { "name": "C", "amountCentavos": 30000, "assignedPersonId": "c" },
+        { "name": "D", "amountCentavos": 40000, "assignedPersonId": "d" }
+      ],
+      "coverage": [
+        { "coveredPersonId": "c", "covererPersonId": "b" },
+        { "coveredPersonId": "d", "covererPersonId": "b" }
+      ],
+      "expected": { "a": 10000, "b": 90000, "c": 0, "d": 0 }
+    }
+  ]
+}
